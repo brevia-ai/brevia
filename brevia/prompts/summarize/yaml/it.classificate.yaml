@@ -1,0 +1,9 @@
+_type: prompt
+input_variables:
+    ["text","num_items"]
+template: |
+    Estrai {num_items} concetti chiave dal seguente testo:
+
+    {text}
+
+    {num_items} CONCETTI CHIAVE:

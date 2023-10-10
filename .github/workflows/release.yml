@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  pull_request_target:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      releaseType:
+        description: 'Release type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release_job:
+    uses: bedita/github-workflows/.github/workflows/release.yml@v1
+    with:
+      main_branch: 'main'
+      dist_branches: '["main"]'
+      version_bump: ${{ inputs.releaseType }}
+      toml_conf_path: pyproject.toml
+      toml_conf_version_key: "tool.poetry.version"
+
+#   docker_push:
+#     runs-on: 'ubuntu-latest'
+#     needs: release_job
+#     steps:
+
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
+
+#       - name: Debug output version
+#         run: |
+#             echo version var ${{ needs.release_job.outputs.version }}
+
+#       - name: Print message if no semantic version was created
+#         if: contains(needs.release_job.outputs.version, 'undefined')
+#         run: |
+#             echo Skip version file update and docker image creation
+
+#       - name: Update version file
+#         if: ${{ !contains(needs.release_job.outputs.version, 'undefined') }}
+#         run: |
+#             echo -e "[breviaAPI]\nversion = ${{ needs.release_job.outputs.version }}" > config/version.ini

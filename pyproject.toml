@@ -1,0 +1,58 @@
+[tool.poetry]
+name = "brevia"
+version = "0.0.1"
+description = ""
+authors = [
+    "Niki Corradetti <niki.corradetti@atlasconsulting.it>",
+    "Stefano Rosanelli <stefano.rosanelli@atlasconsulting.it>",
+]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+en_core_web_sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0.tar.gz"}
+python = "^3.10"
+bs4 = "^0.0.1"
+lxml = "^4.9.2"
+langchain = "0.0.240"
+fastapi = "^0.95.2"
+flake8 = "^6.0.0"
+nltk = "^3.8.1"
+openai = "^0.27.7"
+pgvector = "^0.1.8"
+psycopg2-binary = "^2.9.6"
+pylint = "^2.17.4"
+pypdf = "^3.9.0"
+python-dotenv = "^1.0.0"
+python-multipart = "^0.0.6"
+tiktoken = "^0.4.0"
+uvicorn = {extras = ["standard"], version = "^0.22.0"}
+spacy-fastlang = "^1.0.1"
+langcodes = "^3.3.0"
+language-data = "^1.1"
+fasttext = {git = "https://github.com/cfculhane/fastText", rev = "main"}
+pycryptodome = "^3.18.0"
+alembic = "^1.11.1"
+python-jose = "^3.3.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pylint.main]
+# Specify a score threshold under which the program will exit with error.
+fail-under = 10
+ignore = [".git", "venv", ".venv", "data"]
+limit-inference-results = 100
+persistent = true
+py-version = "3.10"
+extension-pkg-whitelist = ["pydantic"]
+
+[tool.poetry.scripts]
+create_token = "brevia.tokens:create_access_token"
+test_service = "brevia.scripts.test_service:test_service"
+
+[project.scripts]
+# see https://stackoverflow.com/questions/73633063/distribute-alembic-migration-scripts-in-application-package
+db_current = "brevia.commands:db_current_cmd"
+db_upgrade = "brevia.commands:db_upgrade_cmd"
+db_downgrade = "brevia.commands:db_downgrade_cmd"

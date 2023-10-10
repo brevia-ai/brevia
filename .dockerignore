@@ -1,0 +1,14 @@
+*.log*
+*.md
+.git
+.cache
+.output
+.env
+.env.docker
+venv/
+.venv/
+__pycache__
+.editorconfig
+.DS_Store
+.history
+.vscode

@@ -1,0 +1,1066 @@
+{
+	"info": {
+		"_postman_id": "ac3146c5-af00-441c-a02c-48d3dc25de33",
+		"name": "brevia API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "234034"
+	},
+	"item": [
+		{
+			"name": "Collections",
+			"item": [
+				{
+					"name": "collections - Read available collections",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/collections",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"collections"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "collections - Read collections with name filter",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/collections?name={{collection}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"collections"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "{{collection}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "collections - Create collection",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseJSON;",
+									"try {",
+									"    responseJSON = JSON.parse(responseBody); ",
+									"    tests[\"Status code is 201\"] = responseCode.code === 201;",
+									"    if (responseJSON && responseJSON.uuid) {",
+									"        postman.setEnvironmentVariable(\"collection_id\", responseJSON.uuid);",
+									"    }",
+									"} catch (e) {",
+									"    tests[\"Error in parsing response\"] = e;",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"prova-prova-collection\",\n    \"cmetadata\": {\n        \"note\": \"note di prova\",\n        \"description\": \"descrizione di prova\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/collections",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"collections"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "collections - Read single collection",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/collections/{{collection_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"collections",
+								"{{collection_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "collections - Update collection",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"nuovo-nome-nuovo\",\n    \"cmetadata\": {\n        \"note\": \"note di prova prova\",\n        \"description\": \"descrizione di prova prova\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/collections/{{collection_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"collections",
+								"{{collection_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "collections - Delete single collection",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/collections/{{collection_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"collections",
+								"{{collection_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Documents Index",
+			"item": [
+				{
+					"name": "index - Add document to collection",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"content\" : \"Lorem ipsum dolor sit amet, consectetur adipisci elit, sed do eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrum exercitationem ullamco laboriosam, nisi ut aliquid ex ea commodi consequatur. Duis aute irure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\",\r\n    \"collection_id\" : \"{{collection_id}}\",\r\n    \"document_id\" : \"{{document_id}}\",\r\n    \"metadata\" : {\"category\": \"cat1\"}\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/index",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index/upload - Upload PDF file and index in a collection",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/home/ste/Downloads/TestSummary.pdf"
+								},
+								{
+									"key": "collection_id",
+									"value": "{{collection_id}}",
+									"type": "text"
+								},
+								{
+									"key": "document_id",
+									"value": "{{document_id}}",
+									"type": "text"
+								},
+								{
+									"key": "metadata",
+									"value": "{\"type\": \"files\", \"file\": \"test.pdf\"}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/index/upload",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index - Read document from index",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/index/{{collection_id}}/{{document_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"{{collection_id}}",
+								"{{document_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index - Remove document from collection",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/index/{{collection_id}}/{{document_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"{{collection_id}}",
+								"{{document_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "summarize - Summarization",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "X-Chat-Session",
+						"value": "{{session_id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"text\" : \"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum\",\n    \"summ_prompt\" : \"summarize_point\",\n    \"num_items\" : \"8\",\n    \"token_data\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/summarize",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"summarize"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "upload_summarize - Upload PDF file and summarize",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var responseJSON;",
+							"try {",
+							"    responseJSON = JSON.parse(responseBody); ",
+							"    tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"    if (responseJSON && responseJSON.job) {",
+							"        postman.setEnvironmentVariable(\"job_id\", responseJSON.job);",
+							"    }",
+							"} catch (e) {",
+							"    tests[\"Error in parsing response\"] = e;",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/home/ste/Downloads/Sprint 1 ENPACL.pdf"
+						},
+						{
+							"key": "summ_prompt",
+							"value": "summarize",
+							"type": "text"
+						},
+						{
+							"key": "num_items",
+							"value": "4",
+							"type": "text"
+						},
+						{
+							"key": "token_data",
+							"value": "true",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/upload_summarize",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"upload_summarize"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "upload_analyze - Upload file and analyze using extension",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var responseJSON;",
+							"try {",
+							"    responseJSON = JSON.parse(responseBody); ",
+							"    tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"    if (responseJSON && responseJSON.job) {",
+							"        postman.setEnvironmentVariable(\"job_id\", responseJSON.job);",
+							"    }",
+							"} catch (e) {",
+							"    tests[\"Error in parsing response\"] = e;",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": ""
+						},
+						{
+							"key": "service",
+							"value": "{{service}}",
+							"type": "text"
+						},
+						{
+							"key": "payload",
+							"value": "{{service_payload}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/upload_analyze",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"upload_analyze"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "transcribe - Upload audio file and transcribe",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": []
+						},
+						{
+							"key": "language",
+							"value": "it",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/transcribe",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"transcribe"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "upload_summarize - Upload PDF content as base64 string",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file_content",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "summ_prompt",
+							"value": "summarize",
+							"type": "text"
+						},
+						{
+							"key": "num_items",
+							"value": "4",
+							"type": "text"
+						},
+						{
+							"key": "token_data",
+							"value": "true",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/upload_summarize",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"upload_summarize"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "summarize_binary - post binary data",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"content-type": true
+				}
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/octet-stream",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": "/home/ste/Downloads/TestSummary.pdf"
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/summarize_binary",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"summarize_binary"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "prompt - Question/Answer flow",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "X-Chat-Session",
+						"value": "{{session_id}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"question\" : \"quando è nata la repubblica in Italia?\",\n    \"collection\" : \"storia-novecento\",\n    \"source_docs\": true,\n    \"docs_num\": 3,\n    \"token_data\": false\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/prompt",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"prompt"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "prompt - Question/Answer flow with History",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"question\" : \"mi puoi tradurre l'ultima risposta in italiano?\",\n    \"chat_history\": [\n        {\n            \"query\": \"cos'è il floor?\",\n            \"answer\": \"Il floor è il minimo valore a cui è possibile convertire il proprio investimento in strumenti convertibili, che tutela l'imprenditore da un eccessivo ribasso della valutazione.\"\n        },\n        {\n            \"query\": \"cos'è il mifid?\",\n            \"answer\": \"MiFID sta per \\\"Markets in Financial Instruments Directive\\\", ovvero la direttiva sui mercati degli strumenti finanziari.\"\n        },\n        {\n            \"query\": \"quanto bisogna pagare per fare un finanziamento?\",\n            \"answer\": \"The cost of obtaining finance from Doorway varies depending on whether you are an investor or a company seeking funding. For investors, there is a 1% annual fee based on the investment amount for administrative and accounting costs, as well as a potential 20% commission on returns exceeding 7%. For companies seeking funding, Doorway charges a success fee between 6% and 8% of the amount raised.\"\n        }\n\n    ],\n    \"collection\" : \"doorway\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/prompt",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"prompt"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "search - Relevant documents",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"query\" : \"cos'è il floor?\",\r\n    \"collection\" : \"doorway\",\r\n    \"docs_num\" : 6,\r\n    \"distance_strategy_name\" : \"cosine\"\r\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/search",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "status - read API status",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/status",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "status - head API status",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "HEAD",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/status",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "chat history - Read chat history",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/chat_history",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"chat_history"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "chat history - Read chat history with filters",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/chat_history?max_date=2023-04-20&collection={{collection}}&page=1&page_size=20",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"chat_history"
+					],
+					"query": [
+						{
+							"key": "max_date",
+							"value": "2023-04-20"
+						},
+						{
+							"key": "collection",
+							"value": "{{collection}}"
+						},
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "page_size",
+							"value": "20"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "jobs - Read single job",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{access_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/jobs/{{job_id}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"jobs",
+						"{{job_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

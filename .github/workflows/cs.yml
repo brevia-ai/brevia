@@ -1,0 +1,16 @@
+name: 'cs'
+on:
+  pull_request:
+    paths:
+      - '**/*.py'
+      - '.github/workflows/cs.yml'
+  push:
+    paths:
+      - '**/*.py'
+      - '.github/workflows/cs.yml'
+
+jobs:
+  cs:
+    uses: bedita/github-workflows/.github/workflows/python-cs.yml@v1
+    with:
+      python_versions: '["3.x"]'

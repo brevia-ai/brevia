@@ -1,0 +1,16 @@
+name: 'unit'
+on:
+  pull_request:
+    paths:
+      - '**/*.py'
+      - '.github/workflows/unit.yml'
+  push:
+    paths:
+      - '**/*.py'
+      - '.github/workflows/unit.yml'
+
+jobs:
+  unit:
+    uses: bedita/github-workflows/.github/workflows/python-unit.yml@v1
+    with:
+      python_versions: '["3.10","3.11"]'

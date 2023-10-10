@@ -1,0 +1,9 @@
+_type: prompt
+input_variables:
+    ["text"]
+template: |
+    Scrivi un riassunto in italiano del seguente testo fornito:
+
+    {text}
+
+    RIASSUNTO IN ITALIANO:

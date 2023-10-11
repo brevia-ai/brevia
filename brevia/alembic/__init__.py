@@ -1,12 +1,11 @@
 """DB migrations commands """
-from pathlib import Path
+from os import getcwd
 
 from alembic.config import Config
 from alembic import command
 
 
-ROOT_PATH = Path(__file__).parent.parent
-ALEMBIC_CFG = Config(ROOT_PATH / "alembic.ini")
+ALEMBIC_CFG = Config(f'{getcwd()}/alembic.ini')
 
 
 def current(verbose=False):

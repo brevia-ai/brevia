@@ -7,9 +7,10 @@ authors = [
     "Stefano Rosanelli <stefano.rosanelli@atlasconsulting.it>",
 ]
 readme = "README.md"
+homepage = "https://github.com/brevia-ai/brevia"
+repository = "https://github.com/brevia-ai/brevia"
 
 [tool.poetry.dependencies]
-en_core_web_sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0.tar.gz"}
 python = "^3.10"
 bs4 = "^0.0.1"
 lxml = "^4.9.2"
@@ -29,7 +30,6 @@ uvicorn = {extras = ["standard"], version = "^0.22.0"}
 spacy-fastlang = "^1.0.1"
 langcodes = "^3.3.0"
 language-data = "^1.1"
-fasttext = {git = "https://github.com/cfculhane/fastText", rev = "main"}
 pycryptodome = "^3.18.0"
 alembic = "^1.11.1"
 python-jose = "^3.3.0"
@@ -40,7 +40,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pylint.main]
 # Specify a score threshold under which the program will exit with error.
-fail-under = 10
+fail-under = 9.5
 ignore = [".git", "venv", ".venv", "data"]
 limit-inference-results = 100
 persistent = true

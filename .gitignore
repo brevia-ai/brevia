@@ -2,6 +2,7 @@
 .env.docker
 venv/
 .venv/
+dist/
 log.ini
 *.log
 __pycache__

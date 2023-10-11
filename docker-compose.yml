@@ -1,33 +1,5 @@
 version: '3.9'
 services:
-    breviaapi:
-        image: registry.gitlab.com/atlasconsulting/atlas-apps/brevia-api-poc:${API_VERSION}
-        profiles: ["api", "app"]
-        environment:
-            - OPENAI_API_KEY=${OPENAI_API_KEY}
-            - QA_COMPLETIONS_MODEL=${QA_COMPLETIONS_MODEL}
-            - QA_TEMPERATURE=${QA_TEMPERATURE}
-            - QA_MAX_TOKENS=${QA_MAX_TOKENS}
-            - SEARCH_DOCS_NUM=${SEARCH_DOCS_NUM}
-            - TEXT_CHUNK_OVERLAP=${TEXT_CHUNK_OVERLAP}
-            - TEXT_CHUNK_SIZE=${TEXT_CHUNK_SIZE}
-            - SUMM_COMPLETIONS_MODEL=${SUMM_TEMPERATURE}
-            - SUMM_TEMPERATURE=${SUMM_TEMPERATURE}
-            - SUMM_TOKENS=${SUMM_TOKENS}
-            - SUMM_TOKEN_SPLITTER=${SUMM_TOKEN_SPLITTER}
-            - SUMM_TOKEN_OVERLAP=${SUMM_TOKEN_OVERLAP}
-            - SUMM_DEFAULT_PROMPT=${SUMM_DEFAULT_PROMPT}
-            - SUMM_NUM_ITEMS=${SUMM_NUM_ITEMS}
-            - PROMPT_LANG=${PROMPT_LANG}
-            - VERBOSE_MODE=${VERBOSE_MODE}
-            - PGVECTOR_HOST=pgdatabase
-            - PGVECTOR_USER=${PGVECTOR_USER}
-            - PGVECTOR_PASSWORD=${PGVECTOR_PASSWORD}
-            - PGVECTOR_DATABASE=${PGVECTOR_DATABASE}
-            - PGVECTOR_DRIVER=${PGVECTOR_DRIVER}
-            - PGVECTOR_PORT=${PGVECTOR_PORT}
-        ports:
-            - "${API_PORT}:8000"
     pgdatabase:
         image: ankane/pgvector
         environment:
@@ -48,13 +20,6 @@ services:
             - "${PGADMIN_PORT}:80"
         volumes:
           - pgadmindata:/var/lib/pgadmin
-    breviaapp:
-        image: registry.gitlab.com/atlasconsulting/atlas-apps/brevia-app:${APP_VERSION}
-        profiles: ["app"]
-        environment:
-            - API_BASE_URL=http://localhost:${API_PORT}
-        ports:
-            - "${APP_PORT}:3000"
 volumes:
   pgdata:
     name: ${PGVECTOR_VOLUME_NAME}

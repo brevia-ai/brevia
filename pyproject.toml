@@ -50,9 +50,6 @@ extension-pkg-whitelist = ["pydantic"]
 [tool.poetry.scripts]
 create_token = "brevia.tokens:create_access_token"
 test_service = "brevia.scripts.test_service:test_service"
-
-[project.scripts]
-# see https://stackoverflow.com/questions/73633063/distribute-alembic-migration-scripts-in-application-package
 db_current = "brevia.commands:db_current_cmd"
 db_upgrade = "brevia.commands:db_upgrade_cmd"
 db_downgrade = "brevia.commands:db_downgrade_cmd"

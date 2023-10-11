@@ -1,19 +1,19 @@
 # Brevia
 
-Il repository contiene un progetto di LLM API minimale in Python basato su LangChain per l'interazione con LLM e FastAPI per l'interfaccia API.
+The repository contains a minimal LLM API project in Python based on LangChain for interaction with LLM and FastAPI for the API interface.
 
 ## Requirements
 
-E' necessaria una versione di Python 3.10 o superiore e [Poetry](https://python-poetry.org/docs/#installation)
+A version of Python 3.10 or higher and [Poetry](https://python-poetry.org/docs/#installation) is required.
 
-Si consiglia di utilizzare il virtualenv nel progetto.
-Verifica le impostazioni con
+It is recommended to use virtualenv in the project.
+Check the settings with
 
 ```bash
 poetry config --list
 ```
 
-Verifica che la configurazione `virtualenvs.in-project` sia `true` altrimenti lancia:
+Check that the `virtualenvs.in-project` configuration is `true` otherwise launch:
 
 ```bash
 poetry config virtualenvs.in-project true
@@ -21,29 +21,29 @@ poetry config virtualenvs.in-project true
 
 ## Setup
 
-* installa le dipendenze lanciando `poetry install`, verrà automaticamente creato un virtualenv nel folder `.venv`
-* attiva quindi il virtualenv lanciando il comando `poetry shell`
-* copia il file `.env.sample` in `.env` e valorizza le variabili di ambiente, soprattutto `OPENAI_API_KEY` con la secret key di OpenAI e `PGVECTOR_*` vedi la sezione [Database](#database)
+* install the dependencies by running `poetry install`, a virtualenv will automatically be created in the `.venv` folder.
+* then activate the virtualenv by running the `poetry shell` command.
+* copy the file `.env.sample` to `.env` and value the environment variables, especially `OPENAI_API_KEY` with the secret key of OpenAI and `PGVECTOR_*` see the [Database](#database) section
 
-## Aggiornamento pacchetti
+## Update packages
 
-Si usa `poetry update` che aggiornerà il file di lock `poetry.lock`
-Per cambiare versioni delle dipendenze si può anche modificare direttamente `pyproject.toml` nella seziona `[tool.poetry.dependencies]`
+You use `poetry update` which will update the `poetry.lock` lock file.
+To change versions of dependencies you can also directly edit `pyproject.toml` in the `[tool.poetry.dependencies]` section.
 
 ## Database
 
-Lancia `docker compose --profile admin up` per fare partire le immagini docker di postgres+pgvector e pgadmin.
+Run `docker compose --profile admin up` to run postgres+pgvector and pgadmin docker images.
 
-Col browser apri `pgadmin` all'indirizzo http://localhost:4000
+With your browser, open `pgadmin` at http://localhost:4000
 
-La porta `4000` è configurabile con la var di ambiente `PGADMIN_PORT` nel file `.env`.
+The `4000` port is configurable with the `PGADMIN_PORT` environment var in the `.env` file.
 
-* fai login su pgadmin con credenziali `PGADMIN_DEFAULT_*` del file .env
-* crea una connessione con `Add New Server` impostando
-  * in General `brevia` o altro nome a scelta (`PGVECTOR_DATABASE`)
-  * in Connection come host name `pgdatabase` e scegli uno Username a Password (`PGVECTOR_USER`, `PGVECTOR_PASSWORD`)
+* login to pgadmin with `PGADMIN_DEFAULT_*` credentials from the .env file.
+* create a connection with `Add New Server` by setting.
+  * in General `brevia` or other name of your choice (`PGVECTOR_DATABASE`).
+  * in Connection as host name `pgdatabase` and choose a Username to Password (`PGVECTOR_USER`, `PGVECTOR_PASSWORD`)
 
-Lancia le migrations per creare lo schema iniziale con [Alembic](https://alembic.sqlalchemy.org)
+Launch migrations to create the initial schema with [Alembic](https://alembic.sqlalchemy.org)
 
 ```bash
 alembic upgrade head
@@ -51,100 +51,100 @@ alembic upgrade head
 
 ## Test setup
 
-Per verificare che il setup sia corretto lanciare
+To verify that the setup is correct, run
 
 ```py
 python brevia/scripts/csv_import.py data/test_min_dataset.csv test
 ```
 
-Per creare indicizzazione da un CSV di test con una sola riga.
-Se alla fine in output trovate
+To create indexing from a test CSV with one line.
+If at the end in output you find.
 `Index collection {name} updated with {n} documents and {n} texts`
-allora è tutto ok.
+then everything is ok.
 
-## Import/export di collections
+## Import/export of collections.
 
-Per esportare usare lo script `export_collection.py`dal virtual env
+To export use the `export_collection.py` script from the virtual env
 
 ```bash
 python export_collection.py /path/to/folder collection
 ```
 
-Dove
+Where
 
-* `/path/to/folder` è il path dove verranno creati i 2 file CSV, uno per record di collection e altro con embeddings
-* `collection` è il nome della collection
+* `/path/to/folder` is the path where the 2 CSV files will be created, one for collection records and other with embeddings
+* `collection` is the name of the collection
 
-Per esportare usare lo script `import_collection.py`dal virtual env
+To export use the `import_collection.py` script from the virtual env
 
 ```bash
-python import_collection.py /path/to/folder biologia
+python import_collection.py /path/to/folder biology
 ```
 
-Dove
+Where
 
-* `/path/to/folder`  è il path dove sono cercati i 2 file CSV da caricare, uno per record di collection e altro con embeddings
-* `collection` è il nome della collection
+* `/path/to/folder` is the path where the 2 CSV files to be loaded are searched, one for collection records and other with embeddings
+* `collection` is the name of the collection
 
-NB: per questi script è necessario il client postgres `psql`, i parametri di connessione saranno letti da var di ambiente (file `.env`)
+NB: postgres `psql` client is required for these scripts, connection parameters will be read from environment var (`.env` file)
 
-## API server
+## server API
 
-Per far partire il server, digita il seguente comando da virtualenv:
+To start the server, type the following command from virtualenv:
 
 ```bash
 uvicorn main:app --reload
 ```
 
-Il server inizierà ad eseguire sulla porta `8000`.
+The server will start executing on port `8000`.
 
 ## Docker
 
-Per lanciare l'immagine docker delle API insieme al servizio Postgres usa
+To launch the docker image of the API along with the Postgres service use
 
 ```bash
 docker compose --profile api up
 ```
 
-Per lanciare l'immagine docker di PgAdmin insieme a Postgres usa
+To launch the PgAdmin docker image along with Postgres use
 
 ```bash
 docker compose --profile admin up
 ```
 
-Per lanciare l'immagine docker dell'APP e delle API insieme a Postgres
+To launch the docker image of the APP and API along with Postgres
 
 ```bash
 docker compose --profile app up
 ```
 
-La versione dell'immagine docker utilizzata è definita nel file `.env` nelle variabili d'ambiente `API_VERSION` per le API e `APP_VERSION` per l'app
+The version of the docker image used is defined in the `.env` file in the environment variables `API_VERSION` for the API and `APP_VERSION` for the app
 
 ## Tracing log
 
-Per abilitare la funzionalità di trace delle chiamate, integrata in langchain aggiungere/scommentare la variabile di sistema su `app.py`:
+To enable the call tracing feature, built in langchain add/uncomment the system variable on `app.py`:
 
 ```py
 environ["LANGCHAIN_HANDLER"] = langchain
 ```
 
-assicurandosi che venga eseguita prima di qualsiasi operazione sulle librerie di langchain.
+ensuring that it is executed before any operation on the langchain libraries.
 
-Far partire il server tramite immagini docker dalla console:
+Start the server via docker images from the console:
 
 ```bash
 langchain-server
 ```
 
-Navigare su `http://localhost:4173/` per visualizzare il pannello di controllo dei trace e utilizzare la sessione di default.
+Navigate to `http://localhost:4173/` to display the trace control panel and use the default session.
 
-Per cambiare il nome della sessione impostare:
+To change the session name set:
 
 ```py
-.environ ["LANGCHAIN_SESSION"] = "my_session" # Assicurandoti che questa sessione esista effettivamente. È possibile creare una nuova sessione nell'interfaccia utente.
+.environ ["LANGCHAIN_SESSION"] = "my_session" # Making sure that this session actually exists. You can create a new session in the UI.
 ```
 
-Mentre per cambiare dinamicamente sessione nel codice NON impostare la variabile d'ambiente LANGCHAIN_SESSION, usa invece:
+While to dynamically change session in the code DO NOT set the environment variable LANGCHAIN_SESSION, use instead:
 
 ```py
 langchain.set_tracing_callback_manager(session_name = "my_session")

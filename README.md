@@ -1,6 +1,6 @@
 # Brevia
 
-[![Github Actions Coding Style](https://github.com/brevia-ai/brevia/workflows/cs/badge.svg)](https://github.com/brevia-ai/brevia/actions?query=workflow%3Acs)
+[![Github Actions CS](https://github.com/brevia-ai/brevia/workflows/cs/badge.svg)](https://github.com/brevia-ai/brevia/actions?query=workflow%3Acs)
 [![Github Actions Unit](https://github.com/brevia-ai/brevia/workflows/unit/badge.svg)](https://github.com/brevia-ai/brevia/actions?query=workflow%3Aunit)
 ![Python Versions](https://img.shields.io/pypi/pyversions/brevia.svg)
 [![Version](https://img.shields.io/pypi/v/brevia.svg?label=stable)](https://pypi.org/project/brevia/)

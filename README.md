@@ -1,5 +1,11 @@
 # Brevia
 
+[![Github Actions Coding Style](https://github.com/brevia-ai/brevia/workflows/cs/badge.svg)](https://github.com/brevia-ai/brevia/actions?query=workflow%3Acs)
+[![Github Actions Unit](https://github.com/brevia-ai/brevia/workflows/unit/badge.svg)](https://github.com/brevia-ai/brevia/actions?query=workflow%3Aunit)
+[![Python Versions](https://img.shields.io/pypi/pyversions/brevia.svg)]
+[![Version](https://img.shields.io/pypi/v/brevia.svg?label=stable)](https://pypi.org/project/brevia/)
+[![License](https://img.shields.io/badge/License-MIT-orange.svg)](https://github.com/brevia-ai/brevia/blob/main/LICENSE)
+
 The repository contains a minimal LLM API project in Python based on LangChain for interaction with LLM and FastAPI for the API interface.
 
 ## Requirements

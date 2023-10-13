@@ -178,3 +178,25 @@ openssl rand -hex 32
 You can also define a list of valid users as a comma separated string in the `TOKENS_USERS` env variable.
 
 Setting it like `TOKENS_USERS="brevia,gustavo"` means that only `brevia` and `gustavo` are considered valid users names. Remember to use double quotes in a `.env` file.
+
+## Unit tests
+
+To launch unit tests make sure to have `dev` dependencies installed. This is done with:
+
+```bash
+poetry install --with dev
+```
+
+To launch unit tests, type from virtualenv:
+
+```bash
+pytest tests/
+```
+
+To create coverage in HTML format:
+
+```bash
+pytest --cov-report html --cov=brevia tests/
+```
+
+Covreage report is created using `pytest-cov`

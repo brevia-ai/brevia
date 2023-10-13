@@ -9,6 +9,9 @@ __pycache__
 /tmp/*
 /data
 test_service.yml
+tests/.env
+.coverage
+.pytest_cache
 
 # extensions folder
 brevia/extensions/*

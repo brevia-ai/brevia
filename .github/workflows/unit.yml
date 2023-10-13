@@ -1,4 +1,5 @@
-name: 'unit'
+name: 'Unit Tests'
+
 on:
   pull_request:
     paths:
@@ -11,6 +12,6 @@ on:
 
 jobs:
   unit:
-    uses: bedita/github-workflows/.github/workflows/python-unit.yml@v1
+    uses: bedita/github-workflows/.github/workflows/python-unit.yml@fix/poetry-dev
     with:
       python_versions: '["3.10","3.11"]'

@@ -40,11 +40,11 @@ def token_auth(token: str = Depends(oauth2_scheme)):
     """Check authorization header bearer token"""
     try:
         tokens.verify_token(token)
-    except JWTError:
+    except JWTError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Invalid token',
-        )
+        ) from exc
 
 
 def check_collection_name(name: str) -> CollectionStore:

@@ -84,11 +84,11 @@ def read(
     if not os.path.isfile(file_path):
         raise FileNotFoundError(file_path)
 
-    type = mimetypes.guess_type(file_path)[0]
-    if type not in ['application/pdf', 'text/plain']:
-        raise ValueError(f'Unsupported file content type "{type}"')
+    mtype = mimetypes.guess_type(file_path)[0]
+    if mtype not in ['application/pdf', 'text/plain']:
+        raise ValueError(f'Unsupported file content type "{mtype}"')
 
-    if type == 'application/pdf':
+    if mtype == 'application/pdf':
         return read_pdf_file(file_path=file_path, **loader_kwargs)
 
     return read_txt_file(file_path=file_path)

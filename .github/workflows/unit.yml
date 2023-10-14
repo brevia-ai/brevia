@@ -11,7 +11,58 @@ on:
       - '.github/workflows/unit.yml'
 
 jobs:
+
   unit:
-    uses: bedita/github-workflows/.github/workflows/python-unit.yml@fix/poetry-dev
-    with:
-      python_versions: '["3.10","3.11"]'
+    name: 'Run unit tests'
+    runs-on: 'ubuntu-latest'
+
+    strategy:
+      matrix:
+        python-version: ["3.10","3.11"]
+
+    services:
+      pgdatabase:
+        image: ankane/pgvector
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: brevia_unittest
+        volumes:
+          - pgdata:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Set up python
+        id: setup-python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies, including dev dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --with dev
+
+      - name: Test env setup
+        run: cp .env.sample .env && cp tests/.env.sample tests/.env
+
+      - name: Run pytest
+        run: .venv/bin/pytest tests/*.py -v -s

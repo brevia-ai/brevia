@@ -65,4 +65,4 @@ jobs:
         run: cp .env.sample .env && cp tests/.env.sample tests/.env
 
       - name: Run pytest
-        run: .venv/bin/pytest tests/*.py -v -s
+        run: .venv/bin/pytest tests/ -v -s

@@ -1,3 +1,4 @@
+"""Status router tests"""
 from os import environ
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
@@ -9,6 +10,7 @@ client = TestClient(app)
 
 
 def test_status_ok():
+    """Test /status success"""
     response = client.get('/status', headers={})
     assert response.status_code == 200
     assert response.json() == {
@@ -17,6 +19,7 @@ def test_status_ok():
 
 
 def test_status_fail():
+    """Test /status failure"""
     database = environ.get("PGVECTOR_DATABASE")
     environ['PGVECTOR_DATABASE'] = 'non_exixsting_db'
 

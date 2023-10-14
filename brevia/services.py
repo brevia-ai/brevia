@@ -86,3 +86,12 @@ class SummarizeFileService(BaseService):
             'output': result,
             'token_data': None if not token_data else callb.__dict__
         }
+
+
+class FakeService(BaseService):
+    """Fake class for services testing"""
+    def execute(self, payload: dict) -> dict:
+        return {'success': True}
+
+    def validate(self, payload: dict) -> bool:
+        return True

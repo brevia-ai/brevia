@@ -65,4 +65,7 @@ jobs:
         run: cp .env.sample .env && cp tests/.env.sample tests/.env
 
       - name: Run pytest
-        run: .venv/bin/pytest tests/ -v -s
+        run: .venv/bin/pytest --cov-report xml --cov=brevia tests/ -v -s
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2

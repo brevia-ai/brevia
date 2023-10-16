@@ -21,7 +21,10 @@ def collections_info(collection: str | None = None):
             .limit(100)
         )
 
-    return [u._asdict() for u in query.all()]
+        result = [u._asdict() for u in query.all()]
+        session.close()
+
+    return result
 
 
 def collection_name_exists(name: str) -> bool:
@@ -60,10 +63,11 @@ def create_collection(
             name=name,
             cmetadata=cmetadata,
         )
+        session.expire_on_commit = False
         session.add(collection_store)
         session.commit()
 
-        return CollectionStore.get_by_name(name=name, session=session)
+        return collection_store
 
 
 def update_collection(

@@ -77,7 +77,6 @@ def dot_product(v1_list, v2_list):
 def history_from_db(session_id: str) -> List[tuple[str, str]]:
     """ Load chat history from DB """
     connection = db_connection()
-    ChatHistoryStore.metadata.create_all(connection)
 
     filter_by = ChatHistoryStore.session_id == session_id
     with Session(connection) as session:
@@ -163,6 +162,7 @@ def get_history(
         results = [u._asdict() for u in query.offset(offset).limit(page_size).all()]
         pcount = int(count / page_size)
         pcount += 0 if (count % page_size) == 0 else 1
+        session.close()
 
         return {
             'data': results,

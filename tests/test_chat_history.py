@@ -1,17 +1,13 @@
 """chat_history module tests"""
 import uuid
 import pytest
-from sqlalchemy.orm import Session
-from sqlalchemy import delete
-from brevia.connection import db_connection
 from brevia.chat_history import (
     history,
     add_history,
     history_from_db,
     get_history,
-    ChatHistoryStore
 )
-from brevia.collections import create_collection, delete_collection
+from brevia.collections import create_collection
 
 
 def test_history():
@@ -26,13 +22,12 @@ def test_history():
 
 def test_add_history():
     """Test add_history function"""
-    # assert add_history('123', 'test', 'who?', 'me') is None
-    # collection = create_collection('test_collection', {})
-    # history = add_history(uuid.uuid4(), 'test_collection', 'who?', 'me')
-    # assert history is not None
-    # assert history.question == 'who?'
-    # assert history.answer == 'me'
-    # delete_collection(collection.uuid)
+    assert add_history('123', 'test', 'who?', 'me') is None
+    create_collection('test_collection', {})
+    history = add_history(uuid.uuid4(), 'test_collection', 'who?', 'me')
+    assert history is not None
+    assert history.question == 'who?'
+    assert history.answer == 'me'
 
 
 def test_add_history_failure():

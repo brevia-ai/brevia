@@ -11,16 +11,6 @@ from brevia.async_jobs import (
 from brevia.services import BaseService
 
 
-# Define a simple BaseService for testing purposes
-class TestService(BaseService):
-    """Test service class"""
-    def execute(self, payload: dict):
-        return {'status': 'completed'}
-
-    def validate(self, payload: dict) -> bool:
-        return True
-
-
 def test_create_and_get_job():
     """ Test create_job and single_job functions """
     service = 'test_service'

@@ -51,7 +51,7 @@ def test_get_history():
             'pagination': {
                 'count': 0,
                 'page': 1,
-                'page_count': 1,
+                'page_count': 0,
                 'page_items': 0,
                 'page_size': 50,
             },
@@ -64,14 +64,9 @@ def test_history_from_db():
     """Test history_from_db function"""
     result = history_from_db(uuid.uuid4())
     assert result == []
-    # collection = create_collection('test_collection', {})
-    # session_id = uuid.uuid4()
-    # add_history(session_id, 'test_collection', 'who?', 'me')
-    # result = history_from_db(session_id)
-    # assert len(result) == 1
-    # assert result[0] == ('who?', 'me')
-    # delete_collection(collection.uuid)
-    # with Session(db_connection()) as session:
-    #     stmt = delete(ChatHistoryStore).where(ChatHistoryStore.uuid is not None)
-    #     session.execute(stmt)
-    #     session.commit()
+    create_collection('test_collection', {})
+    session_id = uuid.uuid4()
+    add_history(session_id, 'test_collection', 'who?', 'me')
+    result = history_from_db(session_id)
+    assert len(result) == 1
+    assert result[0] == ('who?', 'me')

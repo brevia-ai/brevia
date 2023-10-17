@@ -1,4 +1,6 @@
-# Brevia
+#
+
+<img src="https://chatlas-media.s3.eu-central-1.amazonaws.com/brand/brevia-brand.png" width="400">
 
 [![Github Actions CS](https://github.com/brevia-ai/brevia/workflows/cs/badge.svg)](https://github.com/brevia-ai/brevia/actions?query=workflow%3Acs)
 [![Github Actions Unit](https://github.com/brevia-ai/brevia/workflows/unit/badge.svg)](https://github.com/brevia-ai/brevia/actions?query=workflow%3Aunit)

@@ -1,12 +1,9 @@
 from logging.config import fileConfig
-
+from dotenv import load_dotenv
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-
 from alembic import context
-
-from dotenv import load_dotenv
-
+from sqlalchemy_utils import database_exists, create_database
 from brevia.connection import connection_string
 
 load_dotenv()
@@ -18,8 +15,14 @@ config = context.config
 # we need to double escape "%" into "%%"
 # because alembic uses configparser (that requires an additional escape of %)
 # see https://github.com/sqlalchemy/alembic/issues/700
-url = connection_string().replace('%', '%%')
-config.set_section_option('alembic', 'sqlalchemy.url', url)
+db_url = connection_string()
+config.set_section_option('alembic', 'sqlalchemy.url', db_url.replace('%', '%%'))
+
+# Try to create database if it does not exist.
+if not database_exists(db_url):
+    config.print_stdout(f'Database does not exist: {db_url}')
+    config.print_stdout('Trying to create one')
+    create_database(db_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -80,20 +83,6 @@ def run_migrations_online() -> None:
             connection=connection, target_metadata=target_metadata,
             compare_type=True,
             compare_server_default=True,
-        )
-
-        with context.begin_transaction():
-            context.run_migrations()
-
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
-
-    with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
         )
 
         with context.begin_transaction():

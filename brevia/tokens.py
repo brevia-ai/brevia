@@ -24,15 +24,17 @@ def create_access_token(user: str, duration: int):
 
 
 def verify_token(token: str):
-    # try to decode the token, it will
-    # raise a JWTError if the token is not correct
+    """
+        Try to decode the token, it will
+        raise a JWTError if the token is not correct
+    """
     secret = environ.get('TOKENS_SECRET')
     payload = jwt.decode(token, secret, algorithms=[ALGORITHM])
     # basic check: presence of `user` key, must be a non empty string
     if 'user' not in payload:
         raise JWTError('Bad payload format')
     user = payload['user']
-    if type(user) != str or len(user.strip()) == 0:
+    if user is not str or len(user.strip()) == 0:
         raise JWTError('Bad payload format')
     # further check: user must one of `TOKENS_USERS` env var (if set)
     valid_users = environ.get('TOKENS_USERS')

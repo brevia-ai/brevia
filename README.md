@@ -4,9 +4,10 @@
 
 [![Github Actions CS](https://github.com/brevia-ai/brevia/workflows/cs/badge.svg)](https://github.com/brevia-ai/brevia/actions?query=workflow%3Acs)
 [![Github Actions Unit](https://github.com/brevia-ai/brevia/workflows/unit/badge.svg)](https://github.com/brevia-ai/brevia/actions?query=workflow%3Aunit)
+[![Coverage Status](https://coveralls.io/repos/github/brevia-ai/brevia/badge.svg?branch=main)](https://coveralls.io/github/brevia-ai/brevia?branch=main)
 ![Python Versions](https://img.shields.io/pypi/pyversions/brevia.svg)
 [![Version](https://img.shields.io/pypi/v/brevia.svg?label=brevia)](https://pypi.org/project/brevia/)
-[![License](https://img.shields.io/badge/License-MIT-orange.svg)](https://github.com/brevia-ai/brevia/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-orange.svg)](https://github.com/brevia-ai/brevia/blob/main/LICENSE)
 
 The repository contains a minimal LLM API project in Python based on LangChain for interaction with LLM and FastAPI for the API interface.
 
@@ -180,3 +181,25 @@ openssl rand -hex 32
 You can also define a list of valid users as a comma separated string in the `TOKENS_USERS` env variable.
 
 Setting it like `TOKENS_USERS="brevia,gustavo"` means that only `brevia` and `gustavo` are considered valid users names. Remember to use double quotes in a `.env` file.
+
+## Unit tests
+
+To launch unit tests make sure to have `dev` dependencies installed. This is done with:
+
+```bash
+poetry install --with dev
+```
+
+To launch unit tests, type from virtualenv:
+
+```bash
+pytest tests/
+```
+
+To create coverage in HTML format:
+
+```bash
+pytest --cov-report html --cov=brevia tests/
+```
+
+Covreage report is created using `pytest-cov`

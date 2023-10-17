@@ -1,4 +1,5 @@
-name: 'cs'
+name: 'Cs + Linter'
+
 on:
   pull_request:
     paths:

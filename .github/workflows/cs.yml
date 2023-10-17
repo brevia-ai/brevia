@@ -1,4 +1,4 @@
-name: 'Cs + Linter'
+name: 'cs + lint'
 
 on:
   pull_request:

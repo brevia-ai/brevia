@@ -106,12 +106,15 @@ def conversation_chain(
         Return conversation chain for Q/A with embdedded dataset knowledge
 
         collection: name of collection to questioning
-        docs_num: number of docs to retrieve to create context (default SEARCH_DOCS_NUM env var or '4')
+        docs_num: number of docs to retrieve to create context
+            (default 'SEARCH_DOCS_NUM' env var or '4')
         source_docs: flag to retrieve source docs in response (default True)
         distance_strategy_name: distance strategy to use (default 'cosine')
         streaming: activate streaming (default False),
-        answer_callbacks: callbacks to use in the final LLM answer to enable streaming (default empty list)
-        conversation_callbacks: callback to handle conversation results (default empty list)
+        answer_callbacks: callbacks to use in the final LLM answer to enable streaming
+            (default empty list)
+        conversation_callbacks: callback to handle conversation results
+            (default empty list)
 
         can implement "vectordbkwargs" into quest_dict:
             {

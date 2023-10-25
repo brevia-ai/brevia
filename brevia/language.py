@@ -20,7 +20,7 @@ class Detector():
             self.nlp = spacy.load('en_core_web_sm')
             self.nlp.add_pipe('language_detector')
 
-        except ImportError as exc:
+        except Exception as exc:
             raise ImportError(
                 "SpaCy `en_core_web_sm` not installed!"
             ) from exc

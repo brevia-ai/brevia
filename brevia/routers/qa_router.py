@@ -95,9 +95,7 @@ def chat_language(prompt: PromptBody, cmetadata: dict) -> str:
     if chat_lang:
         return chat_lang
 
-    langDetector = Detector()
-
-    return langDetector.detect(prompt.question)
+    return Detector().detect(prompt.question)
 
 
 def prompt_chat_history(history: list, question: str, session: str = None) -> list:

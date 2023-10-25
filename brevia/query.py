@@ -122,7 +122,8 @@ def conversation_chain(
             }
     """
     if docs_num is None:
-        docs_num = int(collection.cmetadata.get('docs_num', environ.get('QA_MODEL')))
+        default_num = environ.get('SEARCH_DOCS_NUM', 4)
+        docs_num = int(collection.cmetadata.get('docs_num', default_num))
 
     docsearch = PGVector(
         connection_string=connection.connection_string(),

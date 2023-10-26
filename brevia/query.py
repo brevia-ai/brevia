@@ -1,6 +1,5 @@
 """Returning text summarize or question-answering chain against a vector database."""
 from os import environ, path
-import logging
 from langchain.docstore.document import Document
 from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
 from langchain.vectorstores._pgvector_data_models import CollectionStore
@@ -11,7 +10,6 @@ from langchain.text_splitter import TokenTextSplitter
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains.llm import LLMChain
-from langchain import OpenAI
 from langchain.prompts import load_prompt
 from langchain.prompts import (
     ChatPromptTemplate,
@@ -19,9 +17,9 @@ from langchain.prompts import (
     HumanMessagePromptTemplate,
 )
 from langchain.prompts.loading import load_prompt_from_config
-from langchain.chat_models import ChatOpenAI
 from brevia import connection, index
 from brevia.callback import AsyncLoggingCallbackHandler, LoggingCallbackHandler
+from brevia.models import load_llm, load_chatmodel
 
 
 def load_brevia_prompt(prompts: dict | None) -> ChatPromptTemplate:
@@ -71,7 +69,7 @@ def search_vector_qa(
 
     docsearch = PGVector(
         connection_string=connection.connection_string(),
-        embedding_function=index.get_embeddings(),
+        embedding_function=index.load_embeddings(),
         collection_name=collection,
         distance_strategy=distance_strategy(distance_strategy_name),
     )
@@ -123,7 +121,7 @@ def conversation_chain(
 
     docsearch = PGVector(
         connection_string=connection.connection_string(),
-        embedding_function=index.get_embeddings(),
+        embedding_function=index.load_embeddings(),
         collection_name=collection.name,
         distance_strategy=distance_strategy(distance_strategy_name),
     )
@@ -131,12 +129,13 @@ def conversation_chain(
     prompts = collection.cmetadata.get('prompts')
 
     # LLM to rewrite follow-up question
-    fup_llm = OpenAI(
-        model_name=environ.get('QA_FOLLOWUP_MODEL'),
-        temperature=float(environ.get('QA_FOLLOWUP_TEMPERATURE', 0)),
-        max_tokens=int(environ.get('QA_FOLLOWUP_MAX_TOKENS', 200)),
-        verbose=environ.get('VERBOSE_MODE', False),
-    )
+    fup_llm = load_llm({
+        '_type': 'openai',
+        'model_name': environ.get('QA_FOLLOWUP_MODEL'),
+        'temperature': float(environ.get('QA_FOLLOWUP_TEMPERATURE', 0)),
+        'max_tokens': int(environ.get('QA_FOLLOWUP_MAX_TOKENS', 200)),
+        'verbose': environ.get('VERBOSE_MODE', False),
+    })
 
     logging_handler = AsyncLoggingCallbackHandler()
     # Rewrite question using chat history (if any)
@@ -149,14 +148,15 @@ def conversation_chain(
 
     # LLM to use in final prompt
     answer_callbacks.append(logging_handler)
-    chatllm = ChatOpenAI(
-        model_name=environ.get('QA_COMPLETIONS_MODEL'),
-        temperature=float(environ.get('QA_TEMPERATURE', 0)),
-        max_tokens=int(environ.get('QA_MAX_TOKENS', 800)),
-        callbacks=answer_callbacks,
-        streaming=streaming,
-        verbose=environ.get('VERBOSE_MODE', False),
-    )
+    chatllm = load_chatmodel({
+        '_type': 'openai-chat',
+        'model_name': environ.get('QA_COMPLETIONS_MODEL'),
+        'temperature': float(environ.get('QA_TEMPERATURE', 0)),
+        'max_tokens': int(environ.get('QA_MAX_TOKENS', 800)),
+        'callbacks': answer_callbacks,
+        'streaming': streaming,
+        'verbose': environ.get('VERBOSE_MODE', False),
+    })
 
     # this chain use "stuff" to elaborate context
     doc_chain = load_qa_chain(
@@ -188,13 +188,6 @@ def summarize(
 ) -> str:
     """ Perform summarizing for a given text """
 
-    if bool(environ.get('FAKE_SUMMARY')):
-        print('Using FAKE summary - text truncate!!')
-        logging.getLogger(__name__).warning('Using FAKE summary - text truncate!!')
-        import time  # pylint: disable=import-outside-toplevel
-        time.sleep(30)
-        return text[:min(100, len(text)-1)]
-
     text_splitter = TokenTextSplitter(
         chunk_size=int(environ.get("SUMM_TOKEN_SPLITTER", 3000)),
         chunk_overlap=int(environ.get("SUMM_TOKEN_OVERLAP", 0))
@@ -208,12 +201,13 @@ def summarize(
     prompt = load_prompt(f'{prompts_path}/summarize/yaml/{lang}.{summ_prompt}.yaml')
     logging_handler = LoggingCallbackHandler()
     chain = load_summarize_chain(
-        OpenAI(
-            model_name=environ.get("SUMM_COMPLETIONS_MODEL"),
-            temperature=float(environ.get("SUMM_TEMPERATURE", 0)),
-            max_tokens=int(environ.get("SUMM_MAX_TOKENS", 800)),
-            callbacks=[logging_handler],
-        ),
+        llm=load_llm({
+            '_type': 'openai',
+            'model_name': environ.get('SUMM_COMPLETIONS_MODEL'),
+            'temperature': float(environ.get('SUMM_TEMPERATURE', 0)),
+            'max_tokens': int(environ.get('SUMM_MAX_TOKENS', 800)),
+            'callbacks': [logging_handler],
+        }),
         chain_type='map_reduce',
         map_prompt=prompt,
         verbose=environ.get("VERBOSE_MODE", False),

@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, Query, Session
 from sqlalchemy.sql.expression import BinaryExpression
 from brevia.connection import db_connection
-from brevia.index import get_embeddings
+from brevia.models import load_embeddings
 
 
 class ChatHistoryStore(BaseModel):
@@ -56,7 +56,7 @@ def is_related(chat_history: list, question: str):
     scalare tra i vettori (in questo caso = similarity) e confrontarlo
     con una soglia specificata dalle variabili d'ambiente.
     """
-    embeddings = get_embeddings()
+    embeddings = load_embeddings()
     q_e = embeddings.embed_query(question)
     h_e = embeddings.embed_query(
         ''.join([sentence for tuple in chat_history for sentence in tuple])

@@ -19,7 +19,7 @@ from langchain.prompts import (
 from langchain.prompts.loading import load_prompt_from_config
 from brevia.connection import connection_string
 from brevia.callback import AsyncLoggingCallbackHandler, LoggingCallbackHandler
-from brevia.models import load_llm, load_chatmodel, load_embeddings
+from brevia.models import load_chatmodel, load_embeddings
 
 
 def load_brevia_prompt(prompts: dict | None) -> ChatPromptTemplate:
@@ -136,8 +136,8 @@ def conversation_chain(
     verbose = environ.get('VERBOSE_MODE', False)
 
     # LLM to rewrite follow-up question
-    fup_llm = load_llm({
-        '_type': 'openai',
+    fup_llm = load_chatmodel({
+        '_type': 'openai-chat',
         'model_name': environ.get('QA_FOLLOWUP_MODEL', 'gpt-3.5-turbo'),
         'temperature': float(temperature),
         'max_tokens': int(environ.get('QA_FOLLOWUP_MAX_TOKENS', 200)),
@@ -145,7 +145,7 @@ def conversation_chain(
     })
 
     logging_handler = AsyncLoggingCallbackHandler()
-    # Rewrite question using chat history (if any)
+    # Create chain for follow-up question using chat history (if present)
     question_generator = LLMChain(
         llm=fup_llm,
         prompt=load_condense_prompt(prompts),
@@ -153,7 +153,7 @@ def conversation_chain(
         callbacks=[logging_handler],
     )
 
-    # LLM to use in final prompt
+    # Model to use in final prompt
     answer_callbacks.append(logging_handler)
     chatllm = load_chatmodel({
         '_type': 'openai-chat',
@@ -196,23 +196,25 @@ def summarize(
     """ Perform summarizing for a given text """
 
     text_splitter = TokenTextSplitter(
-        chunk_size=int(environ.get("SUMM_TOKEN_SPLITTER", 3000)),
-        chunk_overlap=int(environ.get("SUMM_TOKEN_OVERLAP", 0))
+        chunk_size=int(environ.get("SUMM_TOKEN_SPLITTER", 4000)),
+        chunk_overlap=int(environ.get("SUMM_TOKEN_OVERLAP", 500))
     )
     texts = text_splitter.split_text(text)
     docs = [Document(page_content=t) for t in texts]
     lang = environ.get("PROMPT_LANG", 'it')
+
+    # TODO: refactor with dynamics summary types
     if summ_prompt not in ['summarize', 'summarize_point', 'classificate']:
         summ_prompt = 'summarize'
     prompts_path = f'{path.dirname(__file__)}/prompts'
     prompt = load_prompt(f'{prompts_path}/summarize/yaml/{lang}.{summ_prompt}.yaml')
     logging_handler = LoggingCallbackHandler()
     chain = load_summarize_chain(
-        llm=load_llm({
-            '_type': 'openai',
+        llm=load_chatmodel({
+            '_type': 'openai-chat',
             'model_name': environ.get('SUMM_COMPLETIONS_MODEL'),
             'temperature': float(environ.get('SUMM_TEMPERATURE', 0)),
-            'max_tokens': int(environ.get('SUMM_MAX_TOKENS', 800)),
+            'max_tokens': int(environ.get('SUMM_MAX_TOKENS', 2000)),
             'callbacks': [logging_handler],
         }),
         chain_type='map_reduce',

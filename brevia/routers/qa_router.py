@@ -38,6 +38,8 @@ async def prompt_action(
 ):
     """ /prompt endpoint, ask chatbot about a collection of documents """
     collection = check_collection_name(prompt.collection)
+    if not collection.cmetadata:
+        collection.cmetadata = dict()
     lang = chat_language(prompt=prompt, cmetadata=collection.cmetadata)
 
     conversation_handler = ConversationCallbackHandler()

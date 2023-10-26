@@ -56,7 +56,7 @@ def test_patch_collection():
 
 
 def test_delete_collection():
-    """Test POST /collections endpoint"""
+    """Test DELETE /collections endpoint"""
     collection = create_collection('test_collection', {})
     response = client.delete(
         f'/collections/{collection.uuid}'

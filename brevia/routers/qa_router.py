@@ -13,7 +13,7 @@ from brevia.dependencies import (
     check_collection_name,
 )
 from brevia.callback import ConversationCallbackHandler
-# from brevia.language import Detector
+from brevia.language import Detector
 from brevia.models import test_models_in_use
 
 router = APIRouter()
@@ -25,6 +25,7 @@ class PromptBody(BaseModel):
     collection: str
     chat_history: list = []
     docs_num: int | None = None
+    chat_lang: str | None = None
     streaming: bool = False
     distance_strategy_name: str | None = None
     source_docs: bool = False
@@ -40,9 +41,7 @@ async def prompt_action(
     collection = check_collection_name(prompt.collection)
     if not collection.cmetadata:
         collection.cmetadata = dict()
-    # langDetector = Detector()
-    # lang = langDetector.detect(prompt.question)
-    lang = ''  # restore previous lines after https://github.com/brevia-ai/brevia/pull/8
+    lang = chat_language(prompt=prompt, cmetadata=collection.cmetadata)
 
     conversation_handler = ConversationCallbackHandler()
     stream_handler = AsyncIteratorCallbackHandler()
@@ -91,6 +90,15 @@ async def prompt_action(
         conversation_callback=conversation_handler,
         source_docs=prompt.source_docs,
     ))
+
+
+def chat_language(prompt: PromptBody, cmetadata: dict) -> str:
+    """Retrieve the language to be used in Q/A response"""
+    chat_lang = prompt.chat_lang if prompt.chat_lang else cmetadata.get('chat_lang')
+    if chat_lang:
+        return chat_lang
+
+    return Detector().detect(prompt.question)
 
 
 def prompt_chat_history(history: list, question: str, session: str = None) -> list:
@@ -174,9 +182,11 @@ def search_documents(search: SearchBody):
             COSINE = EmbeddingStore.embedding.cosine_distance
             MAX_INNER_PRODUCT = EmbeddingStore.embedding.max_inner_product
     """
-    check_collection_name(search.collection)
+    collection = check_collection_name(search.collection)
 
     params = {k: v for k, v in search.dict().items() if v is not None}
+    if 'docs_num' not in params and 'docs_num' in collection.cmetadata:
+        params['docs_num'] = collection.cmetadata['docs_num']
     result = query.search_vector_qa(**params)
 
     return extract_content_score(result)

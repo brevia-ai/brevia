@@ -13,7 +13,7 @@ from brevia.dependencies import (
     check_collection_name,
 )
 from brevia.callback import ConversationCallbackHandler
-from brevia.language import Detector
+# from brevia.language import Detector
 from brevia.models import test_models_in_use
 
 router = APIRouter()
@@ -40,8 +40,9 @@ async def prompt_action(
     collection = check_collection_name(prompt.collection)
     if not collection.cmetadata:
         collection.cmetadata = dict()
-    langDetector = Detector()
-    lang = langDetector.detect(prompt.question)
+    # langDetector = Detector()
+    # lang = langDetector.detect(prompt.question)
+    lang = ''  # restore previous lines after https://github.com/brevia-ai/brevia/pull/8
 
     conversation_handler = ConversationCallbackHandler()
     stream_handler = AsyncIteratorCallbackHandler()

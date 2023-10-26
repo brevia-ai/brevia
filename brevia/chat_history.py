@@ -51,10 +51,10 @@ def history(chat_history: list, session: str = None):
 
 def is_related(chat_history: list, question: str):
     """
-    Determina se una domanda è correlata a una sequenza di frasi.
-    Utilizza gli embedding delle frasi e della domanda per calcolare il prodotto
-    scalare tra i vettori (in questo caso = similarity) e confrontarlo
-    con una soglia specificata dalle variabili d'ambiente.
+    Determine whether a question is related to a sequence of sentences.
+    Use sentence and question embeddings to calculate the product
+    scale between the vectors (in this case = similarity) and compare it
+    with a threshold specified by environment variables.
     """
     embeddings = load_embeddings()
     q_e = embeddings.embed_query(question)
@@ -69,7 +69,7 @@ def is_related(chat_history: list, question: str):
 
 def dot_product(v1_list, v2_list):
     """
-    Calcola il prodotto scalare tra due vettori (similarity).
+    Calculate the scalar product between two vectors (similarity).
     """
     return sum(x * y for x, y in zip(v1_list, v2_list))
 

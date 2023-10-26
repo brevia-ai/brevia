@@ -1,4 +1,5 @@
 _type: prompt
+template_format: "jinja2"
 input_variables:
     ["context", "lang"]
 template: |
@@ -9,8 +10,8 @@ template: |
 
     ##Context start##
 
-    {context}
+    {{ context }}
 
     ##Context end##
 
-    Answer in {lang}:
+    Answer in {% if lang|length %}{{ lang }}{% else %}the same language of the question{% endif %}

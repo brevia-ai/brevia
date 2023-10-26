@@ -1,4 +1,4 @@
-"""Chat history router tests"""
+"""Index router tests"""
 import json
 from fastapi.testclient import TestClient
 from fastapi import FastAPI

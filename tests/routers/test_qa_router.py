@@ -1,4 +1,4 @@
-"""Chat history router tests"""
+"""Q/A router tests"""
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from langchain.docstore.document import Document

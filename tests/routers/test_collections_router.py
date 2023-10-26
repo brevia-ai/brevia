@@ -1,4 +1,4 @@
-"""Chat history router tests"""
+"""Collections router tests"""
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from brevia.routers import collections_router

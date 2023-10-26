@@ -17,9 +17,9 @@ from langchain.prompts import (
     HumanMessagePromptTemplate,
 )
 from langchain.prompts.loading import load_prompt_from_config
-from brevia import connection, index
+from brevia.connection import connection_string
 from brevia.callback import AsyncLoggingCallbackHandler, LoggingCallbackHandler
-from brevia.models import load_llm, load_chatmodel
+from brevia.models import load_llm, load_chatmodel, load_embeddings
 
 
 def load_brevia_prompt(prompts: dict | None) -> ChatPromptTemplate:
@@ -68,8 +68,8 @@ def search_vector_qa(
     """ Perform a similarity search on vector index """
 
     docsearch = PGVector(
-        connection_string=connection.connection_string(),
-        embedding_function=index.load_embeddings(),
+        connection_string=connection_string(),
+        embedding_function=load_embeddings(),
         collection_name=collection,
         distance_strategy=distance_strategy(distance_strategy_name),
     )
@@ -124,8 +124,8 @@ def conversation_chain(
         docs_num = int(collection.cmetadata.get('docs_num', default_num))
 
     docsearch = PGVector(
-        connection_string=connection.connection_string(),
-        embedding_function=index.load_embeddings(),
+        connection_string=connection_string(),
+        embedding_function=load_embeddings(),
         collection_name=collection.name,
         distance_strategy=distance_strategy(distance_strategy_name),
     )

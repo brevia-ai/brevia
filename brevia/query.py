@@ -106,12 +106,15 @@ def conversation_chain(
         Return conversation chain for Q/A with embdedded dataset knowledge
 
         collection: name of collection to questioning
-        source_docs: retrive source docs
         docs_num: number of docs to retrieve to create context
-        distance_strategy_name: distance strategy to use
+            (default 'SEARCH_DOCS_NUM' env var or '4')
+        source_docs: flag to retrieve source docs in response (default True)
+        distance_strategy_name: distance strategy to use (default 'cosine')
         streaming: activate streaming (default False),
         answer_callbacks: callbacks to use in the final LLM answer to enable streaming
+            (default empty list)
         conversation_callbacks: callback to handle conversation results
+            (default empty list)
 
         can implement "vectordbkwargs" into quest_dict:
             {
@@ -119,7 +122,8 @@ def conversation_chain(
             }
     """
     if docs_num is None:
-        docs_num = int(environ.get('SEARCH_DOCS_NUM', 4))
+        default_num = environ.get('SEARCH_DOCS_NUM', 4)
+        docs_num = int(collection.cmetadata.get('docs_num', default_num))
 
     docsearch = PGVector(
         connection_string=connection.connection_string(),
@@ -129,13 +133,16 @@ def conversation_chain(
     )
 
     prompts = collection.cmetadata.get('prompts')
+    model_name = collection.cmetadata.get('model_name', environ.get('QA_MODEL'))
+    temperature = collection.cmetadata.get('temperature', environ.get('QA_TEMPERATURE'))
+    verbose = environ.get('VERBOSE_MODE', False)
 
     # LLM to rewrite follow-up question
     fup_llm = OpenAI(
-        model_name=environ.get('QA_FOLLOWUP_MODEL'),
-        temperature=float(environ.get('QA_FOLLOWUP_TEMPERATURE', 0)),
+        model_name=environ.get('QA_FOLLOWUP_MODEL', 'gpt-3.5-turbo'),
+        temperature=float(temperature),
         max_tokens=int(environ.get('QA_FOLLOWUP_MAX_TOKENS', 200)),
-        verbose=environ.get('VERBOSE_MODE', False),
+        verbose=verbose,
     )
 
     logging_handler = AsyncLoggingCallbackHandler()
@@ -143,19 +150,19 @@ def conversation_chain(
     question_generator = LLMChain(
         llm=fup_llm,
         prompt=load_condense_prompt(prompts),
-        verbose=environ.get('VERBOSE_MODE', False),
+        verbose=verbose,
         callbacks=[logging_handler],
     )
 
     # LLM to use in final prompt
     answer_callbacks.append(logging_handler)
     chatllm = ChatOpenAI(
-        model_name=environ.get('QA_COMPLETIONS_MODEL'),
-        temperature=float(environ.get('QA_TEMPERATURE', 0)),
+        model_name=model_name,
+        temperature=float(temperature),
         max_tokens=int(environ.get('QA_MAX_TOKENS', 800)),
         callbacks=answer_callbacks,
         streaming=streaming,
-        verbose=environ.get('VERBOSE_MODE', False),
+        verbose=verbose,
     )
 
     # this chain use "stuff" to elaborate context
@@ -163,7 +170,7 @@ def conversation_chain(
         llm=chatllm,
         prompt=load_brevia_prompt(prompts),
         chain_type="stuff",
-        verbose=environ.get('VERBOSE_MODE', False),
+        verbose=verbose,
         callbacks=[logging_handler],
     )
 
@@ -177,7 +184,7 @@ def conversation_chain(
         return_source_documents=source_docs,
         question_generator=question_generator,
         callbacks=conversation_callbacks,
-        verbose=environ.get('VERBOSE_MODE', False)
+        verbose=verbose,
     )
 
 

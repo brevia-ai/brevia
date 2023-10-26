@@ -1,13 +1,12 @@
 """Language detection utilities"""
 from os import environ
-import spacy
-from spacy.language import Language
+from typing import Any
 import langcodes
 
 
 class Detector():
     """Language detection class"""
-    nlp: Language | None = None
+    detector: Any = None
 
     def __init__(self):
         """Init internal nlp"""
@@ -15,23 +14,22 @@ class Detector():
             return
 
         try:
-            import spacy_fastlang  # noqa: F401 pylint: disable=import-outside-toplevel
+            import gcld3  # noqa: F401 pylint: disable=import-outside-toplevel
 
-            self.nlp = spacy.load('en_core_web_sm')
-            self.nlp.add_pipe('language_detector')
+            self.detector = gcld3.NNetLanguageIdentifier(min_num_bytes=0, max_num_bytes=1000)
 
         except Exception as exc:
             raise ImportError(
-                "SpaCy `en_core_web_sm` not installed!"
+                "gcld3 not installed!"
             ) from exc
 
     def detect(self, phrase: str) -> str:
         """
             Detect language of generic phrase, return an empty string
-            if Spacy has not been initialized
+            if `gcld3` detector has not been initialized
         """
-        if not self.nlp:
+        if not self.detector:
             return ''
-        doc = self.nlp(phrase)
+        result = self.detector.FindLanguage(text=phrase)
 
-        return langcodes.Language.make(language=doc._.language).display_name()
+        return langcodes.Language.make(language=result.language).display_name()

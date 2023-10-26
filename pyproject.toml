@@ -24,13 +24,14 @@ pypdf = "^3.9.0"
 python-dotenv = "^1.0.0"
 python-multipart = "^0.0.6"
 tiktoken = "^0.4.0"
-spacy-fastlang = "^1.0.1"
 langcodes = "^3.3.0"
 language-data = "^1.1"
 pycryptodome = "^3.18.0"
 alembic = "^1.11.1"
 python-jose = "^3.3.0"
 sqlalchemy-utils = "^0.41.1"
+gcld3 = "^3.0.13"
+jinja2 = "^3.1.2"
 
 [tool.poetry.dependencies.uvicorn]
 extras = ["standard"]

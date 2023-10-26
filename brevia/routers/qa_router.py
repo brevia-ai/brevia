@@ -19,7 +19,7 @@ router = APIRouter()
 
 
 class PromptBody(BaseModel):
-    """ /prompt request body """
+    """ /chat request body """
     question: str
     collection: str
     chat_history: list = []
@@ -30,17 +30,18 @@ class PromptBody(BaseModel):
     token_data: bool = False
 
 
-@router.post('/prompt', dependencies=get_dependencies())
-async def prompt_action(
+@router.post('/prompt', dependencies=get_dependencies(), deprecated=True)
+@router.post('/chat', dependencies=get_dependencies())
+async def chat_action(
     prompt: PromptBody,
     x_chat_session: Annotated[str | None, Header()] = None,
 ):
-    """ /prompt endpoint, ask chatbot about a collection of documents """
+    """ /chat endpoint, ask chatbot about a collection of documents """
     collection = check_collection_name(prompt.collection)
     if not collection.cmetadata:
         collection.cmetadata = dict()
-    langDetector = Detector()
-    lang = langDetector.detect(prompt.question)
+    lang_detector = Detector()
+    lang = lang_detector.detect(prompt.question)
 
     conversation_handler = ConversationCallbackHandler()
     stream_handler = AsyncIteratorCallbackHandler()

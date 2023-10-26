@@ -11,7 +11,6 @@ from langchain.text_splitter import TokenTextSplitter
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains.llm import LLMChain
-from langchain import OpenAI
 from langchain.prompts import load_prompt
 from langchain.prompts import (
     ChatPromptTemplate,
@@ -130,8 +129,8 @@ def conversation_chain(
 
     prompts = collection.cmetadata.get('prompts')
 
-    # LLM to rewrite follow-up question
-    fup_llm = OpenAI(
+    # Model for rewriting follow-up question
+    fup_llm = ChatOpenAI(
         model_name=environ.get('QA_FOLLOWUP_MODEL'),
         temperature=float(environ.get('QA_FOLLOWUP_TEMPERATURE', 0)),
         max_tokens=int(environ.get('QA_FOLLOWUP_MAX_TOKENS', 200)),
@@ -139,7 +138,7 @@ def conversation_chain(
     )
 
     logging_handler = AsyncLoggingCallbackHandler()
-    # Rewrite question using chat history (if any)
+    # Create chain for follow-up question using chat history (if present)
     question_generator = LLMChain(
         llm=fup_llm,
         prompt=load_condense_prompt(prompts),
@@ -147,7 +146,7 @@ def conversation_chain(
         callbacks=[logging_handler],
     )
 
-    # LLM to use in final prompt
+    # Model to use in final prompt
     answer_callbacks.append(logging_handler)
     chatllm = ChatOpenAI(
         model_name=environ.get('QA_COMPLETIONS_MODEL'),
@@ -196,22 +195,24 @@ def summarize(
         return text[:min(100, len(text)-1)]
 
     text_splitter = TokenTextSplitter(
-        chunk_size=int(environ.get("SUMM_TOKEN_SPLITTER", 3000)),
-        chunk_overlap=int(environ.get("SUMM_TOKEN_OVERLAP", 0))
+        chunk_size=int(environ.get("SUMM_TOKEN_SPLITTER", 4000)),
+        chunk_overlap=int(environ.get("SUMM_TOKEN_OVERLAP", 500))
     )
     texts = text_splitter.split_text(text)
     docs = [Document(page_content=t) for t in texts]
     lang = environ.get("PROMPT_LANG", 'it')
+
+    # TODO: refactor with dynamics summary types
     if summ_prompt not in ['summarize', 'summarize_point', 'classificate']:
         summ_prompt = 'summarize'
     prompts_path = f'{path.dirname(__file__)}/prompts'
     prompt = load_prompt(f'{prompts_path}/summarize/yaml/{lang}.{summ_prompt}.yaml')
     logging_handler = LoggingCallbackHandler()
     chain = load_summarize_chain(
-        OpenAI(
+        ChatOpenAI(
             model_name=environ.get("SUMM_COMPLETIONS_MODEL"),
             temperature=float(environ.get("SUMM_TEMPERATURE", 0)),
-            max_tokens=int(environ.get("SUMM_MAX_TOKENS", 800)),
+            max_tokens=int(environ.get("SUMM_MAX_TOKENS", 2000)),
             callbacks=[logging_handler],
         ),
         chain_type='map_reduce',

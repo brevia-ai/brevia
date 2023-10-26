@@ -24,6 +24,7 @@ class ChatBody(BaseModel):
     collection: str
     chat_history: list = []
     docs_num: int | None = None
+    chat_lang: str | None = None
     streaming: bool = False
     distance_strategy_name: str | None = None
     source_docs: bool = False
@@ -40,8 +41,7 @@ async def chat_action(
     collection = check_collection_name(chat_body.collection)
     if not collection.cmetadata:
         collection.cmetadata = dict()
-    lang_detector = Detector()
-    lang = lang_detector.detect(chat_body.question)
+    lang = chat_language(chat_body=chat_body, cmetadata=collection.cmetadata)
 
     conversation_handler = ConversationCallbackHandler()
     stream_handler = AsyncIteratorCallbackHandler()
@@ -90,6 +90,15 @@ async def chat_action(
         conversation_callback=conversation_handler,
         source_docs=chat_body.source_docs,
     ))
+
+
+def chat_language(chat_body: ChatBody, cmetadata: dict) -> str:
+    """Retrieve the language to be used in Q/A response"""
+    chat_lang = chat_body.chat_lang if chat_body.chat_lang else cmetadata.get('chat_lang')
+    if chat_lang:
+        return chat_lang
+
+    return Detector().detect(chat_body.question)
 
 
 def retrieve_chat_history(history: list, question: str, session: str = None) -> list:
@@ -173,9 +182,11 @@ def search_documents(search: SearchBody):
             COSINE = EmbeddingStore.embedding.cosine_distance
             MAX_INNER_PRODUCT = EmbeddingStore.embedding.max_inner_product
     """
-    check_collection_name(search.collection)
+    collection = check_collection_name(search.collection)
 
     params = {k: v for k, v in search.dict().items() if v is not None}
+    if 'docs_num' not in params and 'docs_num' in collection.cmetadata:
+        params['docs_num'] = collection.cmetadata['docs_num']
     result = query.search_vector_qa(**params)
 
     return extract_content_score(result)

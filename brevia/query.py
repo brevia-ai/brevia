@@ -11,7 +11,6 @@ from langchain.text_splitter import TokenTextSplitter
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains.llm import LLMChain
-from langchain import OpenAI
 from langchain.prompts import load_prompt
 from langchain.prompts import (
     ChatPromptTemplate,
@@ -106,12 +105,15 @@ def conversation_chain(
         Return conversation chain for Q/A with embdedded dataset knowledge
 
         collection: name of collection to questioning
-        source_docs: retrive source docs
         docs_num: number of docs to retrieve to create context
-        distance_strategy_name: distance strategy to use
+            (default 'SEARCH_DOCS_NUM' env var or '4')
+        source_docs: flag to retrieve source docs in response (default True)
+        distance_strategy_name: distance strategy to use (default 'cosine')
         streaming: activate streaming (default False),
         answer_callbacks: callbacks to use in the final LLM answer to enable streaming
+            (default empty list)
         conversation_callbacks: callback to handle conversation results
+            (default empty list)
 
         can implement "vectordbkwargs" into quest_dict:
             {
@@ -119,7 +121,8 @@ def conversation_chain(
             }
     """
     if docs_num is None:
-        docs_num = int(environ.get('SEARCH_DOCS_NUM', 4))
+        default_num = environ.get('SEARCH_DOCS_NUM', 4)
+        docs_num = int(collection.cmetadata.get('docs_num', default_num))
 
     docsearch = PGVector(
         connection_string=connection.connection_string(),
@@ -129,33 +132,36 @@ def conversation_chain(
     )
 
     prompts = collection.cmetadata.get('prompts')
+    model_name = collection.cmetadata.get('model_name', environ.get('QA_MODEL'))
+    temperature = collection.cmetadata.get('temperature', environ.get('QA_TEMPERATURE'))
+    verbose = environ.get('VERBOSE_MODE', False)
 
-    # LLM to rewrite follow-up question
-    fup_llm = OpenAI(
-        model_name=environ.get('QA_FOLLOWUP_MODEL'),
-        temperature=float(environ.get('QA_FOLLOWUP_TEMPERATURE', 0)),
+    # Model for rewriting follow-up question
+    fup_llm = ChatOpenAI(
+        model_name=environ.get('QA_FOLLOWUP_MODEL', 'gpt-3.5-turbo'),
+        temperature=float(temperature),
         max_tokens=int(environ.get('QA_FOLLOWUP_MAX_TOKENS', 200)),
-        verbose=environ.get('VERBOSE_MODE', False),
+        verbose=verbose,
     )
 
     logging_handler = AsyncLoggingCallbackHandler()
-    # Rewrite question using chat history (if any)
+    # Create chain for follow-up question using chat history (if present)
     question_generator = LLMChain(
         llm=fup_llm,
         prompt=load_condense_prompt(prompts),
-        verbose=environ.get('VERBOSE_MODE', False),
+        verbose=verbose,
         callbacks=[logging_handler],
     )
 
-    # LLM to use in final prompt
+    # Model to use in final prompt
     answer_callbacks.append(logging_handler)
     chatllm = ChatOpenAI(
-        model_name=environ.get('QA_COMPLETIONS_MODEL'),
-        temperature=float(environ.get('QA_TEMPERATURE', 0)),
+        model_name=model_name,
+        temperature=float(temperature),
         max_tokens=int(environ.get('QA_MAX_TOKENS', 800)),
         callbacks=answer_callbacks,
         streaming=streaming,
-        verbose=environ.get('VERBOSE_MODE', False),
+        verbose=verbose,
     )
 
     # this chain use "stuff" to elaborate context
@@ -163,7 +169,7 @@ def conversation_chain(
         llm=chatllm,
         prompt=load_brevia_prompt(prompts),
         chain_type="stuff",
-        verbose=environ.get('VERBOSE_MODE', False),
+        verbose=verbose,
         callbacks=[logging_handler],
     )
 
@@ -177,7 +183,7 @@ def conversation_chain(
         return_source_documents=source_docs,
         question_generator=question_generator,
         callbacks=conversation_callbacks,
-        verbose=environ.get('VERBOSE_MODE', False)
+        verbose=verbose,
     )
 
 
@@ -196,22 +202,24 @@ def summarize(
         return text[:min(100, len(text)-1)]
 
     text_splitter = TokenTextSplitter(
-        chunk_size=int(environ.get("SUMM_TOKEN_SPLITTER", 3000)),
-        chunk_overlap=int(environ.get("SUMM_TOKEN_OVERLAP", 0))
+        chunk_size=int(environ.get("SUMM_TOKEN_SPLITTER", 4000)),
+        chunk_overlap=int(environ.get("SUMM_TOKEN_OVERLAP", 500))
     )
     texts = text_splitter.split_text(text)
     docs = [Document(page_content=t) for t in texts]
     lang = environ.get("PROMPT_LANG", 'it')
+
+    # TODO: refactor with dynamics summary types
     if summ_prompt not in ['summarize', 'summarize_point', 'classificate']:
         summ_prompt = 'summarize'
     prompts_path = f'{path.dirname(__file__)}/prompts'
     prompt = load_prompt(f'{prompts_path}/summarize/yaml/{lang}.{summ_prompt}.yaml')
     logging_handler = LoggingCallbackHandler()
     chain = load_summarize_chain(
-        OpenAI(
+        ChatOpenAI(
             model_name=environ.get("SUMM_COMPLETIONS_MODEL"),
             temperature=float(environ.get("SUMM_TEMPERATURE", 0)),
-            max_tokens=int(environ.get("SUMM_MAX_TOKENS", 800)),
+            max_tokens=int(environ.get("SUMM_MAX_TOKENS", 2000)),
             callbacks=[logging_handler],
         ),
         chain_type='map_reduce',

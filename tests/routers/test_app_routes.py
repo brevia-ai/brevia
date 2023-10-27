@@ -15,7 +15,6 @@ def test_app_router():
         '/summarize',
         '/upload_summarize',
         '/upload_analyze',
-        '/summarize_binary',
         '/collections',
         '/collections/{uuid}',
         '/transcribe',

@@ -1,6 +1,7 @@
 """Utilities to create langchain LLM and Chat Model instances."""
+from abc import ABC, abstractmethod
 from os import environ
-from typing import Dict, List
+from typing import Dict, List, Any
 from langchain.llms.loading import load_llm_from_config
 from langchain.llms.base import BaseLLM
 from langchain.llms.fake import FakeListLLM
@@ -10,6 +11,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.embeddings.fake import FakeEmbeddings
 from langchain.embeddings.base import Embeddings
+from openai import Audio
 
 
 class FakeBreviaLLM(FakeListLLM):
@@ -49,10 +51,36 @@ def load_chatmodel(config: dict) -> BaseChatModel:
     return llm_cls(**config)
 
 
-CHAT_MODEL_TYPES: Dict[str, BaseChatModel] = {
-    'openai-chat': ChatOpenAI,
-    'fake-list-chat-model': FakeListChatModel,
-}
+class BaseAudio(ABC):
+    """Base class for Audio transcription"""
+    @abstractmethod
+    def transcribe(self, file: Any, **kwargs) -> dict:
+        """transcribe Audio"""
+
+
+class FakeAudio(BaseAudio):
+    """Test class for Audio transcription"""
+    def transcribe(self, file: Any, **kwargs) -> dict:
+        """transcribe Audio"""
+        return {'text': LOREM_IPSUM}
+
+
+class AudioOpenAI(BaseAudio):
+    """OpenAI Audio transcription"""
+    def transcribe(self, file: Any, **kwargs) -> dict:
+        """transcribe Audio"""
+        return Audio.transcribe(
+            file=file,
+            **kwargs,
+        )
+
+
+def load_audiotranscriber() -> BaseAudio:
+    """Load Audio transcriber (only openAI supported for now)."""
+    if test_models_in_use():
+        return FakeAudio()
+
+    return AudioOpenAI()
 
 
 def load_embeddings() -> Embeddings:

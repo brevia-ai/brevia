@@ -3,7 +3,7 @@ import logging
 from os import environ
 from typing import Annotated
 from fastapi import APIRouter, UploadFile, Form
-import openai
+from brevia.models import load_audiotranscriber
 from brevia.dependencies import (
     get_dependencies,
     save_upload_file_tmp,
@@ -27,10 +27,10 @@ def audio_transcriptions(
     tmp_file_path = save_upload_file_tmp(file)
 
     with open(tmp_file_path, 'rb') as audio_file:
-
-        result = openai.Audio.transcribe(
-                model='whisper-1',
+        audio = load_audiotranscriber()
+        result = audio.transcribe(
                 file=audio_file,
+                model='whisper-1',
                 api_key=environ.get('OPENAI_API_KEY'),
                 params={'language': language},
         )

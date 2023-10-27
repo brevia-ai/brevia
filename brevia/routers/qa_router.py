@@ -94,7 +94,7 @@ async def chat_action(
 
 def chat_language(chat_body: ChatBody, cmetadata: dict) -> str:
     """Retrieve the language to be used in Q/A response"""
-    chat_lang = chat_body.chat_lang if chat_body.chat_lang else cmetadata.get('chat_lang')
+    chat_lang = chat_body.chat_lang or cmetadata.get('chat_lang')
     if chat_lang:
         return chat_lang
 

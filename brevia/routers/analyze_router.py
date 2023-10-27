@@ -125,38 +125,38 @@ def upload_analyze(
     return {'job': job.uuid}
 
 
-@router.post(
-    '/summarize_binary',
-    dependencies=get_dependencies(json_content_type=False),
-    deprecated=True,
-)
-async def summarize_binary(
-    request: Request,
-    background_tasks: BackgroundTasks,
-):
-    """
-    Perform summarization of a PDF file
-    passed via binary POST (application/octet-stream)
-    """
-    body: bytes = await request.body()
-    tmp_file_path = save_binary_tmp_file(file_content=body)
+# @router.post(
+#     '/summarize_binary',
+#     dependencies=get_dependencies(json_content_type=False),
+#     deprecated=True,
+# )
+# async def summarize_binary(
+#     request: Request,
+#     background_tasks: BackgroundTasks,
+# ):
+#     """
+#     Perform summarization of a PDF file
+#     passed via binary POST (application/octet-stream)
+#     """
+#     body: bytes = await request.body()
+#     tmp_file_path = save_binary_tmp_file(file_content=body)
 
-    job = async_jobs.create_job(
-        service='brevia.services.SummarizeFileService',
-        payload={'file_path': tmp_file_path},
-    )
-    background_tasks.add_task(async_jobs.run_job_service, job.uuid)
+#     job = async_jobs.create_job(
+#         service='brevia.services.SummarizeFileService',
+#         payload={'file_path': tmp_file_path},
+#     )
+#     background_tasks.add_task(async_jobs.run_job_service, job.uuid)
 
-    return {'job': job.uuid}
+#     return {'job': job.uuid}
 
 
-def save_binary_tmp_file(file_content: bytes) -> str:
-    """ Save binary content to temp file, return path """
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        with open(tmp.name, 'wb') as file:
-            file.write(file_content)
+# def save_binary_tmp_file(file_content: bytes) -> str:
+#     """ Save binary content to temp file, return path """
+#     with tempfile.NamedTemporaryFile(delete=False) as tmp:
+#         with open(tmp.name, 'wb') as file:
+#             file.write(file_content)
 
-    return str(Path(tmp.name))
+#     return str(Path(tmp.name))
 
 
 def save_base64_tmp_file(file_content: str) -> str:

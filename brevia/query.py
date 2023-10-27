@@ -59,6 +59,13 @@ def load_condense_prompt(prompts: dict | None) -> ChatPromptTemplate:
     return load_prompt(f'{prompts_path}/qa/default.condense.yaml')
 
 
+DISTANCE_MAP = {
+    'euclidean': DistanceStrategy.EUCLIDEAN,
+    'cosine': DistanceStrategy.COSINE,
+    'max': DistanceStrategy.MAX_INNER_PRODUCT,
+}
+
+
 def search_vector_qa(
     query: str,
     collection: str,
@@ -66,28 +73,15 @@ def search_vector_qa(
     distance_strategy_name: str = 'cosine',
 ) -> list[tuple[Document, float]]:
     """ Perform a similarity search on vector index """
-
+    strategy = DISTANCE_MAP.get(distance_strategy_name, DistanceStrategy.COSINE)
     docsearch = PGVector(
         connection_string=connection_string(),
         embedding_function=load_embeddings(),
         collection_name=collection,
-        distance_strategy=distance_strategy(distance_strategy_name),
+        distance_strategy=strategy,
     )
 
     return docsearch.similarity_search_with_score(query, k=docs_num)
-
-
-def distance_strategy(strategy: str):
-    """Distance strategy from type name"""
-    distance_map = {
-        'euclidean': DistanceStrategy.EUCLIDEAN,
-        'cosine': DistanceStrategy.COSINE,
-        'max': DistanceStrategy.MAX_INNER_PRODUCT,
-    }
-    if strategy not in distance_map:
-        return DistanceStrategy.COSINE
-
-    return distance_map[strategy]
 
 
 def conversation_chain(
@@ -123,11 +117,12 @@ def conversation_chain(
         default_num = environ.get('SEARCH_DOCS_NUM', 4)
         docs_num = int(collection.cmetadata.get('docs_num', default_num))
 
+    strategy = DISTANCE_MAP.get(distance_strategy_name, DistanceStrategy.COSINE)
     docsearch = PGVector(
         connection_string=connection_string(),
         embedding_function=load_embeddings(),
         collection_name=collection.name,
-        distance_strategy=distance_strategy(distance_strategy_name),
+        distance_strategy=strategy,
     )
 
     prompts = collection.cmetadata.get('prompts')

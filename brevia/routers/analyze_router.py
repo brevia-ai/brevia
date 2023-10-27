@@ -127,7 +127,8 @@ def upload_analyze(
 
 @router.post(
     '/summarize_binary',
-    dependencies=get_dependencies(json_content_type=False)
+    dependencies=get_dependencies(json_content_type=False),
+    deprecated=True,
 )
 async def summarize_binary(
     request: Request,

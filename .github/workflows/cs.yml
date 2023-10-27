@@ -14,4 +14,4 @@ jobs:
   cs:
     uses: bedita/github-workflows/.github/workflows/python-cs.yml@v1
     with:
-      python_versions: '["3.x"]'
+      python_versions: '["3.11"]'

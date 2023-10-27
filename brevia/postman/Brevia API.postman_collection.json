@@ -758,7 +758,7 @@
 			"response": []
 		},
 		{
-			"name": "prompt - Question/Answer flow",
+			"name": "chat - Question/Answer flow",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -788,19 +788,19 @@
 					"raw": "{\n    \"question\" : \"quando è nata la repubblica in Italia?\",\n    \"collection\" : \"storia-novecento\",\n    \"source_docs\": true,\n    \"docs_num\": 3,\n    \"token_data\": false\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/prompt",
+					"raw": "{{baseUrl}}/chat",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
-						"prompt"
+						"chat"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "prompt - Question/Answer flow with History",
+			"name": "chat - Question/Answer flow with History",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -825,12 +825,12 @@
 					"raw": "{\n    \"question\" : \"mi puoi tradurre l'ultima risposta in italiano?\",\n    \"chat_history\": [\n        {\n            \"query\": \"cos'è il floor?\",\n            \"answer\": \"Il floor è il minimo valore a cui è possibile convertire il proprio investimento in strumenti convertibili, che tutela l'imprenditore da un eccessivo ribasso della valutazione.\"\n        },\n        {\n            \"query\": \"cos'è il mifid?\",\n            \"answer\": \"MiFID sta per \\\"Markets in Financial Instruments Directive\\\", ovvero la direttiva sui mercati degli strumenti finanziari.\"\n        },\n        {\n            \"query\": \"quanto bisogna pagare per fare un finanziamento?\",\n            \"answer\": \"The cost of obtaining finance from Doorway varies depending on whether you are an investor or a company seeking funding. For investors, there is a 1% annual fee based on the investment amount for administrative and accounting costs, as well as a potential 20% commission on returns exceeding 7%. For companies seeking funding, Doorway charges a success fee between 6% and 8% of the amount raised.\"\n        }\n\n    ],\n    \"collection\" : \"doorway\"\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/prompt",
+					"raw": "{{baseUrl}}/chat",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
-						"prompt"
+						"chat"
 					]
 				}
 			},

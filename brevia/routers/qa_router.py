@@ -19,8 +19,8 @@ from brevia.models import test_models_in_use
 router = APIRouter()
 
 
-class PromptBody(BaseModel):
-    """ /prompt request body """
+class ChatBody(BaseModel):
+    """ /chat request body """
     question: str
     collection: str
     chat_history: list = []
@@ -32,38 +32,39 @@ class PromptBody(BaseModel):
     token_data: bool = False
 
 
-@router.post('/prompt', dependencies=get_dependencies())
-async def prompt_action(
-    prompt: PromptBody,
+@router.post('/prompt', dependencies=get_dependencies(), deprecated=True)
+@router.post('/chat', dependencies=get_dependencies())
+async def chat_action(
+    chat_body: ChatBody,
     x_chat_session: Annotated[str | None, Header()] = None,
 ):
-    """ /prompt endpoint, ask chatbot about a collection of documents """
-    collection = check_collection_name(prompt.collection)
+    """ /chat endpoint, ask chatbot about a collection of documents """
+    collection = check_collection_name(chat_body.collection)
     if not collection.cmetadata:
         collection.cmetadata = dict()
-    lang = chat_language(prompt=prompt, cmetadata=collection.cmetadata)
+    lang = chat_language(chat_body=chat_body, cmetadata=collection.cmetadata)
 
     conversation_handler = ConversationCallbackHandler()
     stream_handler = AsyncIteratorCallbackHandler()
     chain = query.conversation_chain(
         collection=collection,
-        docs_num=prompt.docs_num,
-        streaming=prompt.streaming,
-        answer_callbacks=[stream_handler] if prompt.streaming else [],
+        docs_num=chat_body.docs_num,
+        streaming=chat_body.streaming,
+        answer_callbacks=[stream_handler] if chat_body.streaming else [],
         conversation_callbacks=[conversation_handler]
     )
 
-    if not prompt.streaming or test_models_in_use():
+    if not chat_body.streaming or test_models_in_use():
         return await run_chain(
             chain=chain,
-            prompt=prompt,
+            chat_body=chat_body,
             lang=lang,
             x_chat_session=x_chat_session,
         )
 
     asyncio.create_task(run_chain(
         chain=chain,
-        prompt=prompt,
+        chat_body=chat_body,
         lang=lang,
         x_chat_session=x_chat_session,
     ))
@@ -88,20 +89,20 @@ async def prompt_action(
     return StreamingResponse(event_generator(
         stream_callback=stream_handler,
         conversation_callback=conversation_handler,
-        source_docs=prompt.source_docs,
+        source_docs=chat_body.source_docs,
     ))
 
 
-def chat_language(prompt: PromptBody, cmetadata: dict) -> str:
+def chat_language(chat_body: ChatBody, cmetadata: dict) -> str:
     """Retrieve the language to be used in Q/A response"""
-    chat_lang = prompt.chat_lang if prompt.chat_lang else cmetadata.get('chat_lang')
+    chat_lang = chat_body.chat_lang or cmetadata.get('chat_lang')
     if chat_lang:
         return chat_lang
 
-    return Detector().detect(prompt.question)
+    return Detector().detect(chat_body.question)
 
 
-def prompt_chat_history(history: list, question: str, session: str = None) -> list:
+def retrieve_chat_history(history: list, question: str, session: str = None) -> list:
     """Retrieve chat history to be used in final prompt creation"""
     chat_hist = chat_history.history(
         chat_history=history,
@@ -115,51 +116,51 @@ def prompt_chat_history(history: list, question: str, session: str = None) -> li
 
 async def run_chain(
     chain: Chain,
-    prompt: PromptBody,
+    chat_body: ChatBody,
     lang: str,
     x_chat_session: str,
 ):
     """Run chain usign async methods and return result"""
     with get_openai_callback() as callb:
         result = await chain.acall({
-            'question': prompt.question,
-            'chat_history': prompt_chat_history(
-                history=prompt.chat_history,
-                question=prompt.question,
+            'question': chat_body.question,
+            'chat_history': retrieve_chat_history(
+                history=chat_body.chat_history,
+                question=chat_body.question,
                 session=x_chat_session,
             ),
             'lang': lang,
         })
 
-    return prompt_result(
+    return chat_result(
         result=result,
         callb=callb,
-        prompt=prompt,
+        chat_body=chat_body,
         x_chat_session=x_chat_session
     )
 
 
-def prompt_result(
+def chat_result(
     result: dict,
     callb: OpenAICallbackHandler,
-    prompt: PromptBody,
+    chat_body: ChatBody,
     x_chat_session: str | None = None,
 ) -> dict:
-    """ Handle prompt result: save chat history and return answer """
+    """ Handle chat result: save chat history and return answer """
     answer = result['answer'].strip(" \n")
 
     chat_history.add_history(
             session_id=x_chat_session,
-            collection=prompt.collection,
-            question=prompt.question,
+            collection=chat_body.collection,
+            question=chat_body.question,
             answer=answer,
             metadata=callb.__dict__,
     )
 
     return {
         'bot': answer,
-        'docs': None if not prompt.source_docs else result['source_documents'],
-        'token_data': None if not prompt.token_data else callb.__dict__
+        'docs': None if not chat_body.source_docs else result['source_documents'],
+        'token_data': None if not chat_body.token_data else callb.__dict__
     }
 
 

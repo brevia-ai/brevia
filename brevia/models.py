@@ -38,10 +38,16 @@ CHAT_MODEL_TYPES: Dict[str, BaseChatModel] = {
 }
 
 
+class FakeBreviaChatModel(FakeListChatModel):
+    """Fake LLM for testing purposes."""
+    def get_token_ids(self, text: str) -> List[int]:
+        return [10] * 10
+
+
 def load_chatmodel(config: dict) -> BaseChatModel:
     """Load Chat Model from Config Dict."""
     if test_models_in_use():
-        return FakeListChatModel(responses=[LOREM_IPSUM] * 10)
+        return FakeBreviaChatModel(responses=[LOREM_IPSUM] * 10)
 
     config_type = config.pop('_type')
     if config_type not in CHAT_MODEL_TYPES:

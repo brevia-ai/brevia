@@ -45,16 +45,15 @@ def test_upload_summarize():
     test_path = Path(__file__).parent.parent
     file_path = f'{test_path}/files/empty.pdf'
     handle = open(file_path, 'rb')
-    with TestClient(app) as client:
-        response = client.post(
-            '/upload_summarize',
-            files={'file': handle},
-            data={'summ_prompt': 'summarize'},
-        )
-        assert response.status_code == 200
-        data = response.json()
-        assert data is not None
-        assert data['job'] is not None
+    response = client.post(
+        '/upload_summarize',
+        files={'file': handle},
+        data={'summ_prompt': 'summarize'},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data is not None
+    assert data['job'] is not None
 
 
 def test_upload_summarize_fail():
@@ -88,13 +87,12 @@ def test_upload_analyze():
     test_path = Path(__file__).parent.parent
     file_path = f'{test_path}/files/empty.pdf'
     handle = open(file_path, 'rb')
-    with TestClient(app) as client:
-        response = client.post(
-            '/upload_analyze',
-            files={'file': handle},
-            data={'service': 'brevia.services.FakeService'},
-        )
-        assert response.status_code == 200
-        data = response.json()
-        assert data is not None
-        assert data['job'] is not None
+    response = client.post(
+        '/upload_analyze',
+        files={'file': handle},
+        data={'service': 'brevia.services.FakeService'},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data is not None
+    assert data['job'] is not None

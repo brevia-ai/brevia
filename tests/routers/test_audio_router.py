@@ -16,13 +16,12 @@ def test_audio_transcriptions():
     test_path = Path(__file__).parent.parent
     file_path = f'{test_path}/files/silence.mp3'
     handle = open(file_path, 'rb')
-    with TestClient(app) as client:
-        response = client.post(
-            '/transcribe',
-            files={'file': handle},
-            data={'language': 'it'},
-        )
-        assert response.status_code == 200
-        data = response.json()
-        assert data is not None
-        assert data['text'] == models.LOREM_IPSUM
+    response = client.post(
+        '/transcribe',
+        files={'file': handle},
+        data={'language': 'it'},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data is not None
+    assert data['text'] == models.LOREM_IPSUM

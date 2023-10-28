@@ -11,7 +11,7 @@ homepage = "https://github.com/brevia-ai/brevia"
 repository = "https://github.com/brevia-ai/brevia"
 
   [tool.poetry.dependencies]
-  python = "^3.10"
+  python = ">=3.10,<3.13"
   bs4 = "^0.0.1"
   lxml = "^4.9.2"
   langchain = "0.0.240"
@@ -31,6 +31,7 @@ repository = "https://github.com/brevia-ai/brevia"
   alembic = "^1.11.1"
   python-jose = "^3.3.0"
   sqlalchemy-utils = "^0.41.1"
+  numpy = "^1.26.1"
 
     [tool.poetry.dependencies.uvicorn]
     extras = [ "standard" ]

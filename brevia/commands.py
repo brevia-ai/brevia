@@ -1,7 +1,9 @@
 """Utility commands for applications"""
+import json
 import click
 from dotenv import load_dotenv
-from brevia import alembic
+from brevia.alembic import current, upgrade, downgrade
+from brevia.utilities import files_import
 
 
 @click.command()
@@ -9,7 +11,7 @@ from brevia import alembic
 def db_current_cmd(verbose):
     """Display current database revision"""
     load_dotenv()
-    alembic.current(verbose)
+    current(verbose)
 
 
 @click.command()
@@ -17,7 +19,7 @@ def db_current_cmd(verbose):
 def db_upgrade_cmd(revision):
     """Upgrade to a later database revision"""
     load_dotenv()
-    alembic.upgrade(revision)
+    upgrade(revision)
 
 
 @click.command()
@@ -25,4 +27,24 @@ def db_upgrade_cmd(revision):
 def db_downgrade_cmd(revision):
     """Revert to a previous database revision"""
     load_dotenv()
-    alembic.downgrade(revision)
+    downgrade(revision)
+
+
+@click.command()
+@click.option("-f", "--file", required=True, help="File or folder path")
+@click.option("-c", "--collection", required=True, help="Collection name")
+@click.option("-o", "--options", required=True, help="Loader options in JSON format")
+def import_file(file_path: str, collection: str, options: str = ''):
+    """Add file or folder content to collection"""
+    load_dotenv()
+    # pass loader options via JSON string
+    kwargs = {} if not options else json.loads(options)
+    num = files_import.index_file_folder(
+        file_path=file_path,
+        collection=collection,
+        **kwargs
+    )
+    print(
+        f"""Collection '{collection}'
+        updated from '{file_path}' with {num} documents."""
+    )

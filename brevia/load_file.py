@@ -4,7 +4,13 @@ import re
 import mimetypes
 from typing import List, Any
 from langchain.docstore.document import Document
-from langchain.document_loaders import PyPDFLoader, UnstructuredPDFLoader
+from langchain.document_loaders import (
+    BSHTMLLoader,
+    CSVLoader,
+    PyPDFLoader,
+    TextLoader,
+    UnstructuredPDFLoader,
+)
 
 
 def cleanup_text(text_in: str) -> str:
@@ -92,3 +98,47 @@ def read(
         return read_pdf_file(file_path=file_path, **loader_kwargs)
 
     return read_txt_file(file_path=file_path)
+
+
+def load_documents(file_path: str, **kwargs: Any) -> List[Document]:
+    """Load documents from a file or folder path"""
+    mtype = mimetypes.guess_type(file_path)[0]
+    if mtype not in MIME_TYPES_LOADERS:
+        raise ValueError(f'Unsupported file content type "{mtype}"')
+    load_function = MIME_TYPES_LOADERS[mtype]
+
+    return load_function(file_path, **kwargs)
+
+
+def load_documents_txt(file_path: str, **kwargs: Any) -> List[Document]:
+    """Load documents from TXT file"""
+    loader = TextLoader(file_path=file_path, autodetect_encoding=True)
+    return loader.load()
+
+
+def load_documents_html(file_path: str, **kwargs: Any) -> List[Document]:
+    """Load documents from HTML file"""
+    loader = BSHTMLLoader(file_path=file_path, **kwargs)
+    return loader.load()
+
+
+def load_documents_csv(file_path: str, **kwargs: Any) -> List[Document]:
+    """Load documents from CSV file"""
+    loader = CSVLoader(
+        file_path=file_path,
+        csv_args={
+            'delimiter': ',',
+            'quotechar': '"',
+            'doublequote': True,
+            'skipinitialspace': False,
+        }
+    )
+    return loader.load()
+
+
+MIME_TYPES_LOADERS = {
+    'application/pdf': load_documents_pdf,
+    'plain/test': load_documents_txt,
+    'text/csv': load_documents_csv,
+    'text/html': load_documents_html,
+}

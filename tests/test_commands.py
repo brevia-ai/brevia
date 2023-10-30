@@ -87,7 +87,7 @@ def test_import_file():
 
 def test_run_test_service():
     """ Test run_test_service function """
-    file_path = f'{Path(__file__).parent}/files/test_service.yml'
+    file_path = f'{Path(__file__).parent}/files/run_test_service.yml'
     runner = CliRunner()
     result = runner.invoke(run_test_service, [
         '--file-path',

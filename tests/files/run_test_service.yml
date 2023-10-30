@@ -1,0 +1,12 @@
+# This file should be used to test your services via CLI
+# providing input files, custom parameters and custom prompts
+
+# Specify your service with module path and class (can be a custom o core service)
+service: brevia.services.FakeService
+
+# Output file path
+output_path: "./tests/files/output.txt"
+
+payload:
+  # Input file path
+  file_path: "./tests/files/empty.pdf"

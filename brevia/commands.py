@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from logging import config
 from brevia.alembic import current, upgrade, downgrade
 from brevia.utilities import files_import, run_service, collections_io
+from brevia.tokens import create_token
 
 
 @click.command()
@@ -116,3 +117,13 @@ def import_collection(folder_path: str, collection: str):
         folder_path=folder_path,
         collection=collection
     )
+
+
+@click.command()
+@click.option("-u", "--user", default="brevia", help="Token user name")
+@click.option("-d", "--duration", default=60, help="Token duration in minutes")
+def create_access_token(user: str, duration: int):
+    """Create an access token """
+    load_dotenv()
+    token = create_token(user=user, duration=duration)
+    print(token)

@@ -1,14 +1,12 @@
 """Index document with embeddings in vector database."""
 import os
-import logging
 from langchain.docstore.document import Document
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.embeddings.fake import FakeEmbeddings
 from langchain.text_splitter import NLTKTextSplitter
 from langchain.vectorstores.pgvector import PGVector
 from langchain.vectorstores._pgvector_data_models import EmbeddingStore
 from sqlalchemy.orm import Session
 from brevia import connection, load_file
+from brevia.models import load_embeddings
 
 
 def init_index():
@@ -71,7 +69,7 @@ def add_document(
     texts = text_splitter.split_documents([document])
 
     PGVector.from_documents(
-        embedding=get_embeddings(),
+        embedding=load_embeddings(),
         documents=texts,
         collection_name=collection_name,
         connection_string=connection.connection_string(),
@@ -105,13 +103,3 @@ def read_document(
         query = session.query(EmbeddingStore.document, EmbeddingStore.cmetadata)
         query = query.filter(filter_collection, filter_document)
         return [row._asdict() for row in query.all()]
-
-
-def get_embeddings() -> (FakeEmbeddings | OpenAIEmbeddings):
-    """ Get Embeddings engine: Fake or OpenAI for now """
-    if bool(os.environ.get("FAKE_EMBEDDING")):
-        print('Using FAKE embeddings!!')
-        logging.getLogger(__name__).warning('Using FAKE summary - text truncate!!')
-        return FakeEmbeddings(size=1536)
-
-    return OpenAIEmbeddings()

@@ -1,6 +1,5 @@
 """Returning text summarize or question-answering chain against a vector database."""
 from os import environ, path
-import logging
 from langchain.docstore.document import Document
 from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
 from langchain.vectorstores._pgvector_data_models import CollectionStore
@@ -18,9 +17,9 @@ from langchain.prompts import (
     HumanMessagePromptTemplate,
 )
 from langchain.prompts.loading import load_prompt_from_config
-from langchain.chat_models import ChatOpenAI
-from brevia import connection, index
+from brevia.connection import connection_string
 from brevia.callback import AsyncLoggingCallbackHandler, LoggingCallbackHandler
+from brevia.models import load_chatmodel, load_embeddings
 
 
 def load_brevia_prompt(prompts: dict | None) -> ChatPromptTemplate:
@@ -60,6 +59,13 @@ def load_condense_prompt(prompts: dict | None) -> ChatPromptTemplate:
     return load_prompt(f'{prompts_path}/qa/default.condense.yaml')
 
 
+DISTANCE_MAP = {
+    'euclidean': DistanceStrategy.EUCLIDEAN,
+    'cosine': DistanceStrategy.COSINE,
+    'max': DistanceStrategy.MAX_INNER_PRODUCT,
+}
+
+
 def search_vector_qa(
     query: str,
     collection: str,
@@ -67,28 +73,15 @@ def search_vector_qa(
     distance_strategy_name: str = 'cosine',
 ) -> list[tuple[Document, float]]:
     """ Perform a similarity search on vector index """
-
+    strategy = DISTANCE_MAP.get(distance_strategy_name, DistanceStrategy.COSINE)
     docsearch = PGVector(
-        connection_string=connection.connection_string(),
-        embedding_function=index.get_embeddings(),
+        connection_string=connection_string(),
+        embedding_function=load_embeddings(),
         collection_name=collection,
-        distance_strategy=distance_strategy(distance_strategy_name),
+        distance_strategy=strategy,
     )
 
     return docsearch.similarity_search_with_score(query, k=docs_num)
-
-
-def distance_strategy(strategy: str):
-    """Distance strategy from type name"""
-    distance_map = {
-        'euclidean': DistanceStrategy.EUCLIDEAN,
-        'cosine': DistanceStrategy.COSINE,
-        'max': DistanceStrategy.MAX_INNER_PRODUCT,
-    }
-    if strategy not in distance_map:
-        return DistanceStrategy.COSINE
-
-    return distance_map[strategy]
 
 
 def conversation_chain(
@@ -104,7 +97,7 @@ def conversation_chain(
     """
         Return conversation chain for Q/A with embdedded dataset knowledge
 
-        collection: name of collection to questioning
+        collection: collection store item
         docs_num: number of docs to retrieve to create context
             (default 'SEARCH_DOCS_NUM' env var or '4')
         source_docs: flag to retrieve source docs in response (default True)
@@ -124,11 +117,12 @@ def conversation_chain(
         default_num = environ.get('SEARCH_DOCS_NUM', 4)
         docs_num = int(collection.cmetadata.get('docs_num', default_num))
 
+    strategy = DISTANCE_MAP.get(distance_strategy_name, DistanceStrategy.COSINE)
     docsearch = PGVector(
-        connection_string=connection.connection_string(),
-        embedding_function=index.get_embeddings(),
+        connection_string=connection_string(),
+        embedding_function=load_embeddings(),
         collection_name=collection.name,
-        distance_strategy=distance_strategy(distance_strategy_name),
+        distance_strategy=strategy,
     )
 
     prompts = collection.cmetadata.get('prompts')
@@ -136,13 +130,14 @@ def conversation_chain(
     temperature = collection.cmetadata.get('temperature', environ.get('QA_TEMPERATURE'))
     verbose = environ.get('VERBOSE_MODE', False)
 
-    # Model for rewriting follow-up question
-    fup_llm = ChatOpenAI(
-        model_name=environ.get('QA_FOLLOWUP_MODEL', 'gpt-3.5-turbo'),
-        temperature=float(temperature),
-        max_tokens=int(environ.get('QA_FOLLOWUP_MAX_TOKENS', 200)),
-        verbose=verbose,
-    )
+    # LLM to rewrite follow-up question
+    fup_llm = load_chatmodel({
+        '_type': 'openai-chat',
+        'model_name': environ.get('QA_FOLLOWUP_MODEL', 'gpt-3.5-turbo'),
+        'temperature': float(temperature),
+        'max_tokens': int(environ.get('QA_FOLLOWUP_MAX_TOKENS', 200)),
+        'verbose': verbose,
+    })
 
     logging_handler = AsyncLoggingCallbackHandler()
     # Create chain for follow-up question using chat history (if present)
@@ -155,14 +150,15 @@ def conversation_chain(
 
     # Model to use in final prompt
     answer_callbacks.append(logging_handler)
-    chatllm = ChatOpenAI(
-        model_name=model_name,
-        temperature=float(temperature),
-        max_tokens=int(environ.get('QA_MAX_TOKENS', 800)),
-        callbacks=answer_callbacks,
-        streaming=streaming,
-        verbose=verbose,
-    )
+    chatllm = load_chatmodel({
+        '_type': 'openai-chat',
+        'model_name': model_name,
+        'temperature': float(temperature),
+        'max_tokens': int(environ.get('QA_MAX_TOKENS', 800)),
+        'callbacks': answer_callbacks,
+        'streaming': streaming,
+        'verbose': verbose,
+    })
 
     # this chain use "stuff" to elaborate context
     doc_chain = load_qa_chain(
@@ -194,13 +190,6 @@ def summarize(
 ) -> str:
     """ Perform summarizing for a given text """
 
-    if bool(environ.get('FAKE_SUMMARY')):
-        print('Using FAKE summary - text truncate!!')
-        logging.getLogger(__name__).warning('Using FAKE summary - text truncate!!')
-        import time  # pylint: disable=import-outside-toplevel
-        time.sleep(30)
-        return text[:min(100, len(text)-1)]
-
     text_splitter = TokenTextSplitter(
         chunk_size=int(environ.get("SUMM_TOKEN_SPLITTER", 4000)),
         chunk_overlap=int(environ.get("SUMM_TOKEN_OVERLAP", 500))
@@ -216,12 +205,13 @@ def summarize(
     prompt = load_prompt(f'{prompts_path}/summarize/yaml/{lang}.{summ_prompt}.yaml')
     logging_handler = LoggingCallbackHandler()
     chain = load_summarize_chain(
-        ChatOpenAI(
-            model_name=environ.get("SUMM_COMPLETIONS_MODEL"),
-            temperature=float(environ.get("SUMM_TEMPERATURE", 0)),
-            max_tokens=int(environ.get("SUMM_MAX_TOKENS", 2000)),
-            callbacks=[logging_handler],
-        ),
+        llm=load_chatmodel({
+            '_type': 'openai-chat',
+            'model_name': environ.get('SUMM_COMPLETIONS_MODEL'),
+            'temperature': float(environ.get('SUMM_TEMPERATURE', 0)),
+            'max_tokens': int(environ.get('SUMM_MAX_TOKENS', 2000)),
+            'callbacks': [logging_handler],
+        }),
         chain_type='map_reduce',
         map_prompt=prompt,
         verbose=environ.get("VERBOSE_MODE", False),

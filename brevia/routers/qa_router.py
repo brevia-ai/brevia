@@ -14,6 +14,7 @@ from brevia.dependencies import (
 )
 from brevia.callback import ConversationCallbackHandler
 from brevia.language import Detector
+from brevia.models import test_models_in_use
 
 router = APIRouter()
 
@@ -53,7 +54,7 @@ async def chat_action(
         conversation_callbacks=[conversation_handler]
     )
 
-    if not chat_body.streaming:
+    if not chat_body.streaming or test_models_in_use():
         return await run_chain(
             chain=chain,
             chat_body=chat_body,

@@ -17,8 +17,8 @@ class IndexBody(BaseModel):
     """ /index request body """
     content: str
     collection_id: str
-    metadata: dict | None = None
     document_id: str
+    metadata: dict = {}
 
 
 @router.post('/index', status_code=204, dependencies=get_dependencies())

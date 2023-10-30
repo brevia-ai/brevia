@@ -112,4 +112,4 @@ def test_run_job_service():
     retrieved_job = single_job(job.uuid)
     assert retrieved_job is not None
     assert retrieved_job.completed is not None
-    assert retrieved_job.result == {'success': True}
+    assert retrieved_job.result == {'output': 'ok'}

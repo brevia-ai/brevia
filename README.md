@@ -191,7 +191,7 @@ poetry install --with dev
 ```
 
 A `tests/.env` file must be present where test environment variables are set, you can start with a copy of `tests/.env.sample`.
-Please make sure that `PGVECTOR_*` variables point to a unit test database that will be continuously dropped and recreated. Also make sure to set `USE_TEST_MODEL=True` in order to use fake LLM instances.
+Please make sure that `PGVECTOR_*` variables point to a unit test database that will be continuously dropped and recreated. Also make sure to set `USE_TEST_MODELS=True` in order to use fake LLM instances.
 
 To launch unit tests, type from virtualenv:
 

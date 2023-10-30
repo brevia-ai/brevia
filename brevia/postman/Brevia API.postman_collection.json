@@ -714,50 +714,6 @@
 			"response": []
 		},
 		{
-			"name": "summarize_binary - post binary data",
-			"protocolProfileBehavior": {
-				"disabledSystemHeaders": {
-					"content-type": true
-				}
-			},
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/octet-stream",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "file",
-					"file": {
-						"src": "/home/ste/Downloads/TestSummary.pdf"
-					}
-				},
-				"url": {
-					"raw": "{{baseUrl}}/summarize_binary",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"summarize_binary"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "chat - Question/Answer flow",
 			"request": {
 				"auth": {

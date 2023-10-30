@@ -3,6 +3,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 from alembic import command
 from alembic.config import Config
+from brevia.index import init_index
+
+
+def pytest_sessionstart(session):
+    """Init index data, just once"""
+    return init_index()
 
 
 @pytest.fixture(autouse=True)

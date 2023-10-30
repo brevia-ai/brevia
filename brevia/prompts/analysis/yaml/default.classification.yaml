@@ -1,0 +1,9 @@
+_type: prompt
+input_variables:
+    ["text","num_items"]
+template: |
+    Extract {num_items} key concepts from the following text:
+
+    {text}
+
+    {num_items} KEY CONCEPTS:

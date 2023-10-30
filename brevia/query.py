@@ -1,4 +1,4 @@
-"""Returning text summarize or question-answering chain against a vector database."""
+"""Returning question-answering chain against a vector database."""
 from os import environ, path
 from langchain.docstore.document import Document
 from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
@@ -18,11 +18,11 @@ from langchain.prompts import (
 )
 from langchain.prompts.loading import load_prompt_from_config
 from brevia.connection import connection_string
-from brevia.callback import AsyncLoggingCallbackHandler, LoggingCallbackHandler
+from brevia.callback import AsyncLoggingCallbackHandler
 from brevia.models import load_chatmodel, load_embeddings
 
 
-def load_brevia_prompt(prompts: dict | None) -> ChatPromptTemplate:
+def load_qa_prompt(prompts: dict | None) -> ChatPromptTemplate:
     """ load prompts for Q/A functions """
 
     prompts_path = f'{path.dirname(__file__)}/prompts'
@@ -91,8 +91,8 @@ def conversation_chain(
     source_docs: bool = True,
     distance_strategy_name: str = 'cosine',
     streaming: bool = False,
-    answer_callbacks: list[BaseCallbackHandler] = [],
-    conversation_callbacks: list[BaseCallbackHandler] = [],
+    answer_callbacks: list[BaseCallbackHandler] = None,
+    conversation_callbacks: list[BaseCallbackHandler] = None,
 ) -> Chain:
     """
         Return conversation chain for Q/A with embdedded dataset knowledge
@@ -116,6 +116,10 @@ def conversation_chain(
     if docs_num is None:
         default_num = environ.get('SEARCH_DOCS_NUM', 4)
         docs_num = int(collection.cmetadata.get('docs_num', default_num))
+    if answer_callbacks is None:
+        answer_callbacks = []
+    if conversation_callbacks is None:
+        conversation_callbacks = []
 
     strategy = DISTANCE_MAP.get(distance_strategy_name, DistanceStrategy.COSINE)
     docsearch = PGVector(
@@ -163,7 +167,7 @@ def conversation_chain(
     # this chain use "stuff" to elaborate context
     doc_chain = load_qa_chain(
         llm=chatllm,
-        prompt=load_brevia_prompt(prompts),
+        prompt=load_qa_prompt(prompts),
         chain_type="stuff",
         verbose=verbose,
         callbacks=[logging_handler],
@@ -181,41 +185,3 @@ def conversation_chain(
         callbacks=conversation_callbacks,
         verbose=verbose,
     )
-
-
-def summarize(
-    text: str,
-    num_items: int = int(environ.get('SUMM_NUM_ITEMS', 5)),
-    summ_prompt: str = environ.get('SUMM_DEFAULT_PROMPT')
-) -> str:
-    """ Perform summarizing for a given text """
-
-    text_splitter = TokenTextSplitter(
-        chunk_size=int(environ.get("SUMM_TOKEN_SPLITTER", 4000)),
-        chunk_overlap=int(environ.get("SUMM_TOKEN_OVERLAP", 500))
-    )
-    texts = text_splitter.split_text(text)
-    docs = [Document(page_content=t) for t in texts]
-    lang = environ.get("PROMPT_LANG", 'it')
-
-    # TODO: refactor with dynamics summary types
-    if summ_prompt not in ['summarize', 'summarize_point', 'classificate']:
-        summ_prompt = 'summarize'
-    prompts_path = f'{path.dirname(__file__)}/prompts'
-    prompt = load_prompt(f'{prompts_path}/summarize/yaml/{lang}.{summ_prompt}.yaml')
-    logging_handler = LoggingCallbackHandler()
-    chain = load_summarize_chain(
-        llm=load_chatmodel({
-            '_type': 'openai-chat',
-            'model_name': environ.get('SUMM_COMPLETIONS_MODEL'),
-            'temperature': float(environ.get('SUMM_TEMPERATURE', 0)),
-            'max_tokens': int(environ.get('SUMM_MAX_TOKENS', 2000)),
-            'callbacks': [logging_handler],
-        }),
-        chain_type='map_reduce',
-        map_prompt=prompt,
-        verbose=environ.get("VERBOSE_MODE", False),
-        combine_prompt=prompt,
-        callbacks=[logging_handler],
-    )
-    return chain.run(**{'input_documents': docs, 'num_items': num_items})

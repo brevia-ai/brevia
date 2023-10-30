@@ -1,0 +1,9 @@
+_type: prompt
+input_variables:
+    ["text", "number"]
+template: |
+    Write {number} arguments extracted from the following text:
+
+    {text}
+
+    WRITE THE ARGUMENTS:

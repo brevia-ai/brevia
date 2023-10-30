@@ -2,7 +2,7 @@
 from abc import ABC, abstractmethod
 from os import environ, unlink
 from langchain.callbacks import get_openai_callback
-from brevia import load_file, query
+from brevia import load_file, query, analysis
 
 
 class BaseService(ABC):
@@ -29,7 +29,7 @@ class SummarizeTextService(BaseService):
         """Service logic"""
         token_data = payload.pop('token_data')
         with get_openai_callback() as callb:
-            result = query.summarize(**payload)
+            result = analysis.summarize(**payload)
 
         return {
             'output': result,
@@ -59,7 +59,7 @@ class SummarizeFileService(BaseService):
     def summarize_from_file(
         self,
         file_path: str,
-        summ_prompt: str = environ.get('SUMM_DEFAULT_PROMPT', 'summarize'),
+        summ_type: str = environ.get('SUMM_DEFAULT_PROMPT', 'summarize'),
         num_items: int = int(environ.get('SUMM_NUM_ITEMS', '5')),
         token_data: bool = False,
     ) -> dict:
@@ -76,10 +76,10 @@ class SummarizeFileService(BaseService):
             raise ValueError('Empty text field')
 
         with get_openai_callback() as callb:
-            result = query.summarize(
+            result = analysis.summarize(
                 text,
+                summ_type=summ_type,
                 num_items=num_items,
-                summ_prompt=summ_prompt,
             )
 
         return {

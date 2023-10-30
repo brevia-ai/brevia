@@ -1,5 +1,5 @@
 """Query module tests"""
-from brevia.query import load_brevia_prompt, load_condense_prompt
+from brevia.query import load_qa_prompt, load_condense_prompt
 from langchain.prompts import BasePromptTemplate
 
 FAKE_PROMPT = {
@@ -9,15 +9,15 @@ FAKE_PROMPT = {
 }
 
 
-def test_load_brevia_prompt():
-    """Test load_brevia_prompt method"""
-    result = load_brevia_prompt({
+def test_load_qa_prompt():
+    """Test load_qa_prompt method"""
+    result = load_qa_prompt({
         'system': FAKE_PROMPT,
     })
     assert result is not None
     assert isinstance(result, BasePromptTemplate)
 
-    result = load_brevia_prompt({
+    result = load_qa_prompt({
         'human': FAKE_PROMPT,
     })
     assert result is not None

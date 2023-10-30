@@ -1,4 +1,4 @@
-"""Import a CSV file performing embedding and store."""
+"""Utility functions to import files or folders."""
 import os
 from typing import List, Any
 from langchain.docstore.document import Document

@@ -91,7 +91,7 @@ class SummarizeFileService(BaseService):
 class FakeService(BaseService):
     """Fake class for services testing"""
     def execute(self, payload: dict) -> dict:
-        return {'success': True}
+        return {'output': 'ok'}
 
     def validate(self, payload: dict) -> bool:
         return True

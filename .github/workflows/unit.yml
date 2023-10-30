@@ -63,8 +63,8 @@ jobs:
 
       - name: Install `psql` client, used by collections io commands
         run: |
-          apt-get update
-          apt-get install --yes --no-install-recommends postgresql-client
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends postgresql-client
 
       - name: Test env setup
         run: cp .env.sample .env && cp tests/.env.sample tests/.env

@@ -14,4 +14,3 @@ def test_load_summarize_prompt():
     result = load_summarize_prompt(FAKE_PROMPT)
     assert result is not None
     assert isinstance(result, BasePromptTemplate)
-

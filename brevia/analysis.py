@@ -73,8 +73,9 @@ def summarize(
 
     Args:
         text: The input text that you want to summarize.
-        chain_type: The main langchain summarization chain type Should be one of "stuff",
-            "map_reduce", and "refine". if not providerd map_reduce is used by default
+        chain_type: The main langchain summarization chain type should be one of
+            "stuff", "map_reduce", and "refine".
+            if not providerd map_reduce is used by default
         prompt: Custom prompt to be used in the chain.
 
     Returns:

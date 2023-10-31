@@ -13,7 +13,6 @@ from brevia.callback import LoggingCallbackHandler
 from brevia.models import load_chatmodel
 
 PROMPT_SAMPLES_TYPE = {
-    'custom',
     'summarize',
     'summarize_point',
     'classification',
@@ -30,11 +29,8 @@ def load_summarize_prompt(prompt: dict | None) -> ChatPromptTemplate:
     """Load a summarization prompt.
     This function loads a summarization prompt based on the provided dictionary
     or uses a default prompt if none is specified.
-    default prompt are:
-    - summarize
-    - summarize_point
-    - classification
-
+    - 'custom' for totally customized prompt.
+    - 'type' for one of the default prompts in the PROMPT_SAMPLES_TYPE dict
     Args:
         prompt: A dictionary specifying a custom summarization prompt.
             If not provided, local 'default.summarize' prompt will be used.
@@ -45,15 +41,15 @@ def load_summarize_prompt(prompt: dict | None) -> ChatPromptTemplate:
     prompts_path = f'{path.dirname(__file__)}/prompts'
 
     if prompt:
-        for value in prompt.items():
-            if value not in PROMPT_SAMPLES_TYPE:
-                raise ValueError(f"Invalid value '{value}' in the custom prompts."
-                                 f"Values must be one of {PROMPT_SAMPLES_TYPE}.")
-
         if prompt.get('custom'):
             return load_prompt_from_config(prompt.get('custom'))
 
-        return load_prompt(f'{prompts_path}/analysis/yaml/default.{prompt}.yaml')
+        prompt_type = prompt.get('type')
+        if prompt_type not in PROMPT_SAMPLES_TYPE:
+            raise ValueError(f"Invalid prompt deafult value: '{prompt_type} '"
+                             f"Values must be one of {PROMPT_SAMPLES_TYPE}.")
+
+        return load_prompt(f'{prompts_path}/analysis/yaml/default.{prompt_type}.yaml')
 
     return load_prompt(f'{prompts_path}/analysis/yaml/default.summarize.yaml')
 
@@ -82,7 +78,7 @@ def get_summarize_llm() -> BaseChatModel:
 def summarize(
     text: str,
     summ_type: str | None,
-    prompt: str | None,
+    prompt: dict | None,
     num_items: int | None
 ) -> str:
     """Perform summarizing for a given text.
@@ -115,7 +111,6 @@ def summarize(
             f"Got unsupported chain type: {summ_type}. "
             f"Should be one of {SUMMARIZE_CHAIN_TYPE.keys()}"
         )
-
     logging_handler = LoggingCallbackHandler()
     kwargs = {
         'llm': get_summarize_llm(),

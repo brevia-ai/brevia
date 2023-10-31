@@ -26,7 +26,7 @@ class SummarizeBody(BaseModel):
     """ summarize input """
     text: str
     summ_type: str | None = None
-    prompt: str | None = None
+    prompt: dict | None = None
     num_items: int | None = 5
     token_data: bool = False
 

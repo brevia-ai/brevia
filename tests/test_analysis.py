@@ -34,6 +34,3 @@ def test_load_summarize_prompt():
     })
     assert result is not None
     assert isinstance(result, BasePromptTemplate)
-
-
-

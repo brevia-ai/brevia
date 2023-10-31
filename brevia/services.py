@@ -59,8 +59,9 @@ class SummarizeFileService(BaseService):
     def summarize_from_file(
         self,
         file_path: str,
-        summ_type: str = environ.get('SUMM_DEFAULT_PROMPT', 'summarize'),
-        num_items: int = int(environ.get('SUMM_NUM_ITEMS', '5')),
+        summ_type: str | None,
+        prompt: dict | None,
+        num_items: int | None,
         token_data: bool = False,
     ) -> dict:
         """
@@ -79,6 +80,7 @@ class SummarizeFileService(BaseService):
             result = analysis.summarize(
                 text,
                 summ_type=summ_type,
+                prompt=prompt,
                 num_items=num_items,
             )
 

@@ -18,19 +18,19 @@ def test_load_summarize_prompt():
     assert isinstance(result, BasePromptTemplate)
 
     result = load_summarize_prompt({
-        'summarize': FAKE_PROMPT,
+        'type': 'summarize',
     })
     assert result is not None
     assert isinstance(result, BasePromptTemplate)
 
     result = load_summarize_prompt({
-        'summarize_point': FAKE_PROMPT,
+        'type': 'summarize_point',
     })
     assert result is not None
     assert isinstance(result, BasePromptTemplate)
 
     result = load_summarize_prompt({
-        'classification': FAKE_PROMPT,
+        'type': 'classification',
     })
     assert result is not None
     assert isinstance(result, BasePromptTemplate)

@@ -1,6 +1,6 @@
 """Base service and some basic implementations"""
 from abc import ABC, abstractmethod
-from os import environ, unlink
+from os import unlink
 from langchain.callbacks import get_openai_callback
 from brevia import load_file, analysis
 

@@ -1,6 +1,5 @@
 """API endpoints definitions to handle document analysis like summarization"""
-from typing import Annotated
-from os import environ
+from typing import Annotated, Optional
 from base64 import b64decode
 from pathlib import Path
 import tempfile
@@ -25,9 +24,8 @@ router = APIRouter()
 class SummarizeBody(BaseModel):
     """ summarize input """
     text: str
-    summ_type: str | None = None
-    prompt: dict | None = None
-    num_items: int | None = 5
+    chain_type: Optional[str] = None
+    prompt: Optional[dict] = None
     token_data: bool = False
 
 
@@ -37,13 +35,6 @@ def sum_documents(summarize: SummarizeBody):
     /summarize endpoint:
     Summarize/classification a piece of text
 
-    Specify prompt type:
-        - summarize
-        - summerize_point
-        _ classificate
-
-    num_items:
-        - for summarize_point and classificate, specify number of items in output
     """
     summarize.text = load_file.cleanup_text(summarize.text).strip()
     if not summarize.text:
@@ -61,22 +52,24 @@ def sum_documents(summarize: SummarizeBody):
     dependencies=get_dependencies(json_content_type=False)
 )
 def upload_summarize(
-    summ_prompt: Annotated[str, Form()],
     background_tasks: BackgroundTasks,
-    file: UploadFile | None = None,
-    file_content: Annotated[str, Form()] = '',
-    num_items: Annotated[str, Form()] = environ.get('SUMM_NUM_ITEMS', '5'),
+    chain_type: Optional[Annotated[str, Form()]] = None,
+    prompt: Optional[Annotated[str, Form()]] = None,
+    file: Optional[UploadFile] = None,
+    file_content: Optional[Annotated[str, Form()]] = None,
     token_data: Annotated[bool, Form()] = False,
 ):
     """
     Upload a PDF file and perform summarization
-    See /summarize endpoint for `summ_prompt` and `num_items`
+    See /summarize endpoint for `chain_type`
     arguments
     """
+    print(chain_type)
     if file:
         log = logging.getLogger(__name__)
         log.info(f"Uploaded '{file.filename}' - {file.content_type} - {file.size}")
-        log.info(f"Summ type '{summ_prompt}' - items {num_items} - token {token_data}")
+        log.info(f"Chain type '{chain_type}' - token {token_data}")
+
         tmp_path = save_upload_file_tmp(file)
     elif file_content:
         tmp_path = save_base64_tmp_file(file_content=file_content)
@@ -90,8 +83,8 @@ def upload_summarize(
         service='brevia.services.SummarizeFileService',
         payload={
             'file_path': tmp_path,
-            'summ_prompt': summ_prompt,
-            'num_items': int(num_items),
+            'chain_type': chain_type,
+            'prompt': json.loads(prompt) if prompt else None,
             'token_data': token_data,
         }
     )

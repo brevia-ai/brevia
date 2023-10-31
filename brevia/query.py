@@ -1,5 +1,6 @@
 """Returning question-answering chain against a vector database."""
 from os import environ, path
+from typing import Optional
 from langchain.docstore.document import Document
 from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
 from langchain.vectorstores._pgvector_data_models import CollectionStore
@@ -16,6 +17,7 @@ from langchain.prompts import (
 )
 from langchain.prompts.loading import load_prompt_from_config
 from brevia.connection import connection_string
+from brevia.collections import single_collection_by_name
 from brevia.callback import AsyncLoggingCallbackHandler
 from brevia.models import load_chatmodel, load_embeddings
 
@@ -67,13 +69,16 @@ DISTANCE_MAP = {
 def search_vector_qa(
     query: str,
     collection: str,
-    docs_num: int | None,
+    docs_num: Optional[int] = None,
     distance_strategy_name: str = 'cosine',
 ) -> list[tuple[Document, float]]:
     """ Perform a similarity search on vector index """
+    collection_store = single_collection_by_name(collection)
+    if not collection_store:
+        raise ValueError(f'Collection not found: {collection}')
     if docs_num is None:
         default_num = environ.get('SEARCH_DOCS_NUM', 4)
-        docs_num = int(collection.cmetadata.get('docs_num', default_num))
+        docs_num = int(collection_store.cmetadata.get('docs_num', default_num))
     strategy = DISTANCE_MAP.get(distance_strategy_name, DistanceStrategy.COSINE)
     docsearch = PGVector(
         connection_string=connection_string(),

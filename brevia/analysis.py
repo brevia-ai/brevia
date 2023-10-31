@@ -1,5 +1,6 @@
 """Returning analysis chain against a text prvided"""
 from os import environ, path
+from typing import Optional
 from langchain.docstore.document import Document
 from langchain.chains.summarize import load_summarize_chain
 from langchain.text_splitter import TokenTextSplitter
@@ -12,11 +13,6 @@ from langchain.prompts.loading import load_prompt_from_config
 from brevia.callback import LoggingCallbackHandler
 from brevia.models import load_chatmodel
 
-PROMPT_SAMPLES_TYPE = {
-    'summarize',
-    'summarize_point',
-    'classification',
-}
 
 SUMMARIZE_CHAIN_TYPE = {
     'stuff': 'prompt',
@@ -27,30 +23,19 @@ SUMMARIZE_CHAIN_TYPE = {
 
 def load_summarize_prompt(prompt: dict | None) -> ChatPromptTemplate:
     """Load a summarization prompt.
-    This function loads a summarization prompt based on the provided dictionary
-    or uses a default prompt if none is specified.
-    - 'custom' for totally customized prompt.
-    - 'type' for one of the default prompts in the PROMPT_SAMPLES_TYPE dict
+    This function loads a custom summarization prompt MPT_SAMPLES_TYPE dict
     Args:
-        prompt: A dictionary specifying a custom summarization prompt.
+        prompt: A prompt Template specifying a custom summarization prompt.
             If not provided, local 'default.summarize' prompt will be used.
 
     Returns:
         ChatPromptTemplate: A chat prompt template that can be used for summarization.
     """
-    prompts_path = f'{path.dirname(__file__)}/prompts'
 
     if prompt:
-        if prompt.get('custom'):
-            return load_prompt_from_config(prompt.get('custom'))
+        return load_prompt_from_config(prompt)
 
-        prompt_type = prompt.get('type')
-        if prompt_type not in PROMPT_SAMPLES_TYPE:
-            raise ValueError(f"Invalid prompt deafult value: '{prompt_type} '"
-                             f"Values must be one of {PROMPT_SAMPLES_TYPE}.")
-
-        return load_prompt(f'{prompts_path}/analysis/yaml/default.{prompt_type}.yaml')
-
+    prompts_path = f'{path.dirname(__file__)}/prompts'
     return load_prompt(f'{prompts_path}/analysis/yaml/default.summarize.yaml')
 
 
@@ -77,9 +62,8 @@ def get_summarize_llm() -> BaseChatModel:
 
 def summarize(
     text: str,
-    summ_type: str | None,
-    prompt: dict | None,
-    num_items: int | None
+    chain_type: Optional[str] = None,
+    prompt: Optional[dict] = None
 ) -> str:
     """Perform summarizing for a given text.
 
@@ -89,12 +73,9 @@ def summarize(
 
     Args:
         text: The input text that you want to summarize.
-        summ_type: The main langchain summarization chain type Should be one of "stuff",
+        chain_type: The main langchain summarization chain type Should be one of "stuff",
             "map_reduce", and "refine". if not providerd map_reduce is used by default
-        prompt: Prompt to be used in the chain.
-            From default files or inside 'custom' field.
-        num_items: The number of summary items for summarization_point
-            and classification custom prompt.
+        prompt: Custom prompt to be used in the chain.
 
     Returns:
         str: The generated summary of the input text.
@@ -102,21 +83,19 @@ def summarize(
     Raises:
         ValueError: If an unsupported summarization chain type is specified.
     """
-    if num_items is None:
-        num_items = int(environ.get('SUMM_NUM_ITEMS', 5))
 
-    summ_type = summ_type or environ.get('SUMM_DEFAULT_TYPE', "map_reduce")
-    if summ_type not in SUMMARIZE_CHAIN_TYPE:
+    chain_type = chain_type or environ.get('SUMM_DEFAULT_CHAIN', "map_reduce")
+    if chain_type not in SUMMARIZE_CHAIN_TYPE:
         raise ValueError(
-            f"Got unsupported chain type: {summ_type}. "
+            f"Got unsupported chain type: {chain_type}. "
             f"Should be one of {SUMMARIZE_CHAIN_TYPE.keys()}"
         )
     logging_handler = LoggingCallbackHandler()
     kwargs = {
         'llm': get_summarize_llm(),
-        'chain_type': summ_type,
+        'chain_type': chain_type,
         'verbose': environ.get('VERBOSE_MODE', False),
-        SUMMARIZE_CHAIN_TYPE[summ_type]: load_summarize_prompt(prompt),
+        SUMMARIZE_CHAIN_TYPE[chain_type]: load_summarize_prompt(prompt),
         'callbacks': [logging_handler],
     }
     chain = load_summarize_chain(**kwargs)
@@ -128,4 +107,4 @@ def summarize(
     texts = text_splitter.split_text(text)
     docs = [Document(page_content=t) for t in texts]
 
-    return chain.run(**{'input_documents': docs, 'num_items': num_items})
+    return chain.run(**{'input_documents': docs})

@@ -59,9 +59,8 @@ class SummarizeFileService(BaseService):
     def summarize_from_file(
         self,
         file_path: str,
-        summ_type: str | None,
+        chain_type: str | None,
         prompt: dict | None,
-        num_items: int | None,
         token_data: bool = False,
     ) -> dict:
         """
@@ -79,9 +78,8 @@ class SummarizeFileService(BaseService):
         with get_openai_callback() as callb:
             result = analysis.summarize(
                 text,
-                summ_type=summ_type,
+                chain_type=chain_type,
                 prompt=prompt,
-                num_items=num_items,
             )
 
         return {

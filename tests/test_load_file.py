@@ -6,18 +6,18 @@ from brevia.load_file import read, load_documents
 
 def test_read():
     """Test read function"""
-    file_path = f'{Path(__file__).parent}/files/empty.pdf'
+    file_path = f'{Path(__file__).parent}/files/docs/empty.pdf'
     content = read(file_path=file_path)
     assert content == 'This is an empty PDF sample file.'
 
-    file_path = f'{Path(__file__).parent}/files/test.txt'
+    file_path = f'{Path(__file__).parent}/files/docs/test.txt'
     content = read(file_path=file_path)
     assert content == 'some text'
 
 
 def test_read_pages():
     """Test read function with page selection"""
-    file_path = f'{Path(__file__).parent}/files/empty.pdf'
+    file_path = f'{Path(__file__).parent}/files/docs/empty.pdf'
     content = read(file_path, **{'page_from': 0, 'page_to': 1})
     assert content == 'This is an empty PDF sample file.'
 
@@ -40,22 +40,22 @@ def test_read_notfound():
 
 def test_load_documents():
     """Test load_documents function"""
-    file_path = f'{Path(__file__).parent}/files/empty.pdf'
+    file_path = f'{Path(__file__).parent}/files/docs/empty.pdf'
     docs = load_documents(file_path=file_path)
     assert docs is not None
     assert len(docs) == 1
 
-    file_path = f'{Path(__file__).parent}/files/test.txt'
+    file_path = f'{Path(__file__).parent}/files/docs/test.txt'
     docs = load_documents(file_path=file_path)
     assert docs is not None
     assert len(docs) == 1
 
-    file_path = f'{Path(__file__).parent}/files/test.csv'
+    file_path = f'{Path(__file__).parent}/files/docs/test.csv'
     docs = load_documents(file_path=file_path)
     assert docs is not None
     assert len(docs) == 1
 
-    file_path = f'{Path(__file__).parent}/files/test.html'
+    file_path = f'{Path(__file__).parent}/files/docs/test.html'
     docs = load_documents(file_path=file_path)
     assert docs is not None
     assert len(docs) == 1

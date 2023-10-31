@@ -74,7 +74,7 @@ def test_import_collection():
 
 def test_import_file():
     """ Test import_file function """
-    file_path = f'{Path(__file__).parent}/files/empty.pdf'
+    file_path = f'{Path(__file__).parent}/files/docs/empty.pdf'
     runner = CliRunner()
     result = runner.invoke(import_file, [
         '--collection',

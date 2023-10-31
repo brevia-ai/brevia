@@ -12,7 +12,7 @@ def index_file_folder(
     **kwargs: Any,
 ) -> int:
     """ Load documents in collection index from a file or folder """
-    if not os.path.isfile(file_path):
+    if not os.path.exists(file_path):
         raise FileNotFoundError(f"File {file_path} does not exist.")
 
     chunks_num = 0
@@ -31,7 +31,7 @@ def load_file_folder_documents(file_path: str, **kwargs: Any) -> List[Document]:
     if os.path.isdir(file_path):
         docs = []
         for file in os.listdir(file_path):
-            docs.append(load_documents(file_path=file, **kwargs))
+            docs += load_documents(file_path=f'{file_path}/{file}', **kwargs)
         return docs
 
     return load_documents(file_path=file_path, **kwargs)

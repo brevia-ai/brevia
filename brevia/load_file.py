@@ -84,7 +84,7 @@ def read(
     **loader_kwargs: Any,
 ) -> str:
     """
-    Load text from a txt o pdf file (for now, more formats to come...)
+    Load text from a txt o pdf file (for now, more formats to come)
     """
 
     if not os.path.isfile(file_path):
@@ -138,7 +138,7 @@ def load_documents_csv(file_path: str, **kwargs: Any) -> List[Document]:
 
 MIME_TYPES_LOADERS = {
     'application/pdf': load_documents_pdf,
-    'plain/test': load_documents_txt,
+    'text/plain': load_documents_txt,
     'text/csv': load_documents_csv,
     'text/html': load_documents_html,
 }

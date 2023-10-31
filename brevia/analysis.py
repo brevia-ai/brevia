@@ -81,9 +81,9 @@ def get_summarize_llm() -> BaseChatModel:
 
 def summarize(
     text: str,
-    summ_type: str = environ.get('SUMM_DEFAULT_TYPE', "map_reduce"),
-    prompt: str = environ.get('SUMM_DEFAULT_PROMPT'),
-    num_items: int = int(environ.get('SUMM_NUM_ITEMS', 5))
+    summ_type: str | None,
+    prompt: str | None,
+    num_items: int | None
 ) -> str:
     """Perform summarizing for a given text.
 
@@ -94,10 +94,11 @@ def summarize(
     Args:
         text: The input text that you want to summarize.
         summ_type: The main langchain summarization chain type Should be one of "stuff",
-            "map_reduce", and "refine".
+            "map_reduce", and "refine". if not providerd map_reduce is used by default
         prompt: Prompt to be used in the chain.
             From default files or inside 'custom' field.
-        num_items: The number of summary items for summarization_point custom prompt.
+        num_items: The number of summary items for summarization_point
+            and classification custom prompt.
 
     Returns:
         str: The generated summary of the input text.
@@ -105,7 +106,10 @@ def summarize(
     Raises:
         ValueError: If an unsupported summarization chain type is specified.
     """
+    if num_items is None:
+        num_items = int(environ.get('SUMM_NUM_ITEMS', 5))
 
+    summ_type = summ_type or environ.get('SUMM_DEFAULT_TYPE', "map_reduce")
     if summ_type not in SUMMARIZE_CHAIN_TYPE:
         raise ValueError(
             f"Got unsupported chain type: {summ_type}. "

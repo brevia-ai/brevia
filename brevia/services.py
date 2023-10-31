@@ -2,7 +2,7 @@
 from abc import ABC, abstractmethod
 from os import environ, unlink
 from langchain.callbacks import get_openai_callback
-from brevia import load_file, query, analysis
+from brevia import load_file, analysis
 
 
 class BaseService(ABC):

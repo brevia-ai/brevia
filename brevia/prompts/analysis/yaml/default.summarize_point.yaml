@@ -1,8 +1,8 @@
 _type: prompt
 input_variables:
-    ["text", "number"]
+    ["text", "num_items"]
 template: |
-    Write {number} arguments extracted from the following text:
+    Write {num_items} arguments extracted from the following text:
 
     {text}
 

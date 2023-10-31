@@ -5,8 +5,6 @@ from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
 from langchain.vectorstores._pgvector_data_models import CollectionStore
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains.base import Chain
-from langchain.chains.summarize import load_summarize_chain
-from langchain.text_splitter import TokenTextSplitter
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains.llm import LLMChain
@@ -69,10 +67,13 @@ DISTANCE_MAP = {
 def search_vector_qa(
     query: str,
     collection: str,
-    docs_num: int = int(environ.get('SEARCH_DOCS_NUM', 4)),
+    docs_num: int | None,
     distance_strategy_name: str = 'cosine',
 ) -> list[tuple[Document, float]]:
     """ Perform a similarity search on vector index """
+    if docs_num is None:
+        default_num = environ.get('SEARCH_DOCS_NUM', 4)
+        docs_num = int(collection.cmetadata.get('docs_num', default_num))
     strategy = DISTANCE_MAP.get(distance_strategy_name, DistanceStrategy.COSINE)
     docsearch = PGVector(
         connection_string=connection_string(),

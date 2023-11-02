@@ -22,8 +22,8 @@ def audio_transcriptions(
 ):
     """ /transcribe endpoint, audio file transcription """
     log = logging.getLogger(__name__)
-    log.info(f"Uploaded '{file.filename}' - {file.content_type} - {file.size}")
-    log.info(f"Language '{language}")
+    log.info("Uploaded '%s' - %s - %s", file.filename, file.content_type, file.size)
+    log.info("Language '%s'", language)
     tmp_file_path = save_upload_file_tmp(file)
 
     with open(tmp_file_path, 'rb') as audio_file:

@@ -1,7 +1,7 @@
 """JWT Utility methods"""
 from os import environ
-from jose import jwt, JWTError
 from datetime import datetime, timedelta
+from jose import jwt, JWTError
 
 ALGORITHM = 'HS256'
 

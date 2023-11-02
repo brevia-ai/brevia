@@ -2,9 +2,9 @@
 import json
 import sys
 from os import getcwd, path
+from logging import config
 import click
 from dotenv import load_dotenv
-from logging import config
 from brevia.alembic import current, upgrade, downgrade
 from brevia.utilities import files_import, run_service, collections_io
 from brevia.tokens import create_token

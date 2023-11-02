@@ -53,10 +53,10 @@ def sum_documents(summarize: SummarizeBody):
 )
 def upload_summarize(
     background_tasks: BackgroundTasks,
-    chain_type: Annotated[str, Form()] | None = None,
-    prompt: Annotated[str, Form()] | None = None,
+    chain_type: Annotated[str, Form()] = '',
+    prompt: Annotated[str, Form()] = '',
     file: UploadFile | None = None,
-    file_content: Annotated[str, Form()] | None = None,
+    file_content: Annotated[str, Form()] = '',
     token_data: Annotated[bool, Form()] = False,
 ):
     """
@@ -64,7 +64,6 @@ def upload_summarize(
     See /summarize endpoint for `chain_type`
     arguments
     """
-    print(chain_type)
     if file:
         log = logging.getLogger(__name__)
         log.info(f"Uploaded '{file.filename}' - {file.content_type} - {file.size}")

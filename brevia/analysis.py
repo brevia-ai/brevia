@@ -1,6 +1,5 @@
 """Returning analysis chain against a text prvided"""
 from os import environ, path
-from typing import Optional
 from langchain.docstore.document import Document
 from langchain.chains.summarize import load_summarize_chain
 from langchain.text_splitter import TokenTextSplitter
@@ -62,8 +61,8 @@ def get_summarize_llm() -> BaseChatModel:
 
 def summarize(
     text: str,
-    chain_type: Optional[str] = None,
-    prompt: Optional[dict] = None
+    chain_type: str | None = None,
+    prompt: dict | None = None
 ) -> str:
     """Perform summarizing for a given text.
 

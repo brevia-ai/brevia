@@ -1,5 +1,5 @@
 """API endpoints definitions to handle document analysis like summarization"""
-from typing import Annotated, Optional
+from typing import Annotated
 from base64 import b64decode
 from pathlib import Path
 import tempfile
@@ -24,8 +24,8 @@ router = APIRouter()
 class SummarizeBody(BaseModel):
     """ summarize input """
     text: str
-    chain_type: Optional[str] = None
-    prompt: Optional[dict] = None
+    chain_type: str | None = None
+    prompt: dict | None = None
     token_data: bool = False
 
 
@@ -53,10 +53,10 @@ def sum_documents(summarize: SummarizeBody):
 )
 def upload_summarize(
     background_tasks: BackgroundTasks,
-    chain_type: Optional[Annotated[str, Form()]] = None,
-    prompt: Optional[Annotated[str, Form()]] = None,
-    file: Optional[UploadFile] = None,
-    file_content: Optional[Annotated[str, Form()]] = None,
+    chain_type: Annotated[str, Form()] | None = None,
+    prompt: Annotated[str, Form()] | None = None,
+    file: UploadFile | None = None,
+    file_content: Annotated[str, Form()] | None = None,
     token_data: Annotated[bool, Form()] = False,
 ):
     """

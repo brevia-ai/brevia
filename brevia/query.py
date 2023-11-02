@@ -1,6 +1,5 @@
 """Returning question-answering chain against a vector database."""
 from os import environ, path
-from typing import Optional
 from langchain.docstore.document import Document
 from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
 from langchain.vectorstores._pgvector_data_models import CollectionStore
@@ -69,7 +68,7 @@ DISTANCE_MAP = {
 def search_vector_qa(
     query: str,
     collection: str,
-    docs_num: Optional[int] = None,
+    docs_num: int | None = None,
     distance_strategy_name: str = 'cosine',
 ) -> list[tuple[Document, float]]:
     """ Perform a similarity search on vector index """

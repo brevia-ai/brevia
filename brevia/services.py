@@ -59,21 +59,21 @@ class SummarizeFileService(BaseService):
     def summarize_from_file(
         self,
         file_path: str,
-        chain_type: str | None,
-        prompt: dict | None,
+        chain_type: str | None = None,
+        prompt: dict | None = None,
         token_data: bool = False,
     ) -> dict:
         """
-        Perform summarization of a temporary PDF file.
+        Perform summarization of a temporary PDF or TXT file.
         File is removed after summarization.
         """
         try:
-            text = load_file.read_pdf_file(file_path=file_path)
+            text = load_file.read(file_path=file_path)
         finally:
             unlink(file_path)  # Delete the temp file
 
         if not text:
-            raise ValueError('Empty text field')
+            raise ValueError('Empty text')
 
         with get_openai_callback() as callb:
             result = analysis.summarize(

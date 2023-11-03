@@ -1,4 +1,4 @@
-"""Returning question-answering chain against a vector database."""
+"""Question-answering and search functions against a vector database."""
 from os import environ, path
 from langchain.docstore.document import Document
 from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
@@ -92,12 +92,12 @@ def search_vector_qa(
 def conversation_chain(
     # pylint: disable=too-many-arguments
     collection: CollectionStore,
-    docs_num: int | None,
+    docs_num: int | None = None,
     source_docs: bool = True,
     distance_strategy_name: str = 'cosine',
     streaming: bool = False,
-    answer_callbacks: list[BaseCallbackHandler] = None,
-    conversation_callbacks: list[BaseCallbackHandler] = None,
+    answer_callbacks: list[BaseCallbackHandler] | None = None,
+    conversation_callbacks: list[BaseCallbackHandler] | None = None,
 ) -> Chain:
     """
         Return conversation chain for Q/A with embdedded dataset knowledge

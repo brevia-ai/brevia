@@ -1,4 +1,4 @@
-"""Returning analysis chain against a text prvided"""
+"""Functions to perform summarization & document analysis"""
 from os import environ, path
 from langchain.docstore.document import Document
 from langchain.chains.summarize import load_summarize_chain
@@ -88,7 +88,7 @@ def summarize(
     if chain_type not in SUMMARIZE_CHAIN_TYPE:
         raise ValueError(
             f"Got unsupported chain type: {chain_type}. "
-            f"Should be one of {SUMMARIZE_CHAIN_TYPE.keys()}"
+            f"Should be one of {list(SUMMARIZE_CHAIN_TYPE.keys())}"
         )
     logging_handler = LoggingCallbackHandler()
     kwargs = {

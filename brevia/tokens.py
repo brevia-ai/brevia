@@ -1,26 +1,22 @@
 """JWT Utility methods"""
 from os import environ
-import click
-from dotenv import load_dotenv
-from jose import jwt, JWTError
 from datetime import datetime, timedelta
+from jose import jwt, JWTError
 
 ALGORITHM = 'HS256'
 
 
-@click.command()
-@click.option("-u", "--user", default="brevia", help="Token user name")
-@click.option("-d", "--duration", default=15, help="Token duration in minutes")
-def create_access_token(user: str, duration: int):
+def create_token(user: str, duration: int) -> str:
     """Create an access token """
-    load_dotenv()
-    to_encode = {'user': user}
     # expire time of the token
     expire = datetime.utcnow() + timedelta(minutes=duration)
-    to_encode.update({'exp': expire})
+    to_encode = {
+        'user': user,
+        'exp': expire,
+    }
     secret = environ.get('TOKENS_SECRET')
-    encoded_jwt = jwt.encode(to_encode, secret, algorithm=ALGORITHM)
-    print(encoded_jwt)
+
+    return jwt.encode(to_encode, secret, algorithm=ALGORITHM)
 
 
 def verify_token(token: str):
@@ -34,7 +30,7 @@ def verify_token(token: str):
     if 'user' not in payload:
         raise JWTError('Bad payload format')
     user = payload['user']
-    if user is not str or len(user.strip()) == 0:
+    if not isinstance(user, str) or len(user.strip()) == 0:
         raise JWTError('Bad payload format')
     # further check: user must one of `TOKENS_USERS` env var (if set)
     valid_users = environ.get('TOKENS_USERS')

@@ -13,10 +13,10 @@ def connection_string() -> str:
     """ Postgres+pgvector db connection string """
     driver = os.environ.get('PGVECTOR_DRIVER')
     host = os.environ.get('PGVECTOR_HOST')
-    port = int(os.environ.get('PGVECTOR_PORT'))
+    port = os.environ.get('PGVECTOR_PORT')
     database = os.environ.get('PGVECTOR_DATABASE')
     user = os.environ.get('PGVECTOR_USER')
-    password = parse.quote_plus(os.environ.get('PGVECTOR_PASSWORD'))
+    password = parse.quote_plus(os.environ.get('PGVECTOR_PASSWORD', ''))
 
     return f"postgresql+{driver}://{user}:{password}@{host}:{port}/{database}"
 

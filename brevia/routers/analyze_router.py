@@ -74,8 +74,8 @@ def upload_summarize(
     """
     if file:
         log = logging.getLogger(__name__)
-        log.info(f"Uploaded '{file.filename}' - {file.content_type} - {file.size}")
-        log.info(f"Summ type '{summ_prompt}' - items {num_items} - token {token_data}")
+        log.info("Uploaded '%s' - %s - %s", file.filename, file.content_type, file.size)
+        log.info("Type '%s' - items %s - token %s", summ_prompt, num_items, token_data)
         tmp_path = save_upload_file_tmp(file)
     elif file_content:
         tmp_path = save_base64_tmp_file(file_content=file_content)
@@ -110,7 +110,7 @@ def upload_analyze(
     Upload a file and perform some analysis using a `service` class
     """
     log = logging.getLogger(__name__)
-    log.info(f"Uploaded '{file.filename}' - {file.content_type} - {file.size}")
+    log.info("Uploaded '%s' - %s - %s", file.filename, file.content_type, file.size)
     tmp_path = save_upload_file_tmp(file)
 
     payload = json.loads(payload)

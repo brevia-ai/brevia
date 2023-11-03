@@ -3,9 +3,9 @@ from typing import Annotated
 from os import path
 import json
 import logging
-from langchain.docstore.document import Document
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, status, UploadFile, Form
+from langchain.docstore.document import Document
 from langchain.vectorstores._pgvector_data_models import CollectionStore
 from brevia.dependencies import get_dependencies, save_upload_file_tmp
 from brevia import index, collections, load_file
@@ -64,8 +64,8 @@ def upload_and_index(
     """
     collection = load_collection(collection_id=collection_id)
     log = logging.getLogger(__name__)
-    log.info(f"Uploaded '{file.filename}' - {file.content_type} - {file.size}")
-    log.info(f"Collection '{collection.name}' - document {document_id}")
+    log.info("Uploaded '%s' - %s - %s", file.filename, file.content_type, file.size)
+    log.info("Collection '%s' - document %s", collection.name, document_id)
     if file.content_type not in ['application/pdf', 'text/plain']:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,

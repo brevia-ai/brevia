@@ -8,7 +8,7 @@ from brevia.collections import create_collection
 def test_load_pdf_file():
     """Test load_pdf_file method"""
     collection = create_collection('test_collection', {})
-    file_path = f'{Path(__file__).parent}/files/empty.pdf'
+    file_path = f'{Path(__file__).parent}/files/docs/empty.pdf'
     result = load_pdf_file(file_path=file_path, collection_name=collection.name)
     assert result == 1
 

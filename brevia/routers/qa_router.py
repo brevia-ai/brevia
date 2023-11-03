@@ -41,7 +41,7 @@ async def chat_action(
     """ /chat endpoint, ask chatbot about a collection of documents """
     collection = check_collection_name(chat_body.collection)
     if not collection.cmetadata:
-        collection.cmetadata = dict()
+        collection.cmetadata = {}
     lang = chat_language(chat_body=chat_body, cmetadata=collection.cmetadata)
 
     conversation_handler = ConversationCallbackHandler()

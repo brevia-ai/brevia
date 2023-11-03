@@ -89,7 +89,7 @@ def test_delete_document_index():
 def test_upload_analyze():
     """Test POST /index/upload"""
     collection = create_collection('test_collection', {})
-    file_path = f'{Path(__file__).parent.parent}/files/empty.pdf'
+    file_path = f'{Path(__file__).parent.parent}/files/docs/empty.pdf'
     response = client.post(
         '/index/upload',
         files={'file': open(file_path, 'rb')},
@@ -105,7 +105,7 @@ def test_upload_analyze():
 def test_upload_analyze_meta():
     """Test POST /index/upload with metadata"""
     collection = create_collection('test_collection', {})
-    file_path = f'{Path(__file__).parent.parent}/files/empty.pdf'
+    file_path = f'{Path(__file__).parent.parent}/files/docs/empty.pdf'
     response = client.post(
         '/index/upload',
         files={'file': open(file_path, 'rb')},

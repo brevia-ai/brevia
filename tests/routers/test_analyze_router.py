@@ -43,7 +43,7 @@ def test_summarize_fail():
 def test_upload_summarize():
     """Test POST /upload_summarize"""
     test_path = Path(__file__).parent.parent
-    file_path = f'{test_path}/files/empty.pdf'
+    file_path = f'{test_path}/files/docs/empty.pdf'
     handle = open(file_path, 'rb')
     response = client.post(
         '/upload_summarize',
@@ -85,7 +85,7 @@ def test_upload_summarize_base64():
 def test_upload_analyze():
     """Test POST /upload_analyze"""
     test_path = Path(__file__).parent.parent
-    file_path = f'{test_path}/files/empty.pdf'
+    file_path = f'{test_path}/files/docs/empty.pdf'
     handle = open(file_path, 'rb')
     response = client.post(
         '/upload_analyze',

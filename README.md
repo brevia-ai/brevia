@@ -4,7 +4,7 @@
 
 [![Github Actions CS](https://github.com/brevia-ai/brevia/actions/workflows/cs.yml/badge.svg)](https://github.com/brevia-ai/brevia/actions?query=workflow%3Acs)
 [![Github Actions Unit](https://github.com/brevia-ai/brevia/actions/workflows/unit.yml/badge.svg)](https://github.com/brevia-ai/brevia/actions?query=workflow%3Aunit)
-[![Coverage Status](https://coveralls.io/repos/github/brevia-ai/brevia/badge.svg?branch=main)](https://coveralls.io/github/brevia-ai/brevia?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/brevia-ai/brevia/badge.svg?branch=main&kill_cache=1)](https://coveralls.io/github/brevia-ai/brevia?branch=main)
 ![Python Versions](https://img.shields.io/pypi/pyversions/brevia.svg)
 [![Version](https://img.shields.io/pypi/v/brevia.svg?label=brevia)](https://pypi.org/project/brevia/)
 [![License](https://img.shields.io/badge/license-MIT-orange.svg)](https://github.com/brevia-ai/brevia/blob/main/LICENSE)

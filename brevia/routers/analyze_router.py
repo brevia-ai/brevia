@@ -25,7 +25,7 @@ class SummarizeBody(BaseModel):
     """ summarize input """
     text: str
     chain_type: str | None = None
-    prompt: dict | None = None
+    prompts: dict | None = None
     token_data: bool = False
 
 
@@ -54,7 +54,7 @@ def sum_documents(summarize: SummarizeBody):
 def upload_summarize(
     background_tasks: BackgroundTasks,
     chain_type: Annotated[str, Form()] = '',
-    prompt: Annotated[str, Form()] = '',
+    prompts: Annotated[str, Form()] = '',
     file: UploadFile | None = None,
     file_content: Annotated[str, Form()] = '',
     token_data: Annotated[bool, Form()] = False,
@@ -67,7 +67,7 @@ def upload_summarize(
     if file:
         log = logging.getLogger(__name__)
         log.info("Uploaded '%s' - %s - %s", file.filename, file.content_type, file.size)
-        log.info("Type '%s' - prompt '%s'", chain_type, prompt)
+        log.info("Type '%s' - prompts '%s'", chain_type, prompts)
         tmp_path = save_upload_file_tmp(file)
     elif file_content:
         tmp_path = save_base64_tmp_file(file_content=file_content)
@@ -82,7 +82,7 @@ def upload_summarize(
         payload={
             'file_path': tmp_path,
             'chain_type': chain_type,
-            'prompt': json.loads(prompt) if prompt else None,
+            'prompts': json.loads(prompts) if prompts else None,
             'token_data': token_data,
         }
     )

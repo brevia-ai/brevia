@@ -1,41 +1,91 @@
 """Functions to perform summarization & document analysis"""
-from os import environ, path
+from os import environ
 from langchain.docstore.document import Document
 from langchain.chains.summarize import load_summarize_chain
 from langchain.text_splitter import TokenTextSplitter
 from langchain.chat_models.base import BaseChatModel
-from langchain.prompts import load_prompt
-from langchain.prompts import (
-    ChatPromptTemplate,
-)
 from langchain.prompts.loading import load_prompt_from_config
 from brevia.callback import LoggingCallbackHandler
 from brevia.models import load_chatmodel
 
 
-SUMMARIZE_CHAIN_TYPE = {
-    'stuff': 'prompt',
-    'map_reduce': 'map_prompt',
-    'refine': 'question_prompt',
-}
+def load_stuff_prompts(prompts: dict | None = None) -> dict:
+    """Load custom prompts for the 'stuff' summarization chain.
+    Summarization chain is the simplest one and have only one prompt
 
-
-def load_summarize_prompt(prompt: dict | None) -> ChatPromptTemplate:
-    """Load a summarization prompt.
-    This function loads a custom summarization prompt MPT_SAMPLES_TYPE dict
     Args:
-        prompt: A prompt Template specifying a custom summarization prompt.
-            If not provided, local 'default.summarize' prompt will be used.
+        prompts (dict | None): Optional prompts for customization.
+        It should be a dictionary with the following keys:
+        - 'initial_prompt' (str): The prompt to use for the initial summarization.
 
     Returns:
-        ChatPromptTemplate: A chat prompt template that can be used for summarization.
+        dict: Custom prompts for 'stuff' summarization chain.
+    """
+    if prompts and prompts.get('initial_prompt'):
+        return {
+            'prompt': load_prompt_from_config(prompts.get('initial_prompt'))
+        }
+
+    return {}
+
+
+def load_map_prompts(prompts: dict | None = None) -> dict:
+    """Load custom prompts for the 'map_reduce' summarization chain.
+    The 'map_reduce' summarization chain utilizes a more sophisticated algorithm that
+    merges multiple prompts to create a summary. It divides the text into text chunks
+    and applies the initial prompt to each of them. Afterward, it uses the iteration
+    prompt to combine all the result into a final summary.
+
+    Args:
+        prompts (dict | None): Optional prompts for customization.
+        It should be a dictionary with the following keys:
+        - 'initial_prompt' (str): The prompt to use for the chunks summarization.
+        - 'iteration_prompt' (str | None): (Optional) The prompt to use for summarizing
+            all the pieces.
+
+    Returns:
+        dict: Custom prompts for 'map_reduce' summarization chain.
+    """
+    prompts_data = {}
+    if prompts and prompts.get('initial_prompt'):
+        map_prompt = load_prompt_from_config(prompts.get('initial_prompt'))
+        prompts_data['map_prompt'] = map_prompt
+        prompts_data['combine_prompt'] = map_prompt
+        if prompts.get('iteration_prompt'):
+            combine_prompt = load_prompt_from_config(prompts.get('iteration_prompt'))
+            prompts_data['combine_prompt'] = combine_prompt
+
+    return prompts_data
+
+
+def load_refine_prompts(prompts: dict | None = None) -> dict:
+    """Load custom prompts for the 'refine' summarization chain.
+
+    The 'refine' summarization chain breaks the document into chunks pieces, then
+    concentrates on making the summary better by refining it.
+    Starts using the initial prompt for the first chunk then uses the iteration prompt
+    over the remaining chunks to further enhance the summary.
+
+    Args:
+        prompts (dict | None): Optional prompts for customization.
+        It should be a dictionary with the following keys:
+        - 'initial_prompt' (str): The prompt to use for the first chunk summarization.
+        - 'iteration_prompt' (str | None): (Optional) The prompt to use for increase
+        information over the chunk pieces.
+
+    Returns:
+        dict: Custom prompts for 'refine' summarization chain.
     """
 
-    if prompt:
-        return load_prompt_from_config(prompt)
+    prompts_data = {}
+    if prompts and prompts.get('initial_prompt'):
+        question_prompt = load_prompt_from_config(prompts.get('initial_prompt'))
+        prompts_data['question_prompt'] = question_prompt
+        if prompts.get('iteration_prompt'):
+            refine_prompt = load_prompt_from_config(prompts.get('iteration_prompt'))
+            prompts_data['refine_prompt'] = refine_prompt
 
-    prompts_path = f'{path.dirname(__file__)}/prompts'
-    return load_prompt(f'{prompts_path}/analysis/yaml/default.summarize.yaml')
+    return prompts_data
 
 
 def get_summarize_llm() -> BaseChatModel:
@@ -62,20 +112,20 @@ def get_summarize_llm() -> BaseChatModel:
 def summarize(
     text: str,
     chain_type: str | None = None,
-    prompt: dict | None = None
+    prompts: dict | None = None
 ) -> str:
     """Perform summarizing for a given text.
-
     This function takes a text as input and generates a summary using
-    a specified langchain summarization chain main method (stuff, map_reduce, refine).
-    It also supports basic prompts customization with local yaml files
+    langchain summarization chain main alghoritms (stuff, map_reduce, refine).
 
     Args:
         text: The input text that you want to summarize.
         chain_type: The main langchain summarization chain type should be one of
             "stuff", "map_reduce", and "refine".
-            if not providerd map_reduce is used by default
-        prompt: Custom prompt to be used in the chain.
+            if not providerd stuff is used by default
+        prompts: Optional custom prompts to be used in the selected summarization
+            chain type to replace the langchain defaults.
+            The custom prompts are mapped from body request to the single chain
 
     Returns:
         str: The generated summary of the input text.
@@ -84,22 +134,31 @@ def summarize(
         ValueError: If an unsupported summarization chain type is specified.
     """
 
-    chain_type = chain_type or environ.get('SUMM_DEFAULT_CHAIN', "map_reduce")
-    if chain_type not in SUMMARIZE_CHAIN_TYPE:
+    summarize_chain_map = {
+        'stuff': load_stuff_prompts,
+        'map_reduce': load_map_prompts,
+        'refine': load_refine_prompts
+    }
+
+    chain_type = chain_type or environ.get('SUMM_DEFAULT_CHAIN', 'stuff')
+    if chain_type not in summarize_chain_map:
         raise ValueError(
             f"Got unsupported chain type: {chain_type}. "
-            f"Should be one of {list(SUMMARIZE_CHAIN_TYPE.keys())}"
+            f"Should be one of {list(summarize_chain_map.keys())}"
         )
+
     logging_handler = LoggingCallbackHandler()
     kwargs = {
         'llm': get_summarize_llm(),
         'chain_type': chain_type,
         'verbose': environ.get('VERBOSE_MODE', False),
-        SUMMARIZE_CHAIN_TYPE[chain_type]: load_summarize_prompt(prompt),
         'callbacks': [logging_handler],
     }
-    chain = load_summarize_chain(**kwargs)
 
+    # load chain_type specific prompts:
+    prompts_args = summarize_chain_map[chain_type](prompts)
+    chain = load_summarize_chain(**kwargs, **prompts_args)
+    print(environ.get("SUMM_TOKEN_SPLITTER", 4000))
     text_splitter = TokenTextSplitter(
         chunk_size=int(environ.get("SUMM_TOKEN_SPLITTER", 4000)),
         chunk_overlap=int(environ.get("SUMM_TOKEN_OVERLAP", 500))

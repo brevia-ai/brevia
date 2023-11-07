@@ -1,6 +1,5 @@
 """Analysis module tests"""
 import pytest
-from langchain.prompts import BasePromptTemplate
 from brevia.analysis import (
     load_stuff_prompts,
     load_map_prompts,
@@ -35,27 +34,35 @@ def test_load_stuff_prompts():
     """Test load_summarize_prompts method"""
     result = load_stuff_prompts(FAKE_INITIAL_PROMPT)
     assert result is not None
-    assert isinstance(result, BasePromptTemplate)
+    assert isinstance(result, dict)
 
 
-def test_load_map_prompts():
-    """Test load_summarize_prompts method"""
+def test_load_map_prompts_one():
+    """Test load_summarize_prompts method with one prompt"""
     result = load_map_prompts(FAKE_INITIAL_PROMPT)
     assert result is not None
-    assert isinstance(result, BasePromptTemplate)
+    assert isinstance(result, dict)
+
+
+def test_load_map_prompts_both():
+    """Test load_summarize_prompts method with two prompts"""
     result = load_map_prompts(FAKE_COMPLEX_PROMPT)
     assert result is not None
-    assert isinstance(result, BasePromptTemplate)
+    assert isinstance(result, dict)
 
 
-def test_load_refine_prompts():
-    """Test load_summarize_prompts method"""
+def test_load_refine_prompts_one():
+    """Test load_summarize_prompts method with one prompt"""
     result = load_refine_prompts(FAKE_INITIAL_PROMPT)
     assert result is not None
-    assert isinstance(result, BasePromptTemplate)
+    assert isinstance(result, dict)
+
+
+def test_load_refine_prompts_both():
+    """Test load_summarize_prompts method with two prompts"""
     result = load_refine_prompts(FAKE_COMPLEX_PROMPT)
     assert result is not None
-    assert isinstance(result, BasePromptTemplate)
+    assert isinstance(result, dict)
 
 
 def test_summarize():

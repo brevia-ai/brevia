@@ -60,7 +60,8 @@ class SummarizeFileService(BaseService):
         self,
         file_path: str,
         chain_type: str | None = None,
-        prompts: dict | None = None,
+        initial_prompt: dict | None = None,
+        iteration_prompt: dict | None = None,
         token_data: bool = False,
     ) -> dict:
         """
@@ -79,7 +80,8 @@ class SummarizeFileService(BaseService):
             result = analysis.summarize(
                 text,
                 chain_type=chain_type,
-                prompts=prompts,
+                initial_prompt=initial_prompt,
+                iteration_prompt=iteration_prompt
             )
 
         return {

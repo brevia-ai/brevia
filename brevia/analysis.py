@@ -9,7 +9,7 @@ from brevia.callback import LoggingCallbackHandler
 from brevia.models import load_chatmodel
 
 
-def load_stuff_prompts(prompts: dict | None = None) -> dict:
+def load_stuff_prompts(prompts: dict | None) -> dict:
     """Load custom prompts for the 'stuff' summarization chain.
     Summarization chain is the simplest one and have only one prompt
 
@@ -21,7 +21,7 @@ def load_stuff_prompts(prompts: dict | None = None) -> dict:
     Returns:
         dict: Custom prompts for 'stuff' summarization chain.
     """
-    if prompts and prompts.get('initial_prompt'):
+    if prompts.get('initial_prompt'):
         return {
             'prompt': load_prompt_from_config(prompts.get('initial_prompt'))
         }
@@ -29,7 +29,7 @@ def load_stuff_prompts(prompts: dict | None = None) -> dict:
     return {}
 
 
-def load_map_prompts(prompts: dict | None = None) -> dict:
+def load_map_prompts(prompts: dict | None) -> dict:
     """Load custom prompts for the 'map_reduce' summarization chain.
     The 'map_reduce' summarization chain utilizes a more sophisticated algorithm that
     merges multiple prompts to create a summary. It divides the text into text chunks
@@ -47,7 +47,7 @@ def load_map_prompts(prompts: dict | None = None) -> dict:
         dict: Custom prompts for 'map_reduce' summarization chain.
     """
     prompts_data = {}
-    if prompts and prompts.get('initial_prompt'):
+    if prompts.get('initial_prompt'):
         map_prompt = load_prompt_from_config(prompts.get('initial_prompt'))
         prompts_data['map_prompt'] = map_prompt
         prompts_data['combine_prompt'] = map_prompt
@@ -58,7 +58,7 @@ def load_map_prompts(prompts: dict | None = None) -> dict:
     return prompts_data
 
 
-def load_refine_prompts(prompts: dict | None = None) -> dict:
+def load_refine_prompts(prompts: dict | None) -> dict:
     """Load custom prompts for the 'refine' summarization chain.
 
     The 'refine' summarization chain breaks the document into chunks pieces, then
@@ -78,7 +78,7 @@ def load_refine_prompts(prompts: dict | None = None) -> dict:
     """
 
     prompts_data = {}
-    if prompts and prompts.get('initial_prompt'):
+    if prompts.get('initial_prompt'):
         question_prompt = load_prompt_from_config(prompts.get('initial_prompt'))
         prompts_data['question_prompt'] = question_prompt
         if prompts.get('iteration_prompt'):
@@ -112,7 +112,8 @@ def get_summarize_llm() -> BaseChatModel:
 def summarize(
     text: str,
     chain_type: str | None = None,
-    prompts: dict | None = None
+    initial_prompt: dict | None = None,
+    iteration_prompt: dict | None = None
 ) -> str:
     """Perform summarizing for a given text.
     This function takes a text as input and generates a summary using
@@ -123,9 +124,10 @@ def summarize(
         chain_type: The main langchain summarization chain type should be one of
             "stuff", "map_reduce", and "refine".
             if not providerd stuff is used by default
-        prompts: Optional custom prompts to be used in the selected summarization
-            chain type to replace the langchain defaults.
-            The custom prompts are mapped from body request to the single chain
+        initial_prompt: Optional custom prompt to be used in the selected langchain
+            chain type to replace the main chain prompt defaults.
+        iteration_prompt: Optional custom prompts to be used in the selected langchain
+            chain type to replace the second chain promopt defaults.
 
     Returns:
         str: The generated summary of the input text.
@@ -156,9 +158,12 @@ def summarize(
     }
 
     # load chain_type specific prompts:
-    prompts_args = summarize_chain_map[chain_type](prompts)
+    prompts_args = summarize_chain_map[chain_type]({
+        'initial_prompt': initial_prompt,
+        'iteration_prompt': iteration_prompt
+    })
+
     chain = load_summarize_chain(**kwargs, **prompts_args)
-    print(environ.get("SUMM_TOKEN_SPLITTER", 4000))
     text_splitter = TokenTextSplitter(
         chunk_size=int(environ.get("SUMM_TOKEN_SPLITTER", 4000)),
         chunk_overlap=int(environ.get("SUMM_TOKEN_OVERLAP", 500))

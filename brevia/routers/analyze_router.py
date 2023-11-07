@@ -94,10 +94,12 @@ def upload_summarize(
         chain_type (str, optional): The main Langchain summarization chain type
             Should be one of "stuff", "map_reduce", or "refine"
             If not provided, 'stuff' is used by default
-        initial_prompt (str, optional): Optional custom prompt to be used in
-            the selected Langchain chain type to replace the main chain prompt defaults
-        iteration_prompt (str, optional): Optional custom prompts to be used in the
-            selected Langchain chain type to replace the second chain prompt defaults
+        initial_prompt (str, optional): Optional custom prompt as json string to be
+            used in the selected Langchain chain type to replace the main chain
+            prompt defaults
+        iteration_prompt (str, optional): Optional custom prompt as json string
+            to be used in the selected Langchain chain type to replace the second
+            chain prompt defaults
         file (UploadFile | None): An uploaded PDF file to be summarized
         file_content (str, optional): Content of the PDF file provided
             as a base64-encoded string

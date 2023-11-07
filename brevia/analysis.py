@@ -16,7 +16,7 @@ def load_stuff_prompts(prompts: dict | None) -> dict:
     Args:
         prompts (dict | None): Optional prompts for customization.
         It should be a dictionary with the following keys:
-        - 'initial_prompt' (str): The prompt to use for the initial summarization.
+        - 'initial_prompt' (dict): The prompt to use for the initial summarization.
 
     Returns:
         dict: Custom prompts for 'stuff' summarization chain.
@@ -39,8 +39,8 @@ def load_map_prompts(prompts: dict | None) -> dict:
     Args:
         prompts (dict | None): Optional prompts for customization.
         It should be a dictionary with the following keys:
-        - 'initial_prompt' (str): The prompt to use for the chunks summarization.
-        - 'iteration_prompt' (str | None): (Optional) The prompt to use for summarizing
+        - 'initial_prompt' (dict): The prompt to use for the chunks summarization.
+        - 'iteration_prompt' (dict | None): (Optional) The prompt to use for summarizing
             all the pieces.
 
     Returns:
@@ -69,8 +69,8 @@ def load_refine_prompts(prompts: dict | None) -> dict:
     Args:
         prompts (dict | None): Optional prompts for customization.
         It should be a dictionary with the following keys:
-        - 'initial_prompt' (str): The prompt to use for the first chunk summarization.
-        - 'iteration_prompt' (str | None): (Optional) The prompt to use for increase
+        - 'initial_prompt' (dict): The prompt to use for the first chunk summarization.
+        - 'iteration_prompt' (dict | None): (Optional) The prompt to use for increase
         information over the chunk pieces.
 
     Returns:
@@ -126,8 +126,8 @@ def summarize(
             if not providerd stuff is used by default
         initial_prompt: Optional custom prompt to be used in the selected langchain
             chain type to replace the main chain prompt defaults.
-        iteration_prompt: Optional custom prompts to be used in the selected langchain
-            chain type to replace the second chain promopt defaults.
+        iteration_prompt: Optional custom prompts to be used in the selected
+            langchain chain type to replace the second chain promopt defaults.
 
     Returns:
         str: The generated summary of the input text.

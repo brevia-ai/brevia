@@ -1,9 +1,0 @@
-_type: prompt
-input_variables:
-    ["text", "num_items"]
-template: |
-    Write {num_items} arguments extracted from the following text:
-
-    {text}
-
-    WRITE THE ARGUMENTS:

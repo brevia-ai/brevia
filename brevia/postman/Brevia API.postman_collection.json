@@ -933,6 +933,76 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "upload_summarize - Custom prompt",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseJSON;",
+									"try {",
+									"    responseJSON = JSON.parse(responseBody); ",
+									"    tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"    if (responseJSON && responseJSON.job) {",
+									"        postman.setEnvironmentVariable(\"job_id\", responseJSON.job);",
+									"    }",
+									"} catch (e) {",
+									"    tests[\"Error in parsing response\"] = e;",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "chain_type",
+									"value": "map_reduce",
+									"type": "text"
+								},
+								{
+									"key": "token_data",
+									"value": "true",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/upload_summarize",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"upload_summarize"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},

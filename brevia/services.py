@@ -1,8 +1,8 @@
 """Base service and some basic implementations"""
 from abc import ABC, abstractmethod
-from os import environ, unlink
+from os import unlink
 from langchain.callbacks import get_openai_callback
-from brevia import load_file, query
+from brevia import load_file, analysis
 
 
 class BaseService(ABC):
@@ -29,7 +29,7 @@ class SummarizeTextService(BaseService):
         """Service logic"""
         token_data = payload.pop('token_data')
         with get_openai_callback() as callb:
-            result = query.summarize(**payload)
+            result = analysis.summarize(**payload)
 
         return {
             'output': result,
@@ -59,27 +59,29 @@ class SummarizeFileService(BaseService):
     def summarize_from_file(
         self,
         file_path: str,
-        summ_prompt: str = environ.get('SUMM_DEFAULT_PROMPT', 'summarize'),
-        num_items: int = int(environ.get('SUMM_NUM_ITEMS', '5')),
+        chain_type: str | None = None,
+        initial_prompt: dict | None = None,
+        iteration_prompt: dict | None = None,
         token_data: bool = False,
     ) -> dict:
         """
-        Perform summarization of a temporary PDF file.
+        Perform summarization of a temporary PDF or TXT file.
         File is removed after summarization.
         """
         try:
-            text = load_file.read_pdf_file(file_path=file_path)
+            text = load_file.read(file_path=file_path)
         finally:
             unlink(file_path)  # Delete the temp file
 
         if not text:
-            raise ValueError('Empty text field')
+            raise ValueError('Empty text')
 
         with get_openai_callback() as callb:
-            result = query.summarize(
+            result = analysis.summarize(
                 text,
-                num_items=num_items,
-                summ_prompt=summ_prompt,
+                chain_type=chain_type,
+                initial_prompt=initial_prompt,
+                iteration_prompt=iteration_prompt
             )
 
         return {

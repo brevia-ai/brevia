@@ -48,7 +48,7 @@ def test_upload_summarize():
     response = client.post(
         '/upload_summarize',
         files={'file': handle},
-        data={'summ_prompt': 'summarize'},
+        data={'chain_type': 'map_reduce'},
     )
     assert response.status_code == 200
     data = response.json()
@@ -60,7 +60,7 @@ def test_upload_summarize_fail():
     """Test POST /upload_summarize fail"""
     response = client.post(
         '/upload_summarize',
-        data={'summ_prompt': 'summarize'},
+        data={'chain_type': 'gustavo'},
     )
     assert response.status_code == 400
 
@@ -71,7 +71,7 @@ def test_upload_summarize_base64():
     response = client.post(
         '/upload_summarize',
         data={
-            'summ_prompt': 'summarize',
+            'chain_type': 'stuff',
             'file_content': b64encode(text.encode())
         },
     )

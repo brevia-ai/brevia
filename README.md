@@ -1,6 +1,4 @@
-#
-
-<img src="https://brevia-media.s3.eu-central-1.amazonaws.com/brand/brevia-brand.png" width="400">
+# Brevia
 
 [![Github Actions CS](https://github.com/brevia-ai/brevia/actions/workflows/cs.yml/badge.svg)](https://github.com/brevia-ai/brevia/actions?query=workflow%3Acs)
 [![Github Actions Unit](https://github.com/brevia-ai/brevia/actions/workflows/unit.yml/badge.svg)](https://github.com/brevia-ai/brevia/actions?query=workflow%3Aunit)
@@ -9,24 +7,22 @@
 [![Version](https://img.shields.io/pypi/v/brevia.svg?label=brevia)](https://pypi.org/project/brevia/)
 [![License](https://img.shields.io/badge/license-MIT-orange.svg)](https://github.com/brevia-ai/brevia/blob/main/LICENSE)
 
-The repository contains a minimal LLM API project in Python based on LangChain for interaction with LLM and FastAPI for the API interface.
+Brevia is an extensible API and framework to build your Retrieval Augmented Generation (RAG) and Information Extraction (IE) applications with LLMs.
+
+Ouf of the box Brevia provides:
+
+ * a complete API for RAG applications
+ * an API with Information extractions capabilities like summarization, with the possibility to create your own analysis logic with asycnhronous background operations support
+
+Brevia uses:
+ * the popular LangChain library that you can use to create your custom AI tools and logic
+ * FastAPI framework to easily extend your application with new endpoints
+ * Postgresql with pg_vector extension as vector database
 
 ## Requirements
 
 A version of Python 3.10 or higher and [Poetry](https://python-poetry.org/docs/#installation) is required.
 
-It is recommended to use virtualenv in the project.
-Check the settings with
-
-```bash
-poetry config --list
-```
-
-Check that the `virtualenvs.in-project` configuration is `true` otherwise launch:
-
-```bash
-poetry config virtualenvs.in-project true
-```
 
 ## Setup
 

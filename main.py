@@ -1,6 +1,5 @@
 """API endpoint definitions with FastAPI."""
 from pathlib import Path
-from os import environ
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

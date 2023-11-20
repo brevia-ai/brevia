@@ -137,8 +137,8 @@ def run_job_service(
         result = service.run(job_store.payload)
 
     except Exception as exc:  # pylint: disable=broad-exception-caught
-        msg = exc.args[0]
-        log.error("Error in SummarizeFileService %s", msg)
+        msg = f'{type(exc).__name__}: {exc}'
+        log.error('Error in job service %s: %s', job_store.service, msg)
         result = {'error': msg}
 
     finally:

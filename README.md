@@ -16,9 +16,9 @@ Ouf of the box Brevia provides:
 
 Brevia uses:
 
-* the popular LangChain library that you can use to create your custom AI tools and logic
-* the FastAPI framework to easily extend your application with new endpoints
-* PostgreSQL with [`pg_vector`](https://github.com/pgvector/pgvector) extension as vector database
+* the popular [LangChain](https://github.com/langchain-ai/langchain) framework that you can use to create your custom AI tools and logic
+* the [FastAPI](https://github.com/tiangolo/fastapi) framework to easily extend your application with new endpoints
+* [PostgreSQL](https://www.postgresql.org) with [`pg_vector`](https://github.com/pgvector/pgvector) extension as vector database
 
 ## Requirements
 
@@ -38,7 +38,7 @@ Simply answer few simple questions and you're ready to go.
 
 ## Manual setup
 
-To perform a manual setup follow these steps:
+To perform a manual setup instead follow these steps:
 
 * create a new project with `poetry new {your-brevia-project}`
 * install brevia and its dependencies by running `poetry add brevia`, a virtualenv will automatically be created
@@ -49,16 +49,16 @@ To perform a manual setup follow these steps:
 ## Database
 
 If you have a PostreSQL instance with `pg_vector` extension available you are ready to go, otherwise you can use the provided docker compose file.
-In this case you can simply run `docker compose --profile admin up` to run postgres+pgvector and pgadmin docker images. With your browser, open `pgadmin` at http://localhost:4000
+
+In this case you can simply run `docker compose` to run a PostreSQL database with pg_vector.
+You can also run the embedded [`pgAdmin`](https://www.pgadmin.org) admin tool running `docler compose --profile admin up` to run postgres+pgvector and pgadmin docker images at the same time.
+With your browser, open `pgadmin` at http://localhost:4000
 
 The `4000` port is configurable with the `PGADMIN_PORT` environment var in the `.env` file.
 
-In this case you can simply run `docker compose --profile admin up` to run postgres+pgvector and pgadmin docker images. With your browser, open `pgadmin` at http://localhost:4000
+## Migrations
 
-The `4000` port is configurable with the `PGADMIN_PORT` environment var in the `.env` file.
-
-
-Launch migrations to create the initial schema with [Alembic](https://alembic.sqlalchemy.org) by using this brevia command
+Before using Brevia you need to launch the migrations script in order to create or update the initial schema. This is done with [Alembic](https://alembic.sqlalchemy.org) by using this command
 
 ```bash
 db_upgrade
@@ -74,35 +74,68 @@ uvicorn --env-file .env main:app`
 
 and your [Brevia API](https://github.com/brevia-ai/brevia) project is ready to accept calls!
 
-## Import/export of collections.
+## Test your API
 
-To export use the `export_collection.py` script from the virtual env
+While we are working on a simple reference frontend to test and use Brevia API the simplest way to test your new API is by using the provided OpenAPI Swagger UI and ReDoc UI or by using the official Postman files.
+
+Simply point to `/docs` for your Swagger UI and to `/redoc` for ReDoc.
+
+If you prefer to use Postman you can start by importing the [collection file](https://raw.githubusercontent.com/brevia-ai/brevia/main/brevia/postman/Brevia%20API.postman_collection.json) and an [environment sample](https://raw.githubusercontent.com/brevia-ai/brevia/main/brevia/postman/Brevia%20API.postman_environment.json)
+
+## Add documents via CLI
+
+You can also quickly create collections and add documents via CLI using the `import_file` command.
+
+Just run:
 
 ```bash
-python export_collection.py /path/to/folder collection
+import_file --file-path /path/to/file --collection my-collection
 ```
 
 Where
 
-* `/path/to/folder` is the path where the 2 CSV files will be created, one for collection records and other with embeddings
-* `collection` is the name of the collection
+* `/path/to/file` is the path to a local PDF or txt file
+* `my-collection` is the unique name of the collection that will be created if not exists
 
-To export use the `import_collection.py` script from the virtual env
+## Import/export of collections
+
+To import/export collections via CLI we take advantage of the [PostgreSQL COPY command](https://www.postgresql.org/docs/current/sql-copy.html) in the `import_collection` and `export_collection` scripts.
+
+A `psql` client is required for these scripts, connection parameters will be read from environment variables (via `.env` file).
+
+Two PostresSQL CSV files will be created during export and imported in the import operation.
+One file, named `{collection-name}-collection.csv`, contains collection data and the other, named `{collection-name}-embedding.csv`, contains documents data and embeddings.
+
+To export a collection use:
 
 ```bash
-python import_collection.py /path/to/folder biology
+export_collection --folder-path /path/to/folder --collection collection-name
+```
+
+To import a collection use:
+
+```bash
+import_collection --folder-path /path/to/folder --collection collection-name
 ```
 
 Where
 
-* `/path/to/folder` is the path where the 2 CSV files to be loaded are searched, one for collection records and other with embeddings
-* `collection` is the name of the collection
+* `/path/to/folder` is the path where the 2 CSV files will be created in export or searched in import
+* `collection-name` is the name of the collection
 
-NB: postgres `psql` client is required for these scripts, connection parameters will be read from environment var (`.env` file)
+## LangSmith support
 
-## Langsmith support
+[LangSmith](https://www.langchain.com/langsmith) is a platform to monitor, test and debug LLM apps built with LangChain.
+To use it in Brevia, if you have an account, uncomment the following lines in your `.env` file.
 
+```bash
+LANGCHAIN_TRACING_V2=True
+LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
+LANGCHAIN_API_KEY="########"
+LANGCHAIN_PROJECT="My Project"
+```
 
+Edit `LANGCHAIN_API_KEY` with your LangSmith API Key and set your project name in `LANGCHAIN_PROJECT` var.
 
 ## Access Tokens
 

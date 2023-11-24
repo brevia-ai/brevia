@@ -48,9 +48,9 @@ To perform a manual setup instead follow these steps:
 
 ## Database
 
-If you have a PostreSQL instance with `pg_vector` extension available you are ready to go, otherwise you can use the provided docker compose file.
+If you have a PostgreSQL instance with `pg_vector` extension available you are ready to go, otherwise you can use the provided docker compose file.
 
-In this case you can simply run `docker compose` to run a PostreSQL database with pg_vector.
+In this case you can simply run `docker compose` to run a PostgreSQL database with pg_vector.
 You can also run the embedded [`pgAdmin`](https://www.pgadmin.org) admin tool running `docler compose --profile admin up` to run postgres+pgvector and pgadmin docker images at the same time.
 With your browser, open `pgadmin` at http://localhost:4000
 
@@ -103,7 +103,7 @@ To import/export collections via CLI we take advantage of the [PostgreSQL COPY c
 
 A `psql` client is required for these scripts, connection parameters will be read from environment variables (via `.env` file).
 
-Two PostresSQL CSV files will be created during export and imported in the import operation.
+Two PostgresSQL CSV files will be created during export and imported in the import operation.
 One file, named `{collection-name}-collection.csv`, contains collection data and the other, named `{collection-name}-embedding.csv`, contains documents data and embeddings.
 
 To export a collection use:

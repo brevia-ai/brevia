@@ -1,4 +1,5 @@
 """chat_history module tests"""
+from datetime import datetime, timedelta
 import uuid
 import pytest
 from brevia.chat_history import (
@@ -53,6 +54,27 @@ def test_get_history():
         }
     }
     assert history_items == expected
+
+
+def test_get_history_filters():
+    """Test get_history filters"""
+    create_collection('test_collection', {})
+    session_id = uuid.uuid4()
+    add_history(session_id, 'test_collection', 'who?', 'me')
+    yesterday = datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d')
+    tomorrow = datetime.strftime(datetime.now() + timedelta(1), '%Y-%m-%d')
+    result = get_history(min_date=yesterday)
+    assert result['meta']['pagination']['count'] == 1
+    result = get_history(min_date=tomorrow)
+    assert result['meta']['pagination']['count'] == 0
+    result = get_history(max_date=tomorrow)
+    assert result['meta']['pagination']['count'] == 1
+    result = get_history(min_date=yesterday, collection='test_collection')
+    assert result['meta']['pagination']['count'] == 1
+    result = get_history(min_date=tomorrow, max_date=tomorrow)
+    assert result['meta']['pagination']['count'] == 0
+    result = get_history(min_date=yesterday, collection='test2')
+    assert result['meta']['pagination']['count'] == 0
 
 
 def test_history_from_db():

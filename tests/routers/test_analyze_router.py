@@ -6,6 +6,7 @@ from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from brevia.routers import analyze_router
 from brevia import models
+from brevia.async_jobs import single_job
 
 app = FastAPI()
 app.include_router(analyze_router.router)
@@ -48,12 +49,19 @@ def test_upload_summarize():
     response = client.post(
         '/upload_summarize',
         files={'file': handle},
-        data={'chain_type': 'map_reduce'},
+        data={
+            'chain_type': 'map_reduce',
+            'payload': '{"custom_field":"custom_value"}'
+        }
     )
     assert response.status_code == 200
     data = response.json()
     assert data is not None
     assert data['job'] is not None
+    job = single_job(data['job'])
+    assert job is not None
+    assert job.payload.get('chain_type') == 'map_reduce'
+    assert job.payload.get('custom_field') == 'custom_value'
 
 
 def test_upload_summarize_fail():

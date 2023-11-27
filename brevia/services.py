@@ -48,7 +48,11 @@ class SummarizeFileService(BaseService):
 
     def execute(self, payload: dict):
         """Service logic"""
-        return self.summarize_from_file(**payload)
+        keys = ['file_path', 'chain_type', 'initial_prompt',
+                'iteration_prompt', 'token_data']
+        args = dict(filter(lambda item: item[0] in keys, payload.items()))
+
+        return self.summarize_from_file(**args)
 
     def validate(self, payload: dict):
         """Payload validation"""

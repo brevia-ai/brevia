@@ -133,6 +133,7 @@ def is_valid_uuid(val) -> bool:
 
 
 def get_history(
+    min_date: str | None = None,
     max_date: str | None = None,
     collection: str | None = None,
     page: int = 1,
@@ -143,7 +144,7 @@ def get_history(
         using pagination data in response
     """
     max_date = datetime.now() if max_date is None else max_date
-    filter_date = ChatHistoryStore.created <= max_date
+    min_date = datetime.fromtimestamp(0) if min_date is None else min_date
     filter_collection = CollectionStore.name == collection
     if collection is None:
         filter_collection = CollectionStore.name is not None
@@ -155,7 +156,8 @@ def get_history(
     with Session(db_connection()) as session:
         query = get_history_query(
             session=session,
-            filter_date=filter_date,
+            filter_min_date=ChatHistoryStore.created >= min_date,
+            filter_max_date=ChatHistoryStore.created <= max_date,
             filter_collection=filter_collection,
         )
         count = query.count()
@@ -180,7 +182,8 @@ def get_history(
 
 def get_history_query(
     session: Session,
-    filter_date: BinaryExpression,
+    filter_min_date: BinaryExpression,
+    filter_max_date: BinaryExpression,
     filter_collection: BinaryExpression,
 ) -> Query:
     """Return get history query"""
@@ -197,6 +200,6 @@ def get_history_query(
             CollectionStore,
             CollectionStore.uuid == ChatHistoryStore.collection_id
         )
-        .filter(filter_date, filter_collection)
+        .filter(filter_min_date, filter_max_date, filter_collection)
         .order_by(sqlalchemy.desc(ChatHistoryStore.created))
     )

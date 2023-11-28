@@ -1,5 +1,4 @@
 """ DB connection utility functions """
-import os
 import subprocess
 import sys
 from urllib import parse
@@ -7,16 +6,18 @@ import sqlalchemy
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import OperationalError
 from langchain.vectorstores._pgvector_data_models import CollectionStore
+from brevia.settings import get_settings
 
 
 def connection_string() -> str:
     """ Postgres+pgvector db connection string """
-    driver = os.environ.get('PGVECTOR_DRIVER')
-    host = os.environ.get('PGVECTOR_HOST')
-    port = os.environ.get('PGVECTOR_PORT')
-    database = os.environ.get('PGVECTOR_DATABASE')
-    user = os.environ.get('PGVECTOR_USER')
-    password = parse.quote_plus(os.environ.get('PGVECTOR_PASSWORD', ''))
+    pgconf = get_settings().pgvector
+    driver = pgconf.driver
+    host = pgconf.host
+    port = pgconf.port
+    database = pgconf.database
+    user = pgconf.user
+    password = parse.quote_plus(pgconf.password)
 
     return f"postgresql+{driver}://{user}:{password}@{host}:{port}/{database}"
 
@@ -25,7 +26,7 @@ def db_connection() -> sqlalchemy.engine.Connection:
     """ SQLAlchemy db connection """
     engine = sqlalchemy.create_engine(
         connection_string(),
-        pool_size=int(os.environ.get('PGVECTOR_POOL_SIZE', '10')),
+        pool_size=get_settings().pgvector.pool_size,
     )
     return engine.connect()
 
@@ -49,11 +50,12 @@ def psql_command(
     cmd: str,
 ) -> bool:
     """Perform command on db using `psql`"""
-    host = os.environ.get('PGVECTOR_HOST')
-    port = os.environ.get('PGVECTOR_PORT')
-    database = os.environ.get('PGVECTOR_DATABASE')
-    user = os.environ.get('PGVECTOR_USER')
-    password = os.environ.get('PGVECTOR_PASSWORD')
+    pgconf = get_settings().pgvector
+    host = pgconf.host
+    port = pgconf.host
+    database = pgconf.database
+    user = pgconf.user
+    password = pgconf.password
 
     cmd = ['psql', '-U', user, '-h', host, '-p', port, '-c', f"{cmd}", database]
 

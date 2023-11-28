@@ -1,6 +1,7 @@
 """Settings module"""
 from functools import lru_cache
 from typing import Iterable, Any
+from os import environ
 from pydantic import BaseModel, Json
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -66,7 +67,16 @@ class Settings(BaseSettings):
         for field_name, value in other:
             setattr(self, field_name, value)
 
+    def setup_environment(self):
+        """Setup some useful environment variables"""
+        if not self.openai_api_key:
+            return
+        environ['OPENAI_API_KEY'] = self.openai_api_key
+
 
 @lru_cache
 def get_settings():
-    return Settings()
+    settings = Settings()
+    settings.setup_environment()
+
+    return settings

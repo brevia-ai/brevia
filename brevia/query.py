@@ -8,6 +8,7 @@ from langchain.chains.base import Chain
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains.llm import LLMChain
+from langchain.prompts import PromptTemplate
 from langchain.prompts import load_prompt
 from langchain.prompts import (
     ChatPromptTemplate,
@@ -21,12 +22,28 @@ from brevia.callback import AsyncLoggingCallbackHandler
 from brevia.models import load_chatmodel, load_embeddings
 from brevia.settings import get_settings
 
+# system = load_prompt(f'{prompts_path}/qa/default.system.yaml')
+# jinja2 template from file was disabled by langchain so, for now
+# we load from here
+SYSTEM_TEMPLATE = """
+                As an AI assistant your task is to provide valuable
+                information and support to our users. Answer the question
+                as truthfully as possible using the provided context
+                between ##Context start## and ##Context end##.
+                If the answer is not contained within the provided context,
+                say that you are sorry but that you cannot answer
+                to that question. Don't try to make up an answer.
+                ##Context start## {{context}} ##Context end##
+                Answer in {% if lang|length %}{{ lang }}{% else %}
+                the same language of the question{% endif %}
+                """
+
 
 def load_qa_prompt(prompts: dict | None) -> ChatPromptTemplate:
     """ load prompts for Q/A functions """
 
     prompts_path = f'{path.dirname(__file__)}/prompts'
-    system = load_prompt(f'{prompts_path}/qa/default.system.yaml')
+    system = PromptTemplate.from_template(SYSTEM_TEMPLATE, template_format="jinja2")
     human = load_prompt(f'{prompts_path}/qa/default.human.yaml')
 
     if prompts:

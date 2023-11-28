@@ -83,6 +83,7 @@ def upload_summarize(
     file: UploadFile | None = None,
     file_content: Annotated[str, Form()] = '',
     token_data: Annotated[bool, Form()] = False,
+    payload: Annotated[str, Form()] = '{}',
 ):
     """
     Upload a PDF file and perform summarization with algorithm
@@ -105,6 +106,8 @@ def upload_summarize(
             as a base64-encoded string
         token_data (bool, optional): A boolean indicating whether to include
             token-level data in the summary
+        payload (str, optional): Optional payload in JSON format to use in the async job
+            service to add custom options and custom fields
 
     Returns:
         A JSON object representing the job UUID for the asynchronous summarization task
@@ -137,7 +140,7 @@ def upload_summarize(
 
     job = async_jobs.create_job(
         service='brevia.services.SummarizeFileService',
-        payload={
+        payload=json.loads(payload) | {
             'file_path': tmp_path,
             'chain_type': chain_type,
             'initial_prompt':

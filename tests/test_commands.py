@@ -41,7 +41,7 @@ def test_db_downgrade_cmd():
 def test_export_collection():
     """ Test export_collection function """
     collection = create_collection('export-test', {})
-    folder_path = f'{Path(__file__).parent}/files/'
+    folder_path = f'{Path(__file__).parent}/files'
     runner = CliRunner()
     result = runner.invoke(export_collection, [
         '--collection',
@@ -61,7 +61,7 @@ def test_import_collection():
     collection = 'test-collection'
     assert not collection_name_exists(collection)
 
-    folder_path = f'{Path(__file__).parent}/files/'
+    folder_path = f'{Path(__file__).parent}/files'
     runner = CliRunner()
     result = runner.invoke(import_collection, [
         '--collection',

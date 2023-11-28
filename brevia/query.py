@@ -24,7 +24,7 @@ from brevia.models import load_chatmodel, load_embeddings
 # system = load_prompt(f'{prompts_path}/qa/default.system.yaml')
 # jinja2 template from file was disabled by langchain so, for now
 # we load from here
-JINJA2_TEMPLATE = """
+SYSTEM_TEMPLATE = """
                 As an AI assistant your task is to provide valuable
                 information and support to our users. Answer the question
                 as truthfully as possible using the provided context
@@ -42,7 +42,7 @@ def load_qa_prompt(prompts: dict | None) -> ChatPromptTemplate:
     """ load prompts for Q/A functions """
 
     prompts_path = f'{path.dirname(__file__)}/prompts'
-    system = PromptTemplate.from_template(JINJA2_TEMPLATE, template_format="jinja2")
+    system = PromptTemplate.from_template(SYSTEM_TEMPLATE, template_format="jinja2")
     human = load_prompt(f'{prompts_path}/qa/default.human.yaml')
 
     if prompts:

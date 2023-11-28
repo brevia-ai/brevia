@@ -18,6 +18,10 @@ def update_settings():
     settings = get_settings()
     new_settings = Settings(_env_file=['.env', f'{Path(__file__).parent}/.env'])
     settings.update(new_settings)
+    # Force tokens and test models vars
+    settings.tokens_secret = ''
+    settings.tokens_users = ''
+    settings.use_test_models = True
 
 
 @pytest.fixture(autouse=True)

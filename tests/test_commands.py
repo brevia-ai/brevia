@@ -1,6 +1,6 @@
 """Commands module tests"""
 from pathlib import Path
-from os import unlink, environ
+from os import unlink
 from os.path import exists
 from click.testing import CliRunner
 from brevia.commands import (
@@ -14,6 +14,7 @@ from brevia.commands import (
     create_access_token,
 )
 from brevia.collections import create_collection, collection_name_exists
+from brevia.settings import get_settings
 
 
 def test_db_current_cmd():
@@ -102,7 +103,8 @@ def test_run_test_service():
 
 def test_create_access_token():
     """ Test create_access_token function """
-    environ['TOKENS_SECRET'] = 'secretsecretsecret'
+    settings = get_settings()
+    settings.tokens_secret = 'secretsecretsecret'
     runner = CliRunner()
     result = runner.invoke(create_access_token, [
         '--user',
@@ -111,3 +113,4 @@ def test_create_access_token():
         '10',
     ])
     assert result.exit_code == 0
+    settings.tokens_secret = ''

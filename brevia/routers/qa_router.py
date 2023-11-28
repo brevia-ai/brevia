@@ -185,7 +185,7 @@ def search_documents(search: SearchBody):
     """
     collection = check_collection_name(search.collection)
 
-    params = {k: v for k, v in search.dict().items() if v is not None}
+    params = {k: v for k, v in search.model_dump().items() if v is not None}
     if 'docs_num' not in params and 'docs_num' in collection.cmetadata:
         params['docs_num'] = collection.cmetadata['docs_num']
     result = query.search_vector_qa(**params)

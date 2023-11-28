@@ -57,7 +57,7 @@ def psql_command(
     user = pgconf.user
     password = pgconf.password
 
-    cmd = ['psql', '-U', user, '-h', host, '-p', port, '-c', f"{cmd}", database]
+    cmd = ['psql', '-U', user, '-h', host, '-p', f'{port}', '-c', cmd, database]
 
     with subprocess.Popen(
         cmd,

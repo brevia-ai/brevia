@@ -4,7 +4,6 @@ import sys
 from os import getcwd, path
 from logging import config
 import click
-from dotenv import load_dotenv
 from brevia.alembic import current, upgrade, downgrade
 from brevia.utilities import files_import, run_service, collections_io
 from brevia.tokens import create_token
@@ -14,7 +13,6 @@ from brevia.tokens import create_token
 @click.option("-v", "--verbose", is_flag=True, default=False, help="Verbose mode")
 def db_current_cmd(verbose):
     """Display current database revision"""
-    load_dotenv()
     current(verbose)
 
 
@@ -22,7 +20,6 @@ def db_current_cmd(verbose):
 @click.option("-r", "--revision", default="head", help="Revision target")
 def db_upgrade_cmd(revision):
     """Upgrade to a later database revision"""
-    load_dotenv()
     upgrade(revision)
 
 
@@ -30,7 +27,6 @@ def db_upgrade_cmd(revision):
 @click.option("-r", "--revision", required=True, help="Revision target")
 def db_downgrade_cmd(revision):
     """Revert to a previous database revision"""
-    load_dotenv()
     downgrade(revision)
 
 
@@ -40,7 +36,6 @@ def db_downgrade_cmd(revision):
 @click.option("-o", "--options", required=False, help="Loader options in JSON format")
 def import_file(file_path: str, collection: str, options: str = ''):
     """Add file or folder content to collection"""
-    load_dotenv()
     # pass loader options via JSON string
     kwargs = {} if not options else json.loads(options)
     num = files_import.index_file_folder(
@@ -74,7 +69,6 @@ def import_file(file_path: str, collection: str, options: str = ''):
 )
 def run_test_service(num: int = 1, file_path: str = f'{getcwd()}/test_service.yml'):
     """Service test"""
-    load_dotenv()
     # allow module import from current working directory
     sys.path.append(getcwd())
     # initialize logging from optional log.ini
@@ -95,7 +89,6 @@ def run_test_service(num: int = 1, file_path: str = f'{getcwd()}/test_service.ym
 )
 def export_collection(folder_path: str, collection: str):
     """Export a collection to CSV postgres files."""
-    load_dotenv()
     collections_io.export_collection_data(
         folder_path=folder_path,
         collection=collection
@@ -112,7 +105,6 @@ def export_collection(folder_path: str, collection: str):
 )
 def import_collection(folder_path: str, collection: str):
     """Import a collection from a CSV postgres files."""
-    load_dotenv()
     collections_io.import_collection_data(
         folder_path=folder_path,
         collection=collection
@@ -124,6 +116,5 @@ def import_collection(folder_path: str, collection: str):
 @click.option("-d", "--duration", default=60, help="Token duration in minutes")
 def create_access_token(user: str, duration: int):
     """Create an access token """
-    load_dotenv()
     token = create_token(user=user, duration=duration)
     print(token)

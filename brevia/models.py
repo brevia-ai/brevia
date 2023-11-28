@@ -1,7 +1,6 @@
 """Utilities to create langchain LLM and Chat Model instances."""
 from abc import ABC, abstractmethod
-from os import environ
-from typing import Dict, List, Any
+from typing import Any
 from langchain.llms.loading import load_llm_from_config
 from langchain.llms.base import BaseLLM
 from langchain.llms.fake import FakeListLLM
@@ -9,14 +8,16 @@ from langchain.chat_models.base import BaseChatModel
 from langchain.chat_models.fake import FakeListChatModel
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.embeddings.fake import FakeEmbeddings
 from langchain.embeddings.base import Embeddings
 from openai import Audio
+from brevia.settings import get_settings
 
 
 class FakeBreviaLLM(FakeListLLM):
     """Fake LLM for testing purposes."""
-    def get_token_ids(self, text: str) -> List[int]:
+    def get_token_ids(self, text: str) -> list[int]:
         return [10] * 10
 
 
@@ -32,7 +33,7 @@ def load_llm(config: dict) -> BaseLLM:
     return load_llm_from_config(config=config)
 
 
-CHAT_MODEL_TYPES: Dict[str, BaseChatModel] = {
+CHAT_MODEL_TYPES: dict[str, BaseChatModel] = {
     'openai-chat': ChatOpenAI,
     'fake-list-chat-model': FakeListChatModel,
 }
@@ -40,7 +41,7 @@ CHAT_MODEL_TYPES: Dict[str, BaseChatModel] = {
 
 class FakeBreviaChatModel(FakeListChatModel):
     """Fake LLM for testing purposes."""
-    def get_token_ids(self, text: str) -> List[int]:
+    def get_token_ids(self, text: str) -> list[int]:
         return [10] * 10
 
 
@@ -89,14 +90,26 @@ def load_audiotranscriber() -> BaseAudio:
     return AudioOpenAI()
 
 
-def load_embeddings() -> Embeddings:
+EMBEDDING_TYPES: dict[str, BaseChatModel] = {
+    'openai-embeddings': OpenAIEmbeddings,
+    'cohere-embeddings': CohereEmbeddings,
+    'fake-embeddings': FakeEmbeddings,
+}
+
+
+def load_embeddings(config: dict = {'_type': 'openai-embeddings'}) -> Embeddings:
     """ Load Embeddings engine: only OpenAI or Fake for now """
     if test_models_in_use():
         return FakeEmbeddings(size=1536)
 
-    return OpenAIEmbeddings()
+    config_type = config.pop('_type')
+    if config_type not in EMBEDDING_TYPES:
+        raise ValueError(f"Loading {config_type} Embeddings not supported")
+
+    emb_cls = EMBEDDING_TYPES[config_type]
+    return emb_cls(**config)
 
 
 def test_models_in_use() -> bool:
     """Check if test models are in use (via `USE_TEST_MODELS` env var)"""
-    return bool(environ.get('USE_TEST_MODELS', False))
+    return get_settings().use_test_models

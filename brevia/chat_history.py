@@ -3,7 +3,6 @@ from typing import List
 import uuid
 import logging
 from datetime import datetime
-from os import environ
 from langchain.vectorstores.pgvector import BaseModel
 from langchain.vectorstores._pgvector_data_models import CollectionStore
 import sqlalchemy
@@ -12,6 +11,7 @@ from sqlalchemy.orm import Mapped, Query, Session
 from sqlalchemy.sql.expression import BinaryExpression
 from brevia.connection import db_connection
 from brevia.models import load_embeddings
+from brevia.settings import get_settings
 
 
 class ChatHistoryStore(BaseModel):
@@ -43,7 +43,7 @@ def history(chat_history: list, session: str = None):
     if len(chat_history) > 0:
         return [(x["query"], x["answer"]) for x in chat_history]
 
-    if not is_valid_uuid(session) or bool(environ.get('QA_NO_CHAT_HISTORY')):
+    if not is_valid_uuid(session) or get_settings().qa_no_chat_history:
         return []
 
     return history_from_db(session)
@@ -63,7 +63,7 @@ def is_related(chat_history: list, question: str):
     )
     sim = dot_product(q_e, h_e)
     logging.getLogger(__name__).info("similarity: %s", sim)
-    threshold = float(environ.get('QA_FOLLOWUP_SIM_THRESHOLD', False))
+    threshold = get_settings().qa_followup_sim_threshold
     return sim >= threshold
 
 

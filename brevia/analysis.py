@@ -1,5 +1,4 @@
 """Functions to perform summarization & document analysis"""
-from os import environ
 from langchain.docstore.document import Document
 from langchain.chains.summarize import load_summarize_chain
 from langchain.text_splitter import TokenTextSplitter
@@ -7,6 +6,7 @@ from langchain.chat_models.base import BaseChatModel
 from langchain.prompts.loading import load_prompt_from_config
 from brevia.callback import LoggingCallbackHandler
 from brevia.models import load_chatmodel
+from brevia.settings import get_settings
 
 
 def load_stuff_prompts(prompts: dict | None) -> dict:
@@ -98,15 +98,10 @@ def get_summarize_llm() -> BaseChatModel:
         BaseChatModel: A language model suitable for text summarization.
 
     """
-    logging_handler = LoggingCallbackHandler()
+    model = get_settings().summ_llm
+    model['callbacks'] = [LoggingCallbackHandler()]
 
-    return load_chatmodel({
-        '_type': 'openai-chat',
-        'model_name': environ.get('SUMM_COMPLETIONS_MODEL'),
-        'temperature': float(environ.get('SUMM_TEMPERATURE', 0)),
-        'max_tokens': int(environ.get('SUMM_MAX_TOKENS', 2000)),
-        'callbacks': [logging_handler],
-    })
+    return load_chatmodel(model)
 
 
 def summarize(
@@ -141,8 +136,8 @@ def summarize(
         'map_reduce': load_map_prompts,
         'refine': load_refine_prompts
     }
-
-    chain_type = chain_type or environ.get('SUMM_DEFAULT_CHAIN', 'stuff')
+    settings = get_settings()
+    chain_type = chain_type or settings.summ_default_chain
     if chain_type not in summarize_chain_map:
         raise ValueError(
             f"Got unsupported chain type: {chain_type}. "
@@ -153,7 +148,7 @@ def summarize(
     kwargs = {
         'llm': get_summarize_llm(),
         'chain_type': chain_type,
-        'verbose': environ.get('VERBOSE_MODE', False),
+        'verbose': settings.verbose_mode,
         'callbacks': [logging_handler],
     }
 
@@ -165,8 +160,8 @@ def summarize(
 
     chain = load_summarize_chain(**kwargs, **prompts_args)
     text_splitter = TokenTextSplitter(
-        chunk_size=int(environ.get("SUMM_TOKEN_SPLITTER", 4000)),
-        chunk_overlap=int(environ.get("SUMM_TOKEN_OVERLAP", 500))
+        chunk_size=settings.summ_token_splitter,
+        chunk_overlap=settings.summ_token_overlap
     )
     texts = text_splitter.split_text(text)
     docs = [Document(page_content=t) for t in texts]

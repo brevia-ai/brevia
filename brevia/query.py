@@ -1,5 +1,5 @@
 """Question-answering and search functions against a vector database."""
-from os import environ, path
+from os import path
 from langchain.docstore.document import Document
 from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
 from langchain.vectorstores._pgvector_data_models import CollectionStore
@@ -19,6 +19,7 @@ from brevia.connection import connection_string
 from brevia.collections import single_collection_by_name
 from brevia.callback import AsyncLoggingCallbackHandler
 from brevia.models import load_chatmodel, load_embeddings
+from brevia.settings import get_settings
 
 
 def load_qa_prompt(prompts: dict | None) -> ChatPromptTemplate:
@@ -76,7 +77,7 @@ def search_vector_qa(
     if not collection_store:
         raise ValueError(f'Collection not found: {collection}')
     if docs_num is None:
-        default_num = environ.get('SEARCH_DOCS_NUM', 4)
+        default_num = get_settings().search_docs_num
         docs_num = int(collection_store.cmetadata.get('docs_num', default_num))
     strategy = DISTANCE_MAP.get(distance_strategy_name, DistanceStrategy.COSINE)
     docsearch = PGVector(
@@ -118,8 +119,9 @@ def conversation_chain(
                 "search_distance": 0.9
             }
     """
+    settings = get_settings()
     if docs_num is None:
-        default_num = environ.get('SEARCH_DOCS_NUM', 4)
+        default_num = settings.search_docs_num
         docs_num = int(collection.cmetadata.get('docs_num', default_num))
     if answer_callbacks is None:
         answer_callbacks = []
@@ -135,18 +137,13 @@ def conversation_chain(
     )
 
     prompts = collection.cmetadata.get('prompts')
-    model_name = collection.cmetadata.get('model_name', environ.get('QA_MODEL'))
-    temperature = collection.cmetadata.get('temperature', environ.get('QA_TEMPERATURE'))
-    verbose = environ.get('VERBOSE_MODE', False)
+    qa_llm_conf = collection.cmetadata.get('qa_llm', settings.qa_llm)
+    fup_llm_conf = collection.cmetadata.get('qa_fup_llm', settings.qa_fup_llm)
+
+    verbose = settings.verbose_mode
 
     # LLM to rewrite follow-up question
-    fup_llm = load_chatmodel({
-        '_type': 'openai-chat',
-        'model_name': environ.get('QA_FOLLOWUP_MODEL', 'gpt-3.5-turbo'),
-        'temperature': float(temperature),
-        'max_tokens': int(environ.get('QA_FOLLOWUP_MAX_TOKENS', 200)),
-        'verbose': verbose,
-    })
+    fup_llm = load_chatmodel(fup_llm_conf)
 
     logging_handler = AsyncLoggingCallbackHandler()
     # Create chain for follow-up question using chat history (if present)
@@ -159,15 +156,9 @@ def conversation_chain(
 
     # Model to use in final prompt
     answer_callbacks.append(logging_handler)
-    chatllm = load_chatmodel({
-        '_type': 'openai-chat',
-        'model_name': model_name,
-        'temperature': float(temperature),
-        'max_tokens': int(environ.get('QA_MAX_TOKENS', 800)),
-        'callbacks': answer_callbacks,
-        'streaming': streaming,
-        'verbose': verbose,
-    })
+    qa_llm_conf['callbacks'] = answer_callbacks
+    qa_llm_conf['streaming'] = streaming
+    chatllm = load_chatmodel(qa_llm_conf)
 
     # this chain use "stuff" to elaborate context
     doc_chain = load_qa_chain(

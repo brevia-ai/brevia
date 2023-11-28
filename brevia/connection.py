@@ -52,7 +52,7 @@ def psql_command(
     """Perform command on db using `psql`"""
     pgconf = get_settings().pgvector
     host = pgconf.host
-    port = pgconf.host
+    port = pgconf.port
     database = pgconf.database
     user = pgconf.user
     password = pgconf.password

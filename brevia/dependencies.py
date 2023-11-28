@@ -1,5 +1,4 @@
 """FastAPI endpoints dependencies"""
-from os import environ
 import shutil
 from pathlib import Path
 import tempfile
@@ -8,6 +7,7 @@ from langchain.vectorstores._pgvector_data_models import CollectionStore
 from fastapi import HTTPException, status, Header, Depends, UploadFile
 from fastapi.security import OAuth2PasswordBearer
 from brevia import collections, tokens
+from brevia.settings import get_settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')  # use token authentication
 
@@ -16,7 +16,7 @@ def get_dependencies(json_content_type: bool = True) -> list[Depends]:
     """Get endpoint dependencies"""
     deps = []
     # add authorization header check only if access tokens are defined
-    if environ.get('TOKENS_SECRET'):
+    if get_settings().tokens_secret:
         deps.append(Depends(token_auth))
 
     if json_content_type:

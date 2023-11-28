@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     verbose_mode: bool = False
     pgvector: PgVectorSettings
 
+    # Tokens
     tokens_secret: str = ''
     tokens_users: str = ''
 
@@ -38,6 +39,7 @@ class Settings(BaseSettings):
     text_chunk_size: int = 2000
     text_chunk_overlap: int = 200
 
+    # Search
     search_docs_num: int = 4
 
     # LLM settings
@@ -45,6 +47,16 @@ class Settings(BaseSettings):
     qa_llm: Json = '{}'
     qa_fup_llm: Json = '{}'
     summ_llm: Json = '{}'
+
+    # QA
+    qa_no_chat_history: bool = False  # don't load chat history
+    qa_followup_sim_threshold: float = 0.735  # similitude threshold in followup
+    feature_qa_lang_detect: bool = False
+
+    # Summarization
+    summ_default_chain: str = 'stuff'
+    summ_token_splitter: int = 4000
+    summ_token_overlap: int = 500
 
     def update(
         self,

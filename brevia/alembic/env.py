@@ -1,12 +1,9 @@
 from logging.config import fileConfig
-from dotenv import load_dotenv
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
 from sqlalchemy_utils import database_exists, create_database
 from brevia.connection import connection_string
-
-load_dotenv()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

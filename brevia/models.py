@@ -102,11 +102,12 @@ EMBEDDING_TYPES: dict[str, BaseChatModel] = {
 
 
 def load_embeddings() -> Embeddings:
-    """ Load Embeddings engine: only OpenAI or Fake for now """
+    """ Load Embeddings engine """
+    settings = get_settings()
     if test_models_in_use():
-        return FakeEmbeddings(size=1536)
+        return FakeEmbeddings(size=settings.embeddings_size)
 
-    config = get_settings().embeddings.copy()
+    config = settings.embeddings.copy()
     config_type = config.pop('_type', None)
     if config_type not in EMBEDDING_TYPES:
         raise ValueError(f"Loading {config_type} Embeddings not supported")

@@ -39,10 +39,32 @@ class Settings(BaseSettings):
     search_docs_num: int = 4
 
     # LLM settings
-    embeddings: Json = '{}'
-    qa_completion_llm: Json = '{}'
-    qa_followup_llm: Json = '{}'
-    summarize_llm: Json = '{}'
+    qa_completion_llm: Json = """{
+        "_type": "openai-chat",
+        "model_name": "gpt-3.5-turbo-16k",
+        "temperature": 0,
+        "max_tokens": 1000,
+        "verbose": true
+    }"""
+    qa_followup_llm: Json = """{
+        "_type": "openai-chat",
+        "model_name": "gpt-3.5-turbo-16k",
+        "temperature": 0,
+        "max_tokens": 200,
+        "verbose": true
+    }"""
+    summarize_llm: Json = """{
+        "_type": "openai-chat",
+        "model_name": "gpt-3.5-turbo-16k",
+        "temperature": 0,
+        "max_tokens": 2000
+    }"""
+
+    # Embeddings
+    embeddings: Json = '{"_type": "openai-embeddings"}'
+    # every vendor has its own embeddings vector size, some vendors have multiple sizes
+    # this value should be unique in your project to avoid calculation errors
+    embeddings_size: int = 1536
 
     # QA
     qa_no_chat_history: bool = False  # don't load chat history

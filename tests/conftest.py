@@ -1,6 +1,5 @@
 import pytest
 from pathlib import Path
-from dotenv import load_dotenv
 from alembic import command
 from alembic.config import Config
 from brevia.index import init_index

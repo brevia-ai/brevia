@@ -82,3 +82,16 @@ def test_load_embeddings():
     result = load_embeddings()
     assert isinstance(result, OpenAIEmbeddings)
     settings.use_test_models = True
+
+
+def test_load_embeddings_fail():
+    """ Test load_embeddings failure"""
+    settings = get_settings()
+    settings.use_test_models = False
+    curr_embeddings = settings.embeddings
+    settings.embeddings = {'_type': 'unknown-embeddings'}
+    with pytest.raises(ValueError) as exc:
+        load_embeddings()
+    assert str(exc.value) == 'Loading "unknown-embeddings" Embeddings not supported'
+    settings.use_test_models = True
+    settings.embeddings = curr_embeddings

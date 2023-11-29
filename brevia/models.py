@@ -110,7 +110,7 @@ def load_embeddings() -> Embeddings:
     config = settings.embeddings.copy()
     config_type = config.pop('_type', None)
     if config_type not in EMBEDDING_TYPES:
-        raise ValueError(f"Loading {config_type} Embeddings not supported")
+        raise ValueError(f'Loading "{config_type}" Embeddings not supported')
 
     emb_cls = EMBEDDING_TYPES[config_type]
     return emb_cls(**config)

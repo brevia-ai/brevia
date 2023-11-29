@@ -21,11 +21,11 @@ def test_status_ok():
 def test_status_fail():
     """Test /status failure"""
     settings = get_settings()
-    database = settings.pgvector.database
-    settings.pgvector.database = 'non_exixsting_db'
+    database = settings.pgvector_database
+    settings.pgvector_database = 'non_exixsting_db'
 
     response = client.get('/status', headers={})
 
-    settings.pgvector.database = database
+    settings.pgvector_database = database
 
     assert response.status_code == 503

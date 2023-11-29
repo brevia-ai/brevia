@@ -98,7 +98,7 @@ def get_summarize_llm() -> BaseChatModel:
         BaseChatModel: A language model suitable for text summarization.
 
     """
-    model = get_settings().summ_llm.copy()
+    model = get_settings().summarize_llm.copy()
     model['callbacks'] = [LoggingCallbackHandler()]
 
     return load_chatmodel(model)

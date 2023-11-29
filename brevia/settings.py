@@ -2,35 +2,30 @@
 from functools import lru_cache
 from typing import Iterable, Any
 from os import environ
-from pydantic import BaseModel, Json
+from pydantic import Json
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
-class PgVectorSettings(BaseModel):
-    """Postgres with pg_vector connection settings"""
-    host: str = 'localhost'
-    driver: str = 'psycopg2'
-    port: int = 5432
-    database: str = 'brevia'
-    user: str = ''
-    password: str = ''
-    pool_size: int = 10
 
 
 class Settings(BaseSettings):
     """Brevia settings"""
     model_config = SettingsConfigDict(
-        env_file='.env', extra='ignore', env_nested_delimiter='_'
+        env_file='.env', extra='ignore'
     )
 
     verbose_mode: bool = False
-    pgvector: PgVectorSettings
+    pgvector_host: str = 'localhost'
+    pgvector_driver: str = 'psycopg2'
+    pgvector_port: int = 5432
+    pgvector_database: str = 'brevia'
+    pgvector_user: str = ''
+    pgvector_password: str = ''
+    pgvector_pool_size: int = 10
 
     # Tokens
     tokens_secret: str = ''
     tokens_users: str = ''
 
-    # API keys
+    # API keys, tokens...
     openai_api_key: str = ''
 
     # Test models - only in unit tests
@@ -45,9 +40,9 @@ class Settings(BaseSettings):
 
     # LLM settings
     embeddings: Json = '{}'
-    qa_llm: Json = '{}'
-    qa_fup_llm: Json = '{}'
-    summ_llm: Json = '{}'
+    qa_completion_llm: Json = '{}'
+    qa_followup_llm: Json = '{}'
+    summarize_llm: Json = '{}'
 
     # QA
     qa_no_chat_history: bool = False  # don't load chat history

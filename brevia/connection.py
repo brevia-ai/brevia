@@ -11,13 +11,13 @@ from brevia.settings import get_settings
 
 def connection_string() -> str:
     """ Postgres+pgvector db connection string """
-    pgconf = get_settings().pgvector
-    driver = pgconf.driver
-    host = pgconf.host
-    port = pgconf.port
-    database = pgconf.database
-    user = pgconf.user
-    password = parse.quote_plus(pgconf.password)
+    conf = get_settings()
+    driver = conf.pgvector_driver
+    host = conf.pgvector_host
+    port = conf.pgvector_port
+    database = conf.pgvector_database
+    user = conf.pgvector_user
+    password = parse.quote_plus(conf.pgvector_password)
 
     return f"postgresql+{driver}://{user}:{password}@{host}:{port}/{database}"
 
@@ -26,7 +26,7 @@ def db_connection() -> sqlalchemy.engine.Connection:
     """ SQLAlchemy db connection """
     engine = sqlalchemy.create_engine(
         connection_string(),
-        pool_size=get_settings().pgvector.pool_size,
+        pool_size=get_settings().pgvector_pool_size,
     )
     return engine.connect()
 
@@ -50,12 +50,12 @@ def psql_command(
     cmd: str,
 ) -> bool:
     """Perform command on db using `psql`"""
-    pgconf = get_settings().pgvector
-    host = pgconf.host
-    port = pgconf.port
-    database = pgconf.database
-    user = pgconf.user
-    password = pgconf.password
+    conf = get_settings()
+    host = conf.pgvector_host
+    port = conf.pgvector_port
+    database = conf.pgvector_database
+    user = conf.pgvector_user
+    password = conf.pgvector_password
 
     cmd = ['psql', '-U', user, '-h', host, '-p', f'{port}', '-c', cmd, database]
 

@@ -14,9 +14,8 @@ def pytest_sessionstart(session):
 
 def update_settings():
     """Update settings reading from `tests/.env` file"""
-    load_dotenv(f'{Path(__file__).parent}/.env', override=True)
-    settings = get_settings()
     new_settings = Settings(_env_file=['.env', f'{Path(__file__).parent}/.env'])
+    settings = get_settings()
     settings.update(new_settings)
     # Force tokens and test models vars
     settings.tokens_secret = ''

@@ -5,11 +5,13 @@ from langchain.llms.loading import load_llm_from_config
 from langchain.llms.base import BaseLLM
 from langchain.llms.fake import FakeListLLM
 from langchain.chat_models.base import BaseChatModel
-from langchain.chat_models.fake import FakeListChatModel
-from langchain.chat_models import ChatOpenAI
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.embeddings.cohere import CohereEmbeddings
-from langchain.embeddings.fake import FakeEmbeddings
+from langchain.chat_models import (
+    ChatOpenAI,
+    ChatAnthropic,
+    ChatCohere,
+    FakeListChatModel
+)
+from langchain.embeddings import OpenAIEmbeddings, CohereEmbeddings, FakeEmbeddings
 from langchain.embeddings.base import Embeddings
 from openai import Audio
 from brevia.settings import get_settings
@@ -35,6 +37,8 @@ def load_llm(config: dict) -> BaseLLM:
 
 CHAT_MODEL_TYPES: dict[str, BaseChatModel] = {
     'openai-chat': ChatOpenAI,
+    'cohere-chat': ChatCohere,
+    'anthropic-chat': ChatAnthropic,
     'fake-list-chat-model': FakeListChatModel,
 }
 

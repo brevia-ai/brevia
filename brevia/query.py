@@ -154,9 +154,12 @@ def conversation_chain(
     )
 
     prompts = collection.cmetadata.get('prompts')
-    qa_llm_conf = collection.cmetadata.get('qa_llm', settings.qa_completion_llm.copy())
+    qa_llm_conf = collection.cmetadata.get(
+        'qa_completion_llm',
+        settings.qa_completion_llm.copy()
+    )
     fup_llm_conf = collection.cmetadata.get(
-        'qa_fup_llm',
+        'qa_followup_llm',
         settings.qa_followup_llm.copy()
     )
 

@@ -1,6 +1,6 @@
 """Commands module tests"""
 from pathlib import Path
-from os import unlink, environ
+from os import unlink
 from os.path import exists
 from click.testing import CliRunner
 from brevia.commands import (
@@ -14,6 +14,7 @@ from brevia.commands import (
     create_access_token,
 )
 from brevia.collections import create_collection, collection_name_exists
+from brevia.settings import get_settings
 
 
 def test_db_current_cmd():
@@ -40,7 +41,7 @@ def test_db_downgrade_cmd():
 def test_export_collection():
     """ Test export_collection function """
     collection = create_collection('export-test', {})
-    folder_path = f'{Path(__file__).parent}/files/'
+    folder_path = f'{Path(__file__).parent}/files'
     runner = CliRunner()
     result = runner.invoke(export_collection, [
         '--collection',
@@ -60,7 +61,7 @@ def test_import_collection():
     collection = 'test-collection'
     assert not collection_name_exists(collection)
 
-    folder_path = f'{Path(__file__).parent}/files/'
+    folder_path = f'{Path(__file__).parent}/files'
     runner = CliRunner()
     result = runner.invoke(import_collection, [
         '--collection',
@@ -102,7 +103,8 @@ def test_run_test_service():
 
 def test_create_access_token():
     """ Test create_access_token function """
-    environ['TOKENS_SECRET'] = 'secretsecretsecret'
+    settings = get_settings()
+    settings.tokens_secret = 'secretsecretsecret'
     runner = CliRunner()
     result = runner.invoke(create_access_token, [
         '--user',
@@ -111,3 +113,4 @@ def test_create_access_token():
         '10',
     ])
     assert result.exit_code == 0
+    settings.tokens_secret = ''

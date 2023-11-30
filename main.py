@@ -1,12 +1,9 @@
 """API endpoint definitions with FastAPI."""
 from pathlib import Path
-from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from brevia.routers.app_routers import add_routers
-
-load_dotenv()
 
 app = FastAPI()
 app.add_middleware(

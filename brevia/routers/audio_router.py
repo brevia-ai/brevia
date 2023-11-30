@@ -1,6 +1,5 @@
 """API endpoints definitions to handle audio input"""
 import logging
-from os import environ
 from typing import Annotated
 from fastapi import APIRouter, UploadFile, Form
 from brevia.models import load_audiotranscriber
@@ -8,6 +7,7 @@ from brevia.dependencies import (
     get_dependencies,
     save_upload_file_tmp,
 )
+from brevia.settings import get_settings
 
 router = APIRouter()
 
@@ -31,7 +31,7 @@ def audio_transcriptions(
         result = audio.transcribe(
                 file=audio_file,
                 model='whisper-1',
-                api_key=environ.get('OPENAI_API_KEY'),
+                api_key=get_settings().openai_api_key,
                 params={'language': language},
         )
         log.info('Audio transcription completed')

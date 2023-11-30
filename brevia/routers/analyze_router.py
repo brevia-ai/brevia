@@ -68,7 +68,7 @@ def sum_documents(summarize: SummarizeBody):
         )
 
     service = SummarizeTextService()
-    return service.run(summarize.dict())
+    return service.run(summarize.model_dump())
 
 
 @router.post(

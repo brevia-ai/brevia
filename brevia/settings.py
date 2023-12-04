@@ -27,6 +27,7 @@ class Settings(BaseSettings):
 
     # API keys, tokens...
     openai_api_key: str = ''
+    cohere_api_key: str = ''
 
     # Test models - only in unit tests
     use_test_models: bool = False
@@ -76,6 +77,12 @@ class Settings(BaseSettings):
     summ_token_splitter: int = 4000
     summ_token_overlap: int = 500
 
+    # langsmith
+    langchain_tracing_v2: bool = False
+    langchain_endpoint: str = ''
+    langchain_api_key: str = ''
+    langchain_project: str = ''
+
     def update(
         self,
         other: Iterable[tuple[str, Any]],
@@ -86,9 +93,16 @@ class Settings(BaseSettings):
 
     def setup_environment(self):
         """Setup some useful environment variables"""
-        if not self.openai_api_key:
-            return
-        environ['OPENAI_API_KEY'] = self.openai_api_key
+        if self.openai_api_key:
+            environ['OPENAI_API_KEY'] = self.openai_api_key
+        if self.cohere_api_key:
+            environ['COHERE_API_KEY'] = self.cohere_api_key
+        if self.langchain_tracing_v2:
+            environ['LANGCHAIN_TRACING_V2'] = "true"
+            environ['LANGCHAIN_ENDPOINT'] = self.langchain_endpoint
+            environ['LANGCHAIN_API_KEY'] = self.langchain_api_key
+            environ['LANGCHAIN_PROJECT'] = self.langchain_project
+        return
 
 
 @lru_cache

@@ -46,6 +46,70 @@ To perform a manual setup instead follow these steps:
 * activate the virtualenv by running the `poetry shell` command
 * copy the file `.env.sample` to `.env` and value the environment variables, especially `OPENAI_API_KEY` with the secret key of OpenAI and `PGVECTOR_*` see the [Database](#database) section
 
+
+## Custom Model
+
+In addition to using the default Openai models, you have the option to integrate other Large Language Models, such as the Cohere model or any other model of your choice. Follow the steps below to set up and use a custom model in your Brevia project.
+
+### Cohere Model Integration
+
+Once you have the Cohere API key and model name, update your Brevia project to include these credentials.
+
+0. Prerequisites: install cohere lib:
+
+    ```bash
+    poetry add cohere
+    ```
+
+1. Open the `.env` file in your project directory.
+
+2. Set the `COHERE_API_KEY` variable with your Cohere API key:
+
+    ```bash
+    COHERE_API_KEY=your-cohere-api-key
+    ```
+
+3. Set the cohere variables with the desired Cohere parameter:
+
+For QA/RAG application, set in `QA_COMPLETION_LLM` and `QA_FOLLOWUP_LLM` the json as follow:
+
+    ```bash
+    QA_COMPLETION_LLM='{
+        "_type": "cohere-chat",
+        "model_name": "command",
+        "temperature": 0,
+        "max_tokens": 200,
+        "verbose": true
+    }'
+
+    QA_FOLLOWUP_LLM='{
+        "_type": "cohere-chat",
+        "model_name": "command",
+        "temperature": 0,
+        "max_tokens": 200,
+        "verbose": true
+    }'
+    ```
+
+With relatives embeddings:
+
+    ```bash
+    EMBEDDINGS='{
+        "_type": "cohere-embeddings"
+    }'
+    ```
+
+4. For Summarization module, set  the `SUMMARIZE_LLM` var:
+
+    ```bash
+    SUMMARIZE_LLM='{
+        "_type": "cohere-chat",
+        "model_name": "command",
+        "temperature": 0,
+        "max_tokens": 2000
+    }'
+    ```
+
 ## Database
 
 If you have a PostgreSQL instance with `pg_vector` extension available you are ready to go, otherwise you can use the provided docker compose file.

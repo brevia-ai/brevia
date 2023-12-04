@@ -58,7 +58,7 @@ Once you have the Cohere API key and model name, update your Brevia project to i
 0. Prerequisites: install cohere lib:
 
     ```bash
-    pip install cohere
+    poetry add cohere
     ```
 
 1. Open the `.env` file in your project directory.

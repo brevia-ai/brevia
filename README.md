@@ -49,11 +49,17 @@ To perform a manual setup instead follow these steps:
 
 ## Custom Model
 
-In addition to using the default Openai models, you have the option to integrate other model models, such as the Cohere model or any other model of your choice. Follow the steps below to set up and use a custom model in your Brevia project.
+In addition to using the default Openai models, you have the option to integrate other Large Language Models, such as the Cohere model or any other model of your choice. Follow the steps below to set up and use a custom model in your Brevia project.
 
 ### Cohere Model Integration
 
 Once you have the Cohere API key and model name, update your Brevia project to include these credentials.
+
+0. Prerequisites: install cohere lib:
+
+    ```bash
+    pip install cohere
+    ```
 
 1. Open the `.env` file in your project directory.
 
@@ -75,8 +81,34 @@ For QA/RAG application, set in `QA_COMPLETION_LLM` and `QA_FOLLOWUP_LLM` the jso
         "max_tokens": 200,
         "verbose": true
     }'
+
+    QA_FOLLOWUP_LLM='{
+        "_type": "cohere-chat",
+        "model_name": "command",
+        "temperature": 0,
+        "max_tokens": 200,
+        "verbose": true
+    }'
     ```
 
+With relatives embeddings:
+
+    ```bash
+    EMBEDDINGS='{
+        "_type": "cohere-embeddings"
+    }'
+    ```
+
+4. For Summarization module, set  the `SUMMARIZE_LLM` var:
+
+    ```bash
+    SUMMARIZE_LLM='{
+        "_type": "cohere-chat",
+        "model_name": "command",
+        "temperature": 0,
+        "max_tokens": 2000
+    }'
+    ```
 
 ## Database
 

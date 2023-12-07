@@ -5,7 +5,6 @@ import logging
 from datetime import datetime
 from langchain.vectorstores.pgvector import BaseModel
 from langchain.vectorstores._pgvector_data_models import CollectionStore
-from pydantic import BaseModel as PydanticModel
 import sqlalchemy
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, Query, Session
@@ -133,32 +132,25 @@ def is_valid_uuid(val) -> bool:
         return False
 
 
-class ChatHistoryFilter(PydanticModel):
-    """ Chat history filter """
-    min_date: str | None = None
-    max_date: str | None = None
-    collection: str | None = None
-    session_id: str | None = None
-    page: int = 1
-    page_size: int = 50
-
-
-def get_history(filter: ChatHistoryFilter) -> dict:
+def get_history(
+    min_date: str | None = None,
+    max_date: str | None = None,
+    collection: str | None = None,
+    page: int = 1,
+    page_size: int = 50,
+) -> dict:
     """
         Read chat history with optional date and collection filters
         using pagination data in response
     """
-    max_date = datetime.now() if filter.max_date is None else filter.max_date
-    min_date = datetime.fromtimestamp(0) if filter.min_date is None else filter.min_date
-    filter_collection = CollectionStore.name == filter.collection
-    if filter.collection is None:
+    max_date = datetime.now() if max_date is None else max_date
+    min_date = datetime.fromtimestamp(0) if min_date is None else min_date
+    filter_collection = CollectionStore.name == collection
+    if collection is None:
         filter_collection = CollectionStore.name is not None
-    filter_session_id = sqlalchemy.text('1 = 1')  # (default) always true expression
-    if filter.session_id and is_valid_uuid(filter.session_id):
-        filter_session_id = ChatHistoryStore.session_id = UUID(filter.session_id)
 
-    page = max(1, filter.page)  # min page number is 1
-    page_size = min(1000, filter.page_size)  # max page size is 1000
+    page = max(1, page)  # min page number is 1
+    page_size = min(1000, page_size)  # max page size is 1000
     offset = (page - 1) * page_size
 
     with Session(db_connection()) as session:
@@ -167,7 +159,6 @@ def get_history(filter: ChatHistoryFilter) -> dict:
             filter_min_date=ChatHistoryStore.created >= min_date,
             filter_max_date=ChatHistoryStore.created <= max_date,
             filter_collection=filter_collection,
-            filter_session_id=filter_session_id,
         )
         count = query.count()
         results = [u._asdict() for u in query.offset(offset).limit(page_size).all()]
@@ -194,7 +185,6 @@ def get_history_query(
     filter_min_date: BinaryExpression,
     filter_max_date: BinaryExpression,
     filter_collection: BinaryExpression,
-    filter_session_id: BinaryExpression,
 ) -> Query:
     """Return get history query"""
     return (
@@ -210,6 +200,6 @@ def get_history_query(
             CollectionStore,
             CollectionStore.uuid == ChatHistoryStore.collection_id
         )
-        .filter(filter_min_date, filter_max_date, filter_collection, filter_session_id)
+        .filter(filter_min_date, filter_max_date, filter_collection)
         .order_by(sqlalchemy.desc(ChatHistoryStore.created))
     )

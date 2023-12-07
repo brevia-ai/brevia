@@ -43,21 +43,21 @@ class Settings(BaseSettings):
     search_docs_num: int = 4
 
     # LLM settings
-    qa_completion_llm: Json[dict(str, Any)] = """{
+    qa_completion_llm: Json[dict[str, Any]] = """{
         "_type": "openai-chat",
         "model_name": "gpt-3.5-turbo-16k",
         "temperature": 0,
         "max_tokens": 1000,
         "verbose": true
     }"""
-    qa_followup_llm: Json[dict(str, Any)] = """{
+    qa_followup_llm: Json[dict[str, Any]] = """{
         "_type": "openai-chat",
         "model_name": "gpt-3.5-turbo-16k",
         "temperature": 0,
         "max_tokens": 200,
         "verbose": true
     }"""
-    summarize_llm: Json[dict(str, Any)] = """{
+    summarize_llm: Json[dict[str, Any]] = """{
         "_type": "openai-chat",
         "model_name": "gpt-3.5-turbo-16k",
         "temperature": 0,
@@ -66,7 +66,7 @@ class Settings(BaseSettings):
 
     # Environment secrets, dictionary of variables that must be present as environment
     # variables
-    brevia_env_secrets: Json[dict(str, Any)] = '{}'
+    brevia_env_secrets: Json[dict[str, Any]] = '{}'
 
     # Embeddings
     embeddings: Json = '{"_type": "openai-embeddings"}'

@@ -3,7 +3,7 @@ import logging
 from functools import lru_cache
 from typing import Iterable, Any
 from os import environ
-from pydantic import Json
+from pydantic import Json, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -66,7 +66,7 @@ class Settings(BaseSettings):
 
     # Environment secrets, dictionary of variables that must be present as environment
     # variables
-    brevia_env_secrets: Json[dict[str, Any]] = '{}'
+    brevia_env_secrets: Json[dict[str, SecretStr]] = '{}'
 
     # Embeddings
     embeddings: Json = '{"_type": "openai-embeddings"}'

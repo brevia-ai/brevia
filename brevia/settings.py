@@ -1,4 +1,5 @@
 """Settings module"""
+import logging
 from functools import lru_cache
 from typing import Iterable, Any
 from os import environ
@@ -26,6 +27,8 @@ class Settings(BaseSettings):
     tokens_users: str = ''
 
     # API keys, tokens...
+    # You should use `brevia_env_secrets` to store secrets that
+    # must be available as environment variables
     openai_api_key: str = ''
     cohere_api_key: str = ''
 
@@ -40,26 +43,30 @@ class Settings(BaseSettings):
     search_docs_num: int = 4
 
     # LLM settings
-    qa_completion_llm: Json = """{
+    qa_completion_llm: Json[dict(str, Any)] = """{
         "_type": "openai-chat",
         "model_name": "gpt-3.5-turbo-16k",
         "temperature": 0,
         "max_tokens": 1000,
         "verbose": true
     }"""
-    qa_followup_llm: Json = """{
+    qa_followup_llm: Json[dict(str, Any)] = """{
         "_type": "openai-chat",
         "model_name": "gpt-3.5-turbo-16k",
         "temperature": 0,
         "max_tokens": 200,
         "verbose": true
     }"""
-    summarize_llm: Json = """{
+    summarize_llm: Json[dict(str, Any)] = """{
         "_type": "openai-chat",
         "model_name": "gpt-3.5-turbo-16k",
         "temperature": 0,
         "max_tokens": 2000
     }"""
+
+    # Environment secrets, dictionary of variables that must be present as environment
+    # variables
+    brevia_env_secrets: Json[dict(str, Any)] = '{}'
 
     # Embeddings
     embeddings: Json = '{"_type": "openai-embeddings"}'
@@ -77,12 +84,6 @@ class Settings(BaseSettings):
     summ_token_splitter: int = 4000
     summ_token_overlap: int = 500
 
-    # langsmith
-    langchain_tracing_v2: bool = False
-    langchain_endpoint: str = ''
-    langchain_api_key: str = ''
-    langchain_project: str = ''
-
     def update(
         self,
         other: Iterable[tuple[str, Any]],
@@ -93,16 +94,16 @@ class Settings(BaseSettings):
 
     def setup_environment(self):
         """Setup some useful environment variables"""
+        log = logging.getLogger(__name__)
         if self.openai_api_key:
             environ['OPENAI_API_KEY'] = self.openai_api_key
+            log.info('"OPENAI_API_KEY" env var set')
         if self.cohere_api_key:
             environ['COHERE_API_KEY'] = self.cohere_api_key
-        if self.langchain_tracing_v2:
-            environ['LANGCHAIN_TRACING_V2'] = "true"
-            environ['LANGCHAIN_ENDPOINT'] = self.langchain_endpoint
-            environ['LANGCHAIN_API_KEY'] = self.langchain_api_key
-            environ['LANGCHAIN_PROJECT'] = self.langchain_project
-        return
+            log.info('"COHERE_API_KEY" env var set')
+        for key in self.brevia_env_secrets.keys():
+            environ[key] = self.brevia_env_secrets.get(key)
+            log.info('"%s" env var set', key)
 
 
 @lru_cache

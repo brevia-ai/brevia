@@ -7,7 +7,6 @@ from brevia.chat_history import (
     add_history,
     history_from_db,
     get_history,
-    ChatHistoryFilter,
 )
 from brevia.collections import create_collection
 
@@ -41,7 +40,7 @@ def test_add_history_failure():
 
 def test_get_history():
     """Test get_history function"""
-    history_items = get_history(filter=ChatHistoryFilter())
+    history_items = get_history()
     expected = {
         'data': [],
         'meta': {
@@ -64,23 +63,17 @@ def test_get_history_filters():
     add_history(session_id, 'test_collection', 'who?', 'me')
     yesterday = datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d')
     tomorrow = datetime.strftime(datetime.now() + timedelta(1), '%Y-%m-%d')
-    result = get_history(ChatHistoryFilter(min_date=yesterday))
+    result = get_history(min_date=yesterday)
     assert result['meta']['pagination']['count'] == 1
-    result = get_history(ChatHistoryFilter(min_date=tomorrow))
+    result = get_history(min_date=tomorrow)
     assert result['meta']['pagination']['count'] == 0
-    result = get_history(ChatHistoryFilter(max_date=tomorrow))
+    result = get_history(max_date=tomorrow)
     assert result['meta']['pagination']['count'] == 1
-    result = get_history(ChatHistoryFilter(
-        min_date=yesterday, collection='test_collection'
-    ))
+    result = get_history(min_date=yesterday, collection='test_collection')
     assert result['meta']['pagination']['count'] == 1
-    result = get_history(ChatHistoryFilter(min_date=tomorrow, max_date=tomorrow))
+    result = get_history(min_date=tomorrow, max_date=tomorrow)
     assert result['meta']['pagination']['count'] == 0
-    result = get_history(ChatHistoryFilter(min_date=yesterday, collection='test2'))
-    assert result['meta']['pagination']['count'] == 0
-    result = get_history(ChatHistoryFilter(session_id=str(session_id)))
-    assert result['meta']['pagination']['count'] == 1
-    result = get_history(ChatHistoryFilter(session_id=str(uuid.uuid4())))
+    result = get_history(min_date=yesterday, collection='test2')
     assert result['meta']['pagination']['count'] == 0
 
 

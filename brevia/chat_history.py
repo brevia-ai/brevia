@@ -145,7 +145,7 @@ class ChatHistoryFilter(PydanticModel):
 
 def get_history(filter: ChatHistoryFilter) -> dict:
     """
-        Read chat history with optional date and collection filters
+        Read chat history with optional filters
         using pagination data in response
     """
     max_date = datetime.now() if filter.max_date is None else filter.max_date
@@ -155,7 +155,7 @@ def get_history(filter: ChatHistoryFilter) -> dict:
         filter_collection = CollectionStore.name is not None
     filter_session_id = sqlalchemy.text('1 = 1')  # (default) always true expression
     if filter.session_id and is_valid_uuid(filter.session_id):
-        filter_session_id = ChatHistoryStore.session_id = UUID(filter.session_id)
+        filter_session_id = ChatHistoryStore.session_id == filter.session_id
 
     page = max(1, filter.page)  # min page number is 1
     page_size = min(1000, filter.page_size)  # max page size is 1000

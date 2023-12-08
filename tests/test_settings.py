@@ -10,6 +10,7 @@ def test_setup_environment():
     settings = Settings()
     settings.openai_api_key = 'fakefakefake'
     settings.cohere_api_key = 'fakefakefake'
+    settings.brevia_env_secrets = {}
     settings.setup_environment()
     assert environ.get('OPENAI_API_KEY') is not None
     assert environ.get('COHERE_API_KEY') is not None
@@ -18,6 +19,7 @@ def test_setup_environment():
     environ.pop('COHERE_API_KEY', None)
     settings.openai_api_key = None
     settings.cohere_api_key = None
+    settings.brevia_env_secrets = {}
     settings.setup_environment()
     assert environ.get('OPENAI_API_KEY') is None
     assert environ.get('COHERE_API_KEY') is None

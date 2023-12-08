@@ -3,7 +3,7 @@ import logging
 from functools import lru_cache
 from typing import Iterable, Any
 from os import environ
-from pydantic import Json, SecretStr
+from pydantic import Json
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -66,7 +66,8 @@ class Settings(BaseSettings):
 
     # Environment secrets, dictionary of variables that must be present as environment
     # variables
-    brevia_env_secrets: Json[dict[str, SecretStr]] = '{}'
+    # (Pydantic throws an error using SecretStr as dict value type)
+    brevia_env_secrets: Json[dict[str, str]] = '{}'
 
     # Embeddings
     embeddings: Json = '{"_type": "openai-embeddings"}'
@@ -95,19 +96,20 @@ class Settings(BaseSettings):
     def setup_environment(self):
         """Setup some useful environment variables"""
         log = logging.getLogger(__name__)
+        for key in self.brevia_env_secrets.keys():
+            environ[key] = self.brevia_env_secrets.get(key)
+            log.info('"%s" env var set', key)
         if self.openai_api_key:
             environ['OPENAI_API_KEY'] = self.openai_api_key
             log.info('"OPENAI_API_KEY" env var set')
         if self.cohere_api_key:
             environ['COHERE_API_KEY'] = self.cohere_api_key
             log.info('"COHERE_API_KEY" env var set')
-        for key in self.brevia_env_secrets.keys():
-            environ[key] = self.brevia_env_secrets.get(key)
-            log.info('"%s" env var set', key)
 
 
 @lru_cache
 def get_settings():
+    """Retrieve Settings once via lru cache"""
     settings = Settings()
     settings.setup_environment()
 

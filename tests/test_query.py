@@ -1,14 +1,16 @@
 """Query module tests"""
 import pytest
+from langchain.prompts import BasePromptTemplate
+from langchain.chains import ConversationalRetrievalChain
 from brevia.query import (
     conversation_chain,
     load_qa_prompt,
     load_condense_prompt,
     search_vector_qa,
+    ChatParams,
+    SearchQuery,
 )
 from brevia.collections import create_collection
-from langchain.prompts import BasePromptTemplate
-from langchain.chains import ConversationalRetrievalChain
 
 FAKE_PROMPT = {
     '_type': 'prompt',
@@ -50,14 +52,14 @@ def test_load_condense_prompt():
 def test_search_vector_qa():
     """Test search_vector_qa function"""
     with pytest.raises(ValueError) as exc:
-        search_vector_qa(query='test', collection='test')
+        search_vector_qa(search=SearchQuery(query='test', collection='test'))
     assert str(exc.value) == 'Collection not found: test'
 
 
 def test_conversation_chain():
     """Test conversation_chain function"""
     collection = create_collection('test', {})
-    chain = conversation_chain(collection=collection)
+    chain = conversation_chain(collection=collection, chat_params=ChatParams())
 
     assert chain is not None
     assert isinstance(chain, ConversationalRetrievalChain)

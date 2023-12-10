@@ -1,4 +1,5 @@
 """Q/A router tests"""
+from json import dumps
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from langchain.docstore.document import Document
@@ -44,6 +45,29 @@ def test_search():
     assert response.status_code == 200
     data = response.json()
     assert data is not None
+
+
+def test_search_filter():
+    """Test POST /search with metadata filter"""
+    create_collection('test_collection', {})
+    doc1 = Document(page_content='some', metadata={'category': 'first'})
+    add_document(document=doc1, collection_name='test_collection')
+    doc2 = Document(page_content='some', metadata={'category': 'second'})
+    add_document(document=doc2, collection_name='test_collection')
+
+    body = {
+        'query': 'How?',
+        'collection': 'test_collection',
+        'filter': {'category': 'first'},
+    }
+    response = client.post(
+        '/search',
+        headers={'Content-Type': 'application/json'},
+        content=dumps(body),
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
 
 
 def test_chat_language():

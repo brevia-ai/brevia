@@ -123,7 +123,7 @@ class ChatParams(BaseModel):
     docs_num: int | None = None
     streaming: bool = False
     distance_strategy_name: str | None = None
-    filter: dict[str, str] | None = None
+    filter: dict[str, str | dict] | None = None
     source_docs: bool = False
 
 

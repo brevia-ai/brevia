@@ -1,14 +1,18 @@
 """Query module tests"""
 import pytest
+from langchain.prompts import BasePromptTemplate
+from langchain.chains import ConversationalRetrievalChain
+from langchain.docstore.document import Document
 from brevia.query import (
     conversation_chain,
     load_qa_prompt,
     load_condense_prompt,
     search_vector_qa,
+    ChatParams,
+    SearchQuery,
 )
 from brevia.collections import create_collection
-from langchain.prompts import BasePromptTemplate
-from langchain.chains import ConversationalRetrievalChain
+from brevia.index import add_document
 
 FAKE_PROMPT = {
     '_type': 'prompt',
@@ -50,14 +54,43 @@ def test_load_condense_prompt():
 def test_search_vector_qa():
     """Test search_vector_qa function"""
     with pytest.raises(ValueError) as exc:
-        search_vector_qa(query='test', collection='test')
+        search_vector_qa(search=SearchQuery(query='test', collection='test'))
     assert str(exc.value) == 'Collection not found: test'
+
+
+def test_search_vector_filter():
+    """Test search_vector_qa with metadata filter"""
+    create_collection('test', {})
+    doc1 = Document(page_content='some', metadata={'category': 'first'})
+    add_document(document=doc1, collection_name='test')
+    doc2 = Document(page_content='some', metadata={'category': 'second'})
+    add_document(document=doc2, collection_name='test')
+    doc3 = Document(page_content='some', metadata={})
+    add_document(document=doc3, collection_name='test')
+
+    result = search_vector_qa(search=SearchQuery(
+        query='test',
+        collection='test',
+        filter={'category': 'first'},
+    ))
+    assert len(result) == 1
+    result = search_vector_qa(search=SearchQuery(
+        query='test',
+        collection='test',
+    ))
+    assert len(result) == 3
+    result = search_vector_qa(search=SearchQuery(
+        query='test',
+        collection='test',
+        filter={'category': {'in': ['first', 'second']}},
+    ))
+    assert len(result) == 2
 
 
 def test_conversation_chain():
     """Test conversation_chain function"""
     collection = create_collection('test', {})
-    chain = conversation_chain(collection=collection)
+    chain = conversation_chain(collection=collection, chat_params=ChatParams())
 
     assert chain is not None
     assert isinstance(chain, ConversationalRetrievalChain)

@@ -16,13 +16,36 @@ app.include_router(router)
 client = TestClient(app)
 
 
-def test_prompt():
-    """Test POST /prompt endpoint"""
+def test_chat():
+    """Test POST /chat endpoint"""
     create_collection('test_collection', {})
     response = client.post(
-        '/prompt',
+        '/chat',
         headers={'Content-Type': 'application/json'},
         content='{"question": "How are you?", "collection": "test_collection"}',
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data is not None
+
+
+def test_chat_filter():
+    """Test POST /chat with metadata filter"""
+    create_collection('test_collection', {})
+    doc1 = Document(page_content='some', metadata={'category': 'first'})
+    add_document(document=doc1, collection_name='test_collection')
+    doc2 = Document(page_content='some', metadata={'category': 'second'})
+    add_document(document=doc2, collection_name='test_collection')
+
+    body = {
+        'question': 'How?',
+        'collection': 'test_collection',
+        'filter': {'category': {'in': ['first', 'third']}},
+    }
+    response = client.post(
+        '/chat',
+        headers={'Content-Type': 'application/json'},
+        content=dumps(body),
     )
     assert response.status_code == 200
     data = response.json()

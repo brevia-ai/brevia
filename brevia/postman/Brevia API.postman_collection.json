@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "06e8e501-9778-4afe-99ab-2423e7cf12ce",
+		"_postman_id": "8bcda8f4-e21c-4bf9-95ba-45f4405138a4",
 		"name": "Brevia API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "234034"
@@ -10,7 +10,7 @@
 			"name": "Chat",
 			"item": [
 				{
-					"name": "chat - Question/Answer flow",
+					"name": "chat - Question/Answer flow basic",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -37,7 +37,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"question\" : \"quando è nata la repubblica in Italia?\",\n    \"collection\" : \"storia-novecento\",\n    \"source_docs\": true,\n    \"docs_num\": 3,\n    \"token_data\": false\n}"
+							"raw": "{\n    \"question\" : \"{{query}}\",\n    \"collection\" : \"{{collection}}\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/chat",
@@ -52,7 +52,49 @@
 					"response": []
 				},
 				{
-					"name": "chat - Question/Answer flow with History",
+					"name": "chat - Question/Answer flow with additional parameters",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Chat-Session",
+								"value": "{{session_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"question\" : \"{{query}}\",\n    \"collection\" : \"{{collection}}\",\n    \"source_docs\": true,\n    \"docs_num\": 6,\n    \"token_data\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "chat - Question/Answer flow with chat history",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -74,7 +116,44 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"question\" : \"mi puoi tradurre l'ultima risposta in italiano?\",\n    \"chat_history\": [\n        {\n            \"query\": \"cos'è il floor?\",\n            \"answer\": \"Il floor è il minimo valore a cui è possibile convertire il proprio investimento in strumenti convertibili, che tutela l'imprenditore da un eccessivo ribasso della valutazione.\"\n        },\n        {\n            \"query\": \"cos'è il mifid?\",\n            \"answer\": \"MiFID sta per \\\"Markets in Financial Instruments Directive\\\", ovvero la direttiva sui mercati degli strumenti finanziari.\"\n        },\n        {\n            \"query\": \"quanto bisogna pagare per fare un finanziamento?\",\n            \"answer\": \"The cost of obtaining finance from Doorway varies depending on whether you are an investor or a company seeking funding. For investors, there is a 1% annual fee based on the investment amount for administrative and accounting costs, as well as a potential 20% commission on returns exceeding 7%. For companies seeking funding, Doorway charges a success fee between 6% and 8% of the amount raised.\"\n        }\n\n    ],\n    \"collection\" : \"doorway\"\n}"
+							"raw": "{\n    \"question\" : \"{{query}}\",\n    \"collection\" : \"{{collection}}\",\n    \"chat_history\": [\n        {\n            \"query\": \"what is artificial intelligence?\",\n            \"answer\": \"Artificial intelligence (AI) refers to the simulation or approximation of human intelligence in machines. The goals of artificial intelligence include computer-enhanced learning, reasoning, and perception\"\n        },\n        {\n            \"query\": \"Is AI good or bad?\",\n            \"answer\": \"These technologies not only save time, but also potentially save lives by minimizing human error and ensuring a safer working environment. In addition, automating repetitive tasks in design, planning, and management with AI frees up human workers to focus on more complex and creative aspects.\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "chat - Question/Answer flow with filter",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"question\" : \"{{query}}\",\n    \"collection\" : \"{{collection}}\",\n    \"filter\": {\"category\": \"first\"}\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/chat",
@@ -934,78 +1013,78 @@
 					},
 					"response": []
 				},
-                {
-                    "name": "upload_summarize - Custom prompt",
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "exec": [
-                                    "var responseJSON;",
-                                    "try {",
-                                    "    responseJSON = JSON.parse(responseBody); ",
-                                    "    tests[\"Status code is 200\"] = responseCode.code === 200;",
-                                    "    if (responseJSON && responseJSON.job) {",
-                                    "        postman.setEnvironmentVariable(\"job_id\", responseJSON.job);",
-                                    "    }",
-                                    "} catch (e) {",
-                                    "    tests[\"Error in parsing response\"] = e;",
-                                    "}"
-                                ],
-                                "type": "text/javascript"
-                            }
-                        }
-                    ],
-                    "protocolProfileBehavior": {
-                        "disabledSystemHeaders": {}
-                    },
-                    "request": {
-                        "auth": {
-                            "type": "bearer",
-                            "bearer": [
-                                {
-                                    "key": "token",
-                                    "value": "{{access_token}}",
-                                    "type": "string"
-                                }
-                            ]
-                        },
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "formdata",
-                            "formdata": [
-                                {
-                                    "key": "file",
-                                    "type": "file",
-                                    "src": []
-                                },
-                                {
-                                    "key": "chain_type",
-                                    "value": "map_reduce",
-                                    "type": "text"
-                                },
-                                {
-                                    "key": "token_data",
-                                    "value": "true",
-                                    "type": "text"
-                                }
-                            ]
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/upload_summarize",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "upload_summarize"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
+				{
+					"name": "upload_summarize - Custom prompt",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseJSON;",
+									"try {",
+									"    responseJSON = JSON.parse(responseBody); ",
+									"    tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"    if (responseJSON && responseJSON.job) {",
+									"        postman.setEnvironmentVariable(\"job_id\", responseJSON.job);",
+									"    }",
+									"} catch (e) {",
+									"    tests[\"Error in parsing response\"] = e;",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "chain_type",
+									"value": "map_reduce",
+									"type": "text"
+								},
+								{
+									"key": "token_data",
+									"value": "true",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/upload_summarize",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"upload_summarize"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
 		{
 			"name": "Search",
 			"item": [

@@ -36,16 +36,6 @@ def application_json(content_type: str = Header(...)):
         )
 
 
-def status_token_auth(token: str = Depends(oauth2_scheme)):
-    """Check token auth on /status endpoint"""
-    # check special status token if defined, otherwise
-    # `tokens_secret` check will be performed
-    if get_settings().status_token and token == get_settings().status_token:
-        return
-
-    return token_auth(token=token)
-
-
 def token_auth(token: str = Depends(oauth2_scheme)):
     """Check authorization header bearer token"""
     try:

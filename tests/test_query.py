@@ -85,6 +85,30 @@ def test_search_vector_filter():
         filter={'category': {'in': ['first', 'second']}},
     ))
     assert len(result) == 2
+    result = search_vector_qa(search=SearchQuery(
+        query='test',
+        collection='test',
+        filter={'category': {'gt': 'first'}},
+    ))
+    assert len(result) == 1
+    result = search_vector_qa(search=SearchQuery(
+        query='test',
+        collection='test',
+        filter={'category': {'lt': 'first'}},
+    ))
+    assert len(result) == 0
+    result = search_vector_qa(search=SearchQuery(
+        query='test',
+        collection='test',
+        filter={'category': {'ge': 'aaaaa', 'le': 'zzzzz'}},
+    ))
+    assert len(result) == 2
+    result = search_vector_qa(search=SearchQuery(
+        query='test',
+        collection='test',
+        filter={'category': {'ne': 'first'}},
+    ))
+    assert len(result) == 1
 
 
 def test_conversation_chain():

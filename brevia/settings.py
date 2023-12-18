@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     # Tokens
     tokens_secret: str = ''
     tokens_users: str = ''
+    status_token: str = ''
 
     # API keys, tokens...
     openai_api_key: str = ''

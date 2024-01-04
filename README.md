@@ -252,3 +252,23 @@ pytest --cov-report html --cov=brevia tests/
 ```
 
 Covreage report is created using `pytest-cov`
+
+### Update documentation
+
+Install `mkdocs-material` using `pip` without altering `pyproject.toml`
+
+```bash
+pip install mkdocs-material
+```
+
+When working on documentation files you can use a live preview server with:
+
+```bash
+mkdocs serve
+```
+
+Or you can build the documentation in `site/` folder using
+
+```bash
+mkdocs build --clean
+```

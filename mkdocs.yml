@@ -1,0 +1,7 @@
+site_name: Brevia Docs
+theme:
+  name: material
+
+nav:
+  - Brevia: index.md
+  - Setup: setup.md

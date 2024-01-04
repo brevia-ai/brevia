@@ -1,8 +1,9 @@
 """Status router tests"""
-from os import environ
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from brevia.routers import status_router
+from brevia.settings import get_settings
+from brevia.tokens import create_token
 
 app = FastAPI()
 app.include_router(status_router.router)
@@ -20,11 +21,38 @@ def test_status_ok():
 
 def test_status_fail():
     """Test /status failure"""
-    database = environ.get("PGVECTOR_DATABASE")
-    environ['PGVECTOR_DATABASE'] = 'non_exixsting_db'
+    settings = get_settings()
+    database = settings.pgvector_database
+    settings.pgvector_database = 'non_exixsting_db'
 
     response = client.get('/status', headers={})
 
-    environ["PGVECTOR_DATABASE"] = database
+    settings.pgvector_database = database
 
     assert response.status_code == 503
+
+
+def test_status_token():
+    """Test /status access with special token"""
+    settings = get_settings()
+    settings.tokens_secret = 'secretsecretsecret'
+    settings.status_token = 'specialtoken'
+
+    headers = {}
+    response = client.get('/status', headers=headers)
+    assert response.status_code == 401
+
+    response = client.get('/status?token=specialtoken', headers=headers)
+    assert response.status_code == 200
+
+    headers = {'Authorization': 'Something specialtoken'}
+    response = client.get('/status', headers=headers)
+    assert response.status_code == 401
+
+    token = create_token(user='gustavo', duration=10)
+    headers = {'Authorization': f'Bearer {token}'}
+    response = client.get('/status', headers=headers)
+    assert response.status_code == 200
+
+    settings.tokens_secret = ''
+    settings.status_token = ''

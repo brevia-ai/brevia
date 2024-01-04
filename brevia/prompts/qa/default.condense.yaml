@@ -10,5 +10,5 @@ template: |
 
     follow-up question: {question}
 
-    Standalone question in the same language of the follow-up question::
+    Standalone question in the same language of the follow-up question:
     """

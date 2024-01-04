@@ -1,14 +1,13 @@
 """Index document with embeddings in vector database."""
-import os
-import logging
+from os import path
 from langchain.docstore.document import Document
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.embeddings.fake import FakeEmbeddings
 from langchain.text_splitter import NLTKTextSplitter
 from langchain.vectorstores.pgvector import PGVector
 from langchain.vectorstores._pgvector_data_models import EmbeddingStore
 from sqlalchemy.orm import Session
 from brevia import connection, load_file
+from brevia.models import load_embeddings
+from brevia.settings import get_settings
 
 
 def init_index():
@@ -36,7 +35,7 @@ def load_pdf_file(
     Load document from PDF file, add document to collection index
     and return number of splitted text chunks
     """
-    if not os.path.isfile(file_path):
+    if not path.isfile(file_path):
         raise FileNotFoundError(file_path)
 
     text = load_file.read_pdf_file(
@@ -45,7 +44,7 @@ def load_pdf_file(
         page_to=page_to,
     )
     if metadata is None:
-        metadata = {'source': os.path.basename(file_path)}
+        metadata = {'source': path.basename(file_path)}
 
     return add_document(
         document=Document(
@@ -63,15 +62,16 @@ def add_document(
     document_id: str = None,
 ) -> int:
     """ Add document to index and return number of splitted text chunks"""
+    settings = get_settings()
     text_splitter = NLTKTextSplitter(
         separator="\n",
-        chunk_size=int(os.environ.get('TEXT_CHUNK_SIZE', 2000)),
-        chunk_overlap=int(os.environ.get('TEXT_CHUNK_OVERLAP', 200))
+        chunk_size=settings.text_chunk_size,
+        chunk_overlap=settings.text_chunk_overlap
     )
     texts = text_splitter.split_documents([document])
 
     PGVector.from_documents(
-        embedding=get_embeddings(),
+        embedding=load_embeddings(),
         documents=texts,
         collection_name=collection_name,
         connection_string=connection.connection_string(),
@@ -105,13 +105,3 @@ def read_document(
         query = session.query(EmbeddingStore.document, EmbeddingStore.cmetadata)
         query = query.filter(filter_collection, filter_document)
         return [row._asdict() for row in query.all()]
-
-
-def get_embeddings() -> (FakeEmbeddings | OpenAIEmbeddings):
-    """ Get Embeddings engine: Fake or OpenAI for now """
-    if bool(os.environ.get("FAKE_EMBEDDING")):
-        print('Using FAKE embeddings!!')
-        logging.getLogger(__name__).warning('Using FAKE summary - text truncate!!')
-        return FakeEmbeddings(size=1536)
-
-    return OpenAIEmbeddings()

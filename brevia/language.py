@@ -1,8 +1,8 @@
 """Language detection utilities"""
-from os import environ
 import spacy
 from spacy.language import Language
 import langcodes
+from brevia.settings import get_settings
 
 
 class Detector():
@@ -11,7 +11,7 @@ class Detector():
 
     def __init__(self):
         """Init internal nlp"""
-        if not bool(environ.get('FEATURE_QA_LANG_DETECT')):
+        if not get_settings().feature_qa_lang_detect:
             return
 
         try:

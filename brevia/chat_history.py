@@ -3,15 +3,16 @@ from typing import List
 import uuid
 import logging
 from datetime import datetime
-from os import environ
 from langchain.vectorstores.pgvector import BaseModel
 from langchain.vectorstores._pgvector_data_models import CollectionStore
+from pydantic import BaseModel as PydanticModel
 import sqlalchemy
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, Query, Session
 from sqlalchemy.sql.expression import BinaryExpression
 from brevia.connection import db_connection
-from brevia.index import get_embeddings
+from brevia.models import load_embeddings
+from brevia.settings import get_settings
 
 
 class ChatHistoryStore(BaseModel):
@@ -43,7 +44,7 @@ def history(chat_history: list, session: str = None):
     if len(chat_history) > 0:
         return [(x["query"], x["answer"]) for x in chat_history]
 
-    if not is_valid_uuid(session) or bool(environ.get('QA_NO_CHAT_HISTORY')):
+    if not is_valid_uuid(session) or get_settings().qa_no_chat_history:
         return []
 
     return history_from_db(session)
@@ -51,25 +52,25 @@ def history(chat_history: list, session: str = None):
 
 def is_related(chat_history: list, question: str):
     """
-    Determina se una domanda è correlata a una sequenza di frasi.
-    Utilizza gli embedding delle frasi e della domanda per calcolare il prodotto
-    scalare tra i vettori (in questo caso = similarity) e confrontarlo
-    con una soglia specificata dalle variabili d'ambiente.
+    Determine whether a question is related to a sequence of sentences.
+    Use sentence and question embeddings to calculate the product
+    scale between the vectors (in this case = similarity) and compare it
+    with a threshold specified by environment variables.
     """
-    embeddings = get_embeddings()
+    embeddings = load_embeddings()
     q_e = embeddings.embed_query(question)
     h_e = embeddings.embed_query(
         ''.join([sentence for tuple in chat_history for sentence in tuple])
     )
     sim = dot_product(q_e, h_e)
     logging.getLogger(__name__).info("similarity: %s", sim)
-    threshold = float(environ.get('QA_FOLLOWUP_SIM_THRESHOLD', False))
+    threshold = get_settings().qa_followup_sim_threshold
     return sim >= threshold
 
 
 def dot_product(v1_list, v2_list):
     """
-    Calcola il prodotto scalare tra due vettori (similarity).
+    Calculate the scalar product between two vectors (similarity).
     """
     return sum(x * y for x, y in zip(v1_list, v2_list))
 
@@ -132,31 +133,41 @@ def is_valid_uuid(val) -> bool:
         return False
 
 
-def get_history(
-    max_date: str | None = None,
-    collection: str | None = None,
-    page: int = 1,
-    page_size: int = 50,
-) -> dict:
+class ChatHistoryFilter(PydanticModel):
+    """ Chat history filter """
+    min_date: str | None = None
+    max_date: str | None = None
+    collection: str | None = None
+    session_id: str | None = None
+    page: int = 1
+    page_size: int = 50
+
+
+def get_history(filter: ChatHistoryFilter) -> dict:
     """
-        Read chat history with optional date and collection filters
+        Read chat history with optional filters
         using pagination data in response
     """
-    max_date = datetime.now() if max_date is None else max_date
-    filter_date = ChatHistoryStore.created <= max_date
-    filter_collection = CollectionStore.name == collection
-    if collection is None:
+    max_date = datetime.now() if filter.max_date is None else filter.max_date
+    min_date = datetime.fromtimestamp(0) if filter.min_date is None else filter.min_date
+    filter_collection = CollectionStore.name == filter.collection
+    if filter.collection is None:
         filter_collection = CollectionStore.name is not None
+    filter_session_id = sqlalchemy.text('1 = 1')  # (default) always true expression
+    if filter.session_id and is_valid_uuid(filter.session_id):
+        filter_session_id = ChatHistoryStore.session_id == filter.session_id
 
-    page = max(1, page)  # min page number is 1
-    page_size = min(1000, page_size)  # max page size is 1000
+    page = max(1, filter.page)  # min page number is 1
+    page_size = min(1000, filter.page_size)  # max page size is 1000
     offset = (page - 1) * page_size
 
     with Session(db_connection()) as session:
         query = get_history_query(
             session=session,
-            filter_date=filter_date,
+            filter_min_date=ChatHistoryStore.created >= min_date,
+            filter_max_date=ChatHistoryStore.created <= max_date,
             filter_collection=filter_collection,
+            filter_session_id=filter_session_id,
         )
         count = query.count()
         results = [u._asdict() for u in query.offset(offset).limit(page_size).all()]
@@ -180,8 +191,10 @@ def get_history(
 
 def get_history_query(
     session: Session,
-    filter_date: BinaryExpression,
+    filter_min_date: BinaryExpression,
+    filter_max_date: BinaryExpression,
     filter_collection: BinaryExpression,
+    filter_session_id: BinaryExpression,
 ) -> Query:
     """Return get history query"""
     return (
@@ -197,6 +210,6 @@ def get_history_query(
             CollectionStore,
             CollectionStore.uuid == ChatHistoryStore.collection_id
         )
-        .filter(filter_date, filter_collection)
+        .filter(filter_min_date, filter_max_date, filter_collection, filter_session_id)
         .order_by(sqlalchemy.desc(ChatHistoryStore.created))
     )

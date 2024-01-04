@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "brevia"
-version = "0.0.4"
+version = "0.0.12"
 description = ""
 authors = [
   "Niki Corradetti <niki.corradetti@atlasconsulting.it>",
@@ -14,8 +14,8 @@ repository = "https://github.com/brevia-ai/brevia"
   python = "^3.10"
   bs4 = "^0.0.1"
   lxml = "^4.9.2"
-  langchain = "0.0.240"
-  fastapi = "^0.95.2"
+  langchain = "0.0.338"
+  fastapi = "^0.104.1"
   nltk = "^3.8.1"
   openai = "^0.27.7"
   pgvector = "^0.1.8"
@@ -31,17 +31,21 @@ repository = "https://github.com/brevia-ai/brevia"
   alembic = "^1.11.1"
   python-jose = "^3.3.0"
   sqlalchemy-utils = "^0.41.1"
+  pydantic-settings = "^2.1.0"
 
     [tool.poetry.dependencies.uvicorn]
     extras = [ "standard" ]
     version = "^0.22.0"
 
   [tool.poetry.scripts]
-  create_token = "brevia.tokens:create_access_token"
-  test_service = "brevia.scripts.test_service:test_service"
+  create_token = "brevia.commands:create_access_token"
   db_current = "brevia.commands:db_current_cmd"
   db_upgrade = "brevia.commands:db_upgrade_cmd"
   db_downgrade = "brevia.commands:db_downgrade_cmd"
+  export_collection = "brevia.commands:export_collection"
+  import_collection = "brevia.commands:import_collection"
+  import_file = "brevia.commands:import_file"
+  test_service = "brevia.commands:run_test_service"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^6.1.0"

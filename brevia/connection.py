@@ -4,7 +4,7 @@ import sys
 from urllib import parse
 import sqlalchemy
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import OperationalError
+from sqlalchemy.exc import DatabaseError
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from brevia.settings import get_settings
 
@@ -41,7 +41,7 @@ def test_connection() -> bool:
                 .all()
             )
         return True
-    except OperationalError:
+    except DatabaseError:
         print('Error performing a simple SQL query', file=sys.stderr)
         return False
 

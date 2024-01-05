@@ -19,6 +19,7 @@ def update_settings():
     # Force tokens and test models vars
     settings.tokens_secret = ''
     settings.tokens_users = ''
+    settings.status_token = ''
     settings.use_test_models = True
 
 

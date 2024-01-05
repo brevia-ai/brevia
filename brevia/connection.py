@@ -5,7 +5,7 @@ from urllib import parse
 import sqlalchemy
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import OperationalError
-from langchain.vectorstores._pgvector_data_models import CollectionStore
+from langchain_community.vectorstores.pgembedding import CollectionStore
 from brevia.settings import get_settings
 
 

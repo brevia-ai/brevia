@@ -3,7 +3,7 @@ from os import path
 from langchain.docstore.document import Document
 from langchain.text_splitter import NLTKTextSplitter
 from langchain.vectorstores.pgvector import PGVector
-from langchain.vectorstores._pgvector_data_models import EmbeddingStore
+from langchain_community.vectorstores.pgembedding import EmbeddingStore
 from sqlalchemy.orm import Session
 from brevia import connection, load_file
 from brevia.models import load_embeddings

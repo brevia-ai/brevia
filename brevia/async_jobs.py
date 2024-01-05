@@ -6,7 +6,7 @@ from datetime import datetime
 import sqlalchemy
 from sqlalchemy.dialects.postgresql import JSON, TIMESTAMP, SMALLINT
 from sqlalchemy.orm import Session
-from langchain.vectorstores.pgvector import BaseModel
+from langchain_community.vectorstores.pgembedding import BaseModel
 from brevia.connection import db_connection
 from brevia.services import BaseService
 

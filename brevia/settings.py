@@ -1,6 +1,6 @@
 """Settings module"""
 from functools import lru_cache
-from typing import Iterable, Any
+from typing import Any
 from os import environ
 from pydantic import Json
 from pydantic_settings import BaseSettings, SettingsConfigDict

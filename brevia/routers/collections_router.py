@@ -11,7 +11,11 @@ from brevia import collections
 router = APIRouter()
 
 
-@router.get('/collections', dependencies=get_dependencies(json_content_type=False))
+@router.get(
+    '/collections',
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Collections'],
+)
 async def collections_index(name: str | None = None):
     """ GET /collections endpoint, information on available collections """
     return collections.collections_info(collection=name)
@@ -19,7 +23,8 @@ async def collections_index(name: str | None = None):
 
 @router.get(
     '/collections/{uuid}',
-    dependencies=get_dependencies(json_content_type=False)
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Collections'],
 )
 async def read_collection(uuid: str):
     """ GET /collections/{uuid} endpoint"""
@@ -34,7 +39,12 @@ class CollectionBody(BaseModel):
     cmetadata: dict
 
 
-@router.post('/collections', status_code=201, dependencies=get_dependencies())
+@router.post(
+    '/collections',
+    status_code=201,
+    dependencies=get_dependencies(),
+    tags=['Collections'],
+)
 def create_collection(body: CollectionBody):
     """ POST /collections endpoint"""
     check_collection_name_absent(body.name)
@@ -45,7 +55,12 @@ def create_collection(body: CollectionBody):
     )
 
 
-@router.patch('/collections/{uuid}', status_code=204, dependencies=get_dependencies())
+@router.patch(
+    '/collections/{uuid}',
+    status_code=204,
+    dependencies=get_dependencies(),
+    tags=['Collections'],
+)
 def update_collection(uuid: str, body: CollectionBody):
     """ PATCH /collections endpoint"""
     check_collection_uuid(uuid)
@@ -60,7 +75,8 @@ def update_collection(uuid: str, body: CollectionBody):
 @router.delete(
     '/collections/{uuid}',
     status_code=204,
-    dependencies=get_dependencies(json_content_type=False)
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Collections'],
 )
 def delete_collection(uuid: str):
     """ DELETE /collections endpoint"""

@@ -84,6 +84,9 @@ class Settings(BaseSettings):
     langchain_api_key: str = ''
     langchain_project: str = ''
 
+    # App metadata
+    block_openapi_urls: bool = False
+
     def update(
         self,
         other: Iterable[tuple[str, Any]],

@@ -1,0 +1,25 @@
+site_name: Brevia Docs
+theme:
+  name: material
+
+nav:
+  - Brevia: index.md
+  - Setup: setup.md
+  - Configuration: config.md
+  - Database: database.md
+  - Document Index: document_index.md
+  - Chat and search: chat_search.md
+  - Analyze services: services.md
+  - Models:
+    - OpenAI: models/openai.md
+    - Cohere: models/cohere.md
+    - Other Models: models/other_models.md
+  - Endpoints:
+    - Collections: endpoints/collections.md
+    - Index & Search: endpoints/documents_index.md
+    - Chat & History: endpoints/chat_and_history.md
+    - Summarize & Analyze: endpoints/summarize_analyze.md
+    - Transcribe:  endpoints/transcribe.md
+    - Status: endpoints/status.md
+  - Security: security.md
+

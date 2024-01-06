@@ -32,6 +32,7 @@ alembic = "^1.11.1"
 python-jose = "^3.3.0"
 sqlalchemy-utils = "^0.41.1"
 pydantic-settings = "^2.1.0"
+tomli = "^2.0.1"
 
 [tool.poetry.dependencies.uvicorn]
 extras = ["standard"]

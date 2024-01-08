@@ -1,6 +1,9 @@
-"""Create OpenAPI app metadata"""
+"""Generati OpenAPI metadata"""
 import logging
 import tomli
+from typing import Any
+from fastapi import FastAPI, APIRouter
+from brevia.routers.app_routers import add_routers
 from brevia.settings import get_settings
 
 
@@ -39,3 +42,21 @@ def metadata(py_proj_path: str) -> dict[str, str]:
         'version': meta.get('version', 'unknown'),
         'openapi_tags': OPENAPI_METADATA,
     }
+
+
+def brevia_openapi(
+    py_proj_path: str,
+    new_routes: list[APIRouter] = []
+) -> dict[str, Any]:
+    """Generate Brevia OpenAPI metadata"""
+    meta = metadata(py_proj_path)
+    app = FastAPI(**meta)
+    add_routers(app)
+    for router in new_routes:
+        app.include_router(router)
+    openapi_schema = app.openapi()
+    # Comment to show how to extend openapi metadata
+    # openapi_schema["info"]["x-logo"] = {
+    #     "url": "https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png"
+    # }
+    return openapi_schema

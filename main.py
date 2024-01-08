@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from brevia.routers.app_routers import add_routers
-from brevia.app_metadata import metadata
+from brevia.utilities.openapi import metadata
 
 
 meta = metadata(f'{Path(__file__).parent}/pyproject.toml')

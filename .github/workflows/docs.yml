@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  PYTHON_VERSION: 3.x
+  PYTHON_VERSION: 3.11
 
 permissions:
   contents: write
@@ -48,9 +48,38 @@ jobs:
           pip install mkdocs-material
 
       - name: Build documentation
+        # `TZ=UTC` added as a workoround to make it work with `act`, see https://github.com/nektos/act/issues/1853#issuecomment-1620853901
         run: |
-          mkdocs build --clean
+          TZ=UTC mkdocs build --clean
           mkdocs --version
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies, including dev dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction
+
+      - name: Create OpenAPI Json file
+        run: .venv/bin/create_openapi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+
+      - name: Build Redoc instance
+        run: npx @redocly/cli build-docs ./openapi.json --output=site/redoc/index.html
 
       - name: Adjust permissions
         run: |

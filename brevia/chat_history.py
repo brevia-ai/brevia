@@ -3,8 +3,7 @@ from typing import List
 import uuid
 import logging
 from datetime import datetime
-from langchain.vectorstores.pgvector import BaseModel
-from langchain.vectorstores._pgvector_data_models import CollectionStore
+from langchain_community.vectorstores.pgembedding import BaseModel, CollectionStore
 from pydantic import BaseModel as PydanticModel
 import sqlalchemy
 from sqlalchemy.dialects.postgresql import JSON, UUID

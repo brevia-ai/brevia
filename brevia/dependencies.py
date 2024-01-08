@@ -3,7 +3,7 @@ import shutil
 from pathlib import Path
 import tempfile
 from jose import JWTError
-from langchain.vectorstores._pgvector_data_models import CollectionStore
+from langchain_community.vectorstores.pgembedding import CollectionStore
 from fastapi import HTTPException, status, Header, Depends, UploadFile
 from fastapi.security import OAuth2PasswordBearer
 from brevia import collections, tokens

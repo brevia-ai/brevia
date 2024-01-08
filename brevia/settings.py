@@ -1,6 +1,6 @@
 """Settings module"""
 from functools import lru_cache
-from typing import Iterable, Any
+from typing import Any
 from os import environ
 from pydantic import Json
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -89,11 +89,13 @@ class Settings(BaseSettings):
 
     def update(
         self,
-        other: Iterable[tuple[str, Any]],
+        other: dict[str, Any],
     ) -> None:
         """Update settings fields, used in unit tests"""
-        for field_name, value in other:
-            setattr(self, field_name, value)
+        for field_name in other.keys():
+            key = field_name.lower()
+            if hasattr(self, key):
+                setattr(self, key, other.get(field_name))
 
     def setup_environment(self):
         """Setup some useful environment variables"""
@@ -106,11 +108,11 @@ class Settings(BaseSettings):
             environ['LANGCHAIN_ENDPOINT'] = self.langchain_endpoint
             environ['LANGCHAIN_API_KEY'] = self.langchain_api_key
             environ['LANGCHAIN_PROJECT'] = self.langchain_project
-        return
 
 
 @lru_cache
 def get_settings():
+    """Return Settings object instance just once (using lru_cache)"""
     settings = Settings()
     settings.setup_environment()
 

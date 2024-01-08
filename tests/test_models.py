@@ -21,7 +21,6 @@ from brevia.models import (
 def test_load_llm():
     """ Test load_llm """
     result = load_llm({'_type': 'openai'})
-    print(result)
     assert isinstance(result, FakeBreviaLLM)
     assert result.get_token_ids('') == [10] * 10
 

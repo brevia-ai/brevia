@@ -7,7 +7,11 @@ from brevia.chat_history import get_history, ChatHistoryFilter
 router = APIRouter()
 
 
-@router.get('/chat_history', dependencies=get_dependencies(json_content_type=False))
+@router.get(
+    '/chat_history',
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Chat'],
+)
 def read_chat_history(filter: Annotated[ChatHistoryFilter, Depends()]):
     """ /chat_history endpoint, read stored chat history """
     return get_history(filter=filter)

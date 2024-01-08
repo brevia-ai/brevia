@@ -7,7 +7,7 @@ from brevia.routers.app_routers import add_routers
 from brevia.settings import get_settings
 
 
-OPENAPI_METADATA = [  # Metadata used in OpenAPI representations
+OPENAPI_TAGS = [  # Tags used in OpenAPI representations
     {
         'name': 'Collections',
         'description': 'Operations with Collections.',
@@ -15,6 +15,18 @@ OPENAPI_METADATA = [  # Metadata used in OpenAPI representations
     {
         'name': 'Index',
         'description': 'Manage documents index',
+    },
+    {
+        'name': 'Chat',
+        'description': 'Chat on documents collections, retrieve chat history',
+    },
+    {
+        'name': 'Analysis',
+        'description': 'Document analisys, summarization, audio transcription',
+    },
+    {
+        'name': 'Status',
+        'description': 'API status',
     },
 ]
 
@@ -40,7 +52,7 @@ def metadata(py_proj_path: str) -> dict[str, str]:
         'title': meta.get('name', 'Brevia'),
         'description': meta.get('description', '[unable to read app metadata]'),
         'version': meta.get('version', 'unknown'),
-        'openapi_tags': OPENAPI_METADATA,
+        'openapi_tags': OPENAPI_TAGS,
     }
 
 

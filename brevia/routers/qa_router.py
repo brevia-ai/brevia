@@ -28,8 +28,8 @@ class ChatBody(ChatParams):
     token_data: bool = False
 
 
-@router.post('/prompt', dependencies=get_dependencies(), deprecated=True)
-@router.post('/chat', dependencies=get_dependencies())
+@router.post('/prompt', dependencies=get_dependencies(), deprecated=True, tags=['Chat'])
+@router.post('/chat', dependencies=get_dependencies(), tags=['Chat'])
 async def chat_action(
     chat_body: ChatBody,
     x_chat_session: Annotated[str | None, Header()] = None,
@@ -159,7 +159,7 @@ def chat_result(
     }
 
 
-@router.post('/search', dependencies=get_dependencies())
+@router.post('/search', dependencies=get_dependencies(), tags=['Index'])
 def search_documents(search: SearchQuery):
     """
         /search endpoint:

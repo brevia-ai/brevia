@@ -14,7 +14,8 @@ router = APIRouter()
 
 @router.post(
     '/transcribe',
-    dependencies=get_dependencies(json_content_type=False)
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Analysis'],
 )
 def audio_transcriptions(
     file: UploadFile,

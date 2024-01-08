@@ -24,6 +24,7 @@ def check_authorization(token: str | None, authorization: str | None):
 @router.api_route(
     '/status',
     methods=['GET', 'HEAD'],
+    tags=['Status'],
 )
 def api_status(
     response: Response,

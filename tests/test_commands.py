@@ -12,6 +12,7 @@ from brevia.commands import (
     import_file,
     run_test_service,
     create_access_token,
+    create_openapi,
 )
 from brevia.collections import create_collection, collection_name_exists
 from brevia.settings import get_settings
@@ -114,3 +115,16 @@ def test_create_access_token():
     ])
     assert result.exit_code == 0
     settings.tokens_secret = ''
+
+
+def test_create_openapi():
+    """ Test create_openapi function """
+    output_path = f'{Path(__file__).parent}/files/openapi.json'
+    runner = CliRunner()
+    result = runner.invoke(create_openapi, [
+        '--output',
+        output_path,
+    ])
+    assert result.exit_code == 0
+    assert exists(output_path)
+    unlink(output_path)

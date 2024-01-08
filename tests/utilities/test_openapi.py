@@ -1,12 +1,12 @@
-"""App metadata module tests"""
+"""Openapi module tests"""
 from pathlib import Path
 from brevia.settings import get_settings
-from brevia.app_metadata import metadata
+from brevia.utilities.openapi import metadata
 
 
 def test_metadata():
     """Test metadata method"""
-    meta = metadata(f'{Path(__file__).parent.parent}/pyproject.toml')
+    meta = metadata(f'{Path(__file__).parent.parent.parent}/pyproject.toml')
     assert list(meta.keys()) == ['title', 'description', 'version', 'openapi_tags']
     assert meta['version'] != 'unknown'
 

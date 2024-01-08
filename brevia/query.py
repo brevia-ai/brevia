@@ -2,7 +2,7 @@
 from os import path
 from langchain.docstore.document import Document
 from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
-from langchain.vectorstores._pgvector_data_models import CollectionStore
+from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains.base import Chain
 from langchain.chains import ConversationalRetrievalChain

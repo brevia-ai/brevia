@@ -105,3 +105,17 @@ def read_document(
         query = session.query(EmbeddingStore.document, EmbeddingStore.cmetadata)
         query = query.filter(filter_collection, filter_document)
         return [row._asdict() for row in query.all()]
+
+
+def update_metadata(
+    collection_id: str,
+    document_id: str,
+    metadata: dict | None = None,
+):
+    """ Update index metadata"""
+    filter_document = EmbeddingStore.custom_id == document_id
+    filter_collection = EmbeddingStore.collection_id == collection_id
+    with Session(connection.db_connection()) as session:
+        query = session.query(EmbeddingStore).filter(filter_collection, filter_document)
+        query.update({EmbeddingStore.cmetadata: metadata})
+        session.commit()

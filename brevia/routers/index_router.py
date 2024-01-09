@@ -7,7 +7,11 @@ from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, status, UploadFile, Form
 from langchain.docstore.document import Document
 from langchain_community.vectorstores.pgembedding import CollectionStore
-from brevia.dependencies import get_dependencies, save_upload_file_tmp
+from brevia.dependencies import (
+    get_dependencies,
+    save_upload_file_tmp,
+    check_collection_uuid,
+)
 from brevia import index, collections, load_file
 
 router = APIRouter()
@@ -116,4 +120,22 @@ def read_document(collection_id: str, document_id: str):
     return index.read_document(
         collection_id=collection_id,
         document_id=document_id,
+    )
+
+
+class IndexMetaBody(BaseModel):
+    """ /index/metadata request body """
+    collection_id: str
+    document_id: str
+    metadata: dict = {}
+
+
+@router.post('/index/metadata', status_code=204, dependencies=get_dependencies())
+def index_metadata_document(item: IndexMetaBody):
+    """ Update metadata of a single collection document """
+    check_collection_uuid(item.collection_id)
+    index.update_metadata(
+        collection_id=item.collection_id,
+        document_id=item.document_id,
+        metadata=item.metadata,
     )

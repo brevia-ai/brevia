@@ -1,53 +1,53 @@
 [tool.poetry]
 name = "Brevia"
-version = "0.0.13"
+version = "0.0.14"
 description = "Extensible API and framework to build your Retrieval Augmented Generation (RAG) and Information Extraction (IE) applications with LLMs"
 authors = [
-    "Niki Corradetti <niki.corradetti@atlasconsulting.it>",
-    "Stefano Rosanelli <stefano.rosanelli@atlasconsulting.it>",
+  "Niki Corradetti <niki.corradetti@atlasconsulting.it>",
+  "Stefano Rosanelli <stefano.rosanelli@atlasconsulting.it>"
 ]
 readme = "README.md"
 homepage = "https://github.com/brevia-ai/brevia"
 repository = "https://github.com/brevia-ai/brevia"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-bs4 = "^0.0.1"
-lxml = "^4.9.2"
-langchain = "0.0.354"
-fastapi = "^0.104.1"
-nltk = "^3.8.1"
-openai = "^0.27.7"
-pgvector = "^0.1.8"
-psycopg2-binary = "^2.9.6"
-pypdf = "^3.9.0"
-python-dotenv = "^1.0.0"
-python-multipart = "^0.0.6"
-tiktoken = "^0.4.0"
-spacy-fastlang = "^1.0.1"
-langcodes = "^3.3.0"
-language-data = "^1.1"
-pycryptodome = "^3.18.0"
-alembic = "^1.11.1"
-python-jose = "^3.3.0"
-sqlalchemy-utils = "^0.41.1"
-pydantic-settings = "^2.1.0"
-tomli = "^2.0.1"
+  [tool.poetry.dependencies]
+  python = "^3.10"
+  bs4 = "^0.0.1"
+  lxml = "^4.9.2"
+  langchain = "0.0.354"
+  fastapi = "^0.104.1"
+  nltk = "^3.8.1"
+  openai = "^0.27.7"
+  pgvector = "^0.1.8"
+  psycopg2-binary = "^2.9.6"
+  pypdf = "^3.9.0"
+  python-dotenv = "^1.0.0"
+  python-multipart = "^0.0.6"
+  tiktoken = "^0.4.0"
+  spacy-fastlang = "^1.0.1"
+  langcodes = "^3.3.0"
+  language-data = "^1.1"
+  pycryptodome = "^3.18.0"
+  alembic = "^1.11.1"
+  python-jose = "^3.3.0"
+  sqlalchemy-utils = "^0.41.1"
+  pydantic-settings = "^2.1.0"
+  tomli = "^2.0.1"
 
-[tool.poetry.dependencies.uvicorn]
-extras = ["standard"]
-version = "^0.22.0"
+    [tool.poetry.dependencies.uvicorn]
+    extras = [ "standard" ]
+    version = "^0.22.0"
 
-[tool.poetry.scripts]
-create_token = "brevia.commands:create_access_token"
-create_openapi = "brevia.commands:create_openapi"
-db_current = "brevia.commands:db_current_cmd"
-db_upgrade = "brevia.commands:db_upgrade_cmd"
-db_downgrade = "brevia.commands:db_downgrade_cmd"
-export_collection = "brevia.commands:export_collection"
-import_collection = "brevia.commands:import_collection"
-import_file = "brevia.commands:import_file"
-test_service = "brevia.commands:run_test_service"
+  [tool.poetry.scripts]
+  create_token = "brevia.commands:create_access_token"
+  create_openapi = "brevia.commands:create_openapi"
+  db_current = "brevia.commands:db_current_cmd"
+  db_upgrade = "brevia.commands:db_upgrade_cmd"
+  db_downgrade = "brevia.commands:db_downgrade_cmd"
+  export_collection = "brevia.commands:export_collection"
+  import_collection = "brevia.commands:import_collection"
+  import_file = "brevia.commands:import_file"
+  test_service = "brevia.commands:run_test_service"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^6.1.0"
@@ -58,12 +58,12 @@ httpx = "^0.25.0"
 
 [tool.pylint.main]
 fail-under = 9.5
-ignore = [".git", "venv", ".venv", "data"]
+ignore = [ ".git", "venv", ".venv", "data" ]
 limit-inference-results = 100
 persistent = true
 py-version = "3.10"
-extension-pkg-whitelist = ["pydantic"]
+extension-pkg-whitelist = [ "pydantic" ]
 
 [build-system]
-requires = ["poetry-core"]
+requires = [ "poetry-core" ]
 build-backend = "poetry.core.masonry.api"

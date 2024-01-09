@@ -70,10 +70,10 @@ jobs:
 
       - name: Install dependencies, including dev dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction
+        run: poetry install --no-interaction --with dev
 
       - name: Create OpenAPI Json file
-        run: .venv/bin/create_openapi
+        run: poetry run create_openapi
 
       - name: Setup Node
         uses: actions/setup-node@v4

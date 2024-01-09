@@ -70,7 +70,7 @@ jobs:
 
       - name: Install dependencies, including dev dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --with dev
+        run: poetry install --no-interaction --with dev --no-root
 
       - name: Create OpenAPI Json file
         run: poetry run create_openapi

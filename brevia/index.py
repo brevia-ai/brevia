@@ -112,7 +112,7 @@ def update_metadata(
     document_id: str,
     metadata: dict | None = None,
 ):
-    """ Update index metadata"""
+    """ Update metadata of a document in a collection"""
     filter_document = EmbeddingStore.custom_id == document_id
     filter_collection = EmbeddingStore.collection_id == collection_id
     with Session(connection.db_connection()) as session:

@@ -132,7 +132,7 @@ class IndexMetaBody(BaseModel):
 
 @router.post('/index/metadata', status_code=204, dependencies=get_dependencies())
 def index_metadata_document(item: IndexMetaBody):
-    """ Update metadata of a single collection document """
+    """ Update metadata of a single document in a collection"""
     check_collection_uuid(item.collection_id)
     index.update_metadata(
         collection_id=item.collection_id,

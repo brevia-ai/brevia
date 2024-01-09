@@ -1,16 +1,16 @@
 {
 	"info": {
-		"_postman_id": "8bcda8f4-e21c-4bf9-95ba-45f4405138a4",
+		"_postman_id": "484c3a34-cbf0-48a1-8d51-72bc8f460502",
 		"name": "Brevia API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "234034"
+		"_exporter_id": "4185449"
 	},
 	"item": [
 		{
 			"name": "Chat",
 			"item": [
 				{
-					"name": "chat - Question/Answer flow basic",
+					"name": "chat - Simple Completion",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -162,6 +162,48 @@
 							],
 							"path": [
 								"chat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "completion - Completion with custom prompt",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Chat-Session",
+								"value": "{{session_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum\",\n    \"prompt\": {\n        \"_type\": \"prompt\",\n        \"input_variables\": [\n            \"text\"\n        ],\n        \"template\": \"formatta il seguente testo in formato EMAIL :\\n\\n{text}\\n\\n SCRIVI L'EMAIL:\"\n    },\n    \"token_data\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/completion",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"completion"
 							]
 						}
 					},

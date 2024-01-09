@@ -20,38 +20,11 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          sparse-checkout: |
-            docs
-            mkdocs.yml
 
       - name: Set up Python runtime
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-          cache-dependency-path: |
-            pyproject.toml
-            requirements.txt
-
-      - name: Set up build cache
-        uses: actions/cache/restore@v3
-        with:
-          key: brevia-docs-${{ hashfiles('.cache/**') }}
-          path: .cache
-          restore-keys: |
-            brevia-docs-
-
-      - name: Install Python dependencies
-        run: |
-          pip install mkdocs-material
-
-      - name: Build documentation
-        # `TZ=UTC` added as a workoround to make it work with `act`, see https://github.com/nektos/act/issues/1853#issuecomment-1620853901
-        run: |
-          TZ=UTC mkdocs build --clean
-          mkdocs --version
 
       - name: Install and configure Poetry
         uses: snok/install-poetry@v1
@@ -70,10 +43,19 @@ jobs:
 
       - name: Install dependencies, including dev dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --with dev --no-root
+        run: poetry install --no-interaction --with dev
+
+      - name: Install mkdocs-material
+        run: poetry add mkdocs-material
+
+      - name: Build documentation
+        # `TZ=UTC` added as a workoround to make it work with `act`, see https://github.com/nektos/act/issues/1853#issuecomment-1620853901
+        run: |
+          TZ=UTC .venv/bin/mkdocs build --clean
+          .venv/bin/mkdocs --version
 
       - name: Create OpenAPI Json file
-        run: poetry run create_openapi
+        run: .venv/bin/create_openapi
 
       - name: Setup Node
         uses: actions/setup-node@v4

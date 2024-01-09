@@ -21,7 +21,12 @@ class IndexBody(BaseModel):
     metadata: dict = {}
 
 
-@router.post('/index', status_code=204, dependencies=get_dependencies())
+@router.post(
+    '/index',
+    status_code=204,
+    dependencies=get_dependencies(),
+    tags=['Index'],
+)
 def index_document(item: IndexBody):
     """ Add single document to collection index """
     collection = load_collection(collection_id=item.collection_id)
@@ -51,7 +56,8 @@ def load_collection(collection_id: str) -> CollectionStore:
 @router.post(
     '/index/upload',
     status_code=204,
-    dependencies=get_dependencies(json_content_type=False)
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Index'],
 )
 def upload_and_index(
     file: UploadFile,
@@ -97,7 +103,8 @@ def upload_and_index(
 @router.delete(
     '/index/{collection_id}/{document_id}',
     status_code=204,
-    dependencies=get_dependencies(json_content_type=False)
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Index'],
 )
 def remove_document(collection_id: str, document_id: str):
     """ Remove document from collection index """
@@ -109,7 +116,8 @@ def remove_document(collection_id: str, document_id: str):
 
 @router.get(
     '/index/{collection_id}/{document_id}',
-    dependencies=get_dependencies(json_content_type=False)
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Index'],
 )
 def read_document(collection_id: str, document_id: str):
     """ Read document from collection index """

@@ -30,8 +30,8 @@ class SummarizeBody(BaseModel):
     token_data: bool = False
 
 
-@router.post('/summarize', dependencies=get_dependencies())
-def sum_documents(summarize: SummarizeBody):
+@router.post('/summarize', dependencies=get_dependencies(), tags=['Analysis'])
+def summarize_text(summarize: SummarizeBody):
     """
     /summarize endpoint:
     Summarize text and return a summary with algorithm selection
@@ -73,7 +73,8 @@ def sum_documents(summarize: SummarizeBody):
 
 @router.post(
     '/upload_summarize',
-    dependencies=get_dependencies(json_content_type=False)
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Analysis'],
 )
 def upload_summarize(
     background_tasks: BackgroundTasks,
@@ -155,7 +156,11 @@ def upload_summarize(
     return {'job': job.uuid}
 
 
-@router.post('/upload_analyze', dependencies=get_dependencies(json_content_type=False))
+@router.post(
+    '/upload_analyze',
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Analysis'],
+)
 def upload_analyze(
     file: UploadFile,
     service: Annotated[str, Form()],

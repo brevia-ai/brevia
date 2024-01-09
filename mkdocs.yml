@@ -22,4 +22,3 @@ nav:
     - Transcribe:  endpoints/transcribe.md
     - Status: endpoints/status.md
   - Security: security.md
-

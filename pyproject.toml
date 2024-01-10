@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "brevia"
-version = "0.0.13"
-description = ""
+name = "Brevia"
+version = "0.0.15"
+description = "Extensible API and framework to build your Retrieval Augmented Generation (RAG) and Information Extraction (IE) applications with LLMs"
 authors = [
   "Niki Corradetti <niki.corradetti@atlasconsulting.it>",
   "Stefano Rosanelli <stefano.rosanelli@atlasconsulting.it>"
@@ -32,6 +32,7 @@ repository = "https://github.com/brevia-ai/brevia"
   python-jose = "^3.3.0"
   sqlalchemy-utils = "^0.41.1"
   pydantic-settings = "^2.1.0"
+  tomli = "^2.0.1"
 
     [tool.poetry.dependencies.uvicorn]
     extras = [ "standard" ]
@@ -39,6 +40,7 @@ repository = "https://github.com/brevia-ai/brevia"
 
   [tool.poetry.scripts]
   create_token = "brevia.commands:create_access_token"
+  create_openapi = "brevia.commands:create_openapi"
   db_current = "brevia.commands:db_current_cmd"
   db_upgrade = "brevia.commands:db_upgrade_cmd"
   db_downgrade = "brevia.commands:db_downgrade_cmd"

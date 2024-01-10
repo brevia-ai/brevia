@@ -7,6 +7,7 @@ import click
 from brevia.alembic import current, upgrade, downgrade
 from brevia.utilities import files_import, run_service, collections_io
 from brevia.tokens import create_token
+from brevia.utilities.openapi import brevia_openapi
 
 
 @click.command()
@@ -118,3 +119,25 @@ def create_access_token(user: str, duration: int):
     """Create an access token """
     token = create_token(user=user, duration=duration)
     print(token)
+
+
+@click.command()
+@click.option(
+    "-f",
+    "--file-path",
+    default=f'{getcwd()}/pyproject.toml',
+    required=True,
+    help="Path to a pyproject.toml file"
+)
+@click.option(
+    "-o",
+    "--output",
+    default='./openapi.json',
+    required=True,
+    help="Path of the generated OpenAPI JSON file"
+)
+def create_openapi(file_path: str, output: str):
+    """Create an openapi metadata file"""
+    metadata = brevia_openapi(py_proj_path=file_path)
+    with open(output, 'w') as f:
+        json.dump(metadata, f)

@@ -1,8 +1,7 @@
 """API endpoints for question answering and search"""
 from typing import Annotated
 import asyncio
-from langchain.callbacks import AsyncIteratorCallbackHandler, get_openai_callback
-from langchain.callbacks.openai_info import OpenAICallbackHandler
+from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain.chains.base import Chain
 from fastapi import APIRouter, Header
 from fastapi.responses import StreamingResponse
@@ -11,7 +10,12 @@ from brevia.dependencies import (
     get_dependencies,
     check_collection_name,
 )
-from brevia.callback import ConversationCallbackHandler
+from brevia.callback import (
+    ConversationCallbackHandler,
+    token_usage_callback,
+    token_usage,
+    TokensCallbackHandler,
+)
 from brevia.language import Detector
 from brevia.query import SearchQuery, ChatParams, conversation_chain, search_vector_qa
 from brevia.models import test_models_in_use
@@ -28,8 +32,8 @@ class ChatBody(ChatParams):
     token_data: bool = False
 
 
-@router.post('/prompt', dependencies=get_dependencies(), deprecated=True)
-@router.post('/chat', dependencies=get_dependencies())
+@router.post('/prompt', dependencies=get_dependencies(), deprecated=True, tags=['Chat'])
+@router.post('/chat', dependencies=get_dependencies(), tags=['Chat'])
 async def chat_action(
     chat_body: ChatBody,
     x_chat_session: Annotated[str | None, Header()] = None,
@@ -116,7 +120,7 @@ async def run_chain(
     x_chat_session: str,
 ):
     """Run chain usign async methods and return result"""
-    with get_openai_callback() as callb:
+    with token_usage_callback() as callb:
         result = await chain.acall({
             'question': chat_body.question,
             'chat_history': retrieve_chat_history(
@@ -137,7 +141,7 @@ async def run_chain(
 
 def chat_result(
     result: dict,
-    callb: OpenAICallbackHandler,
+    callb: TokensCallbackHandler,
     chat_body: ChatBody,
     x_chat_session: str | None = None,
 ) -> dict:
@@ -149,17 +153,17 @@ def chat_result(
             collection=chat_body.collection,
             question=chat_body.question,
             answer=answer,
-            metadata=callb.__dict__,
+            metadata=token_usage(callb),
     )
 
     return {
         'bot': answer,
         'docs': None if not chat_body.source_docs else result['source_documents'],
-        'token_data': None if not chat_body.token_data else callb.__dict__
+        'token_data': None if not chat_body.token_data else token_usage(callb)
     }
 
 
-@router.post('/search', dependencies=get_dependencies())
+@router.post('/search', dependencies=get_dependencies(), tags=['Index'])
 def search_documents(search: SearchQuery):
     """
         /search endpoint:

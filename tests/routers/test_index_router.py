@@ -4,8 +4,10 @@ from uuid import uuid4
 from pathlib import Path
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
+from langchain.docstore.document import Document
 from brevia.routers import index_router
 from brevia.collections import create_collection
+from brevia.index import add_document, read_document
 
 app = FastAPI()
 app.include_router(index_router.router)
@@ -132,3 +134,24 @@ def test_upload_analyze_fail():
         },
     )
     assert response.status_code == 400
+
+
+def test_index_metadata_document():
+    """Test POST /index/metadata endpoint"""
+    collection = create_collection('test_collection', {})
+    doc1 = Document(page_content='some', metadata={'category': 'first'})
+    add_document(document=doc1, collection_name='test_collection', document_id='123')
+    response = client.post(
+        '/index/metadata',
+        headers={'Content-Type': 'application/json'},
+        content=json.dumps({
+            'collection_id': str(collection.uuid),
+            'document_id': '123',
+            'metadata': {'category': 'second'},
+        })
+    )
+    assert response.status_code == 204
+    assert response.text == ''
+    docs = read_document(collection_id=str(collection.uuid), document_id='123')
+    assert len(docs) == 1
+    assert docs[0].get('cmetadata') == {'category': 'second'}

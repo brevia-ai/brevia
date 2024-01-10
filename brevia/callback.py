@@ -4,10 +4,28 @@ from uuid import UUID
 import asyncio
 import logging
 import json
+from langchain.callbacks import get_openai_callback
 from langchain.callbacks.base import BaseCallbackHandler, AsyncCallbackHandler
 from langchain.docstore.document import Document
 from langchain.schema import BaseMessage
 from langchain.schema.output import LLMResult
+from langchain.callbacks.openai_info import OpenAICallbackHandler
+
+# Only OpenAI token usage callback handler is supported for now
+# other LLMs will always return 0 as tokens usage (for now)
+token_usage_callback = get_openai_callback
+TokensCallbackHandler = OpenAICallbackHandler
+
+
+def token_usage(callb: TokensCallbackHandler) -> dict[str, int | float]:
+    """Tokens usage and costs details (only OpenAI for now)"""
+    return {
+        'completion_tokens': callb.completion_tokens,
+        'prompt_tokens': callb.prompt_tokens,
+        'total_tokens': callb.total_tokens,
+        'successful_requests': callb.successful_requests,
+        'total_cost': callb.total_cost,
+    }
 
 
 class ConversationCallbackHandler(AsyncCallbackHandler):

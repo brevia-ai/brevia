@@ -1,13 +1,11 @@
 """API endpoints for question answering and search"""
-from langchain.callbacks import get_openai_callback
-from langchain_community.callbacks.openai_info import OpenAICallbackHandler
 from langchain.chains.base import Chain
-from fastapi import APIRouter, Header
+from fastapi import APIRouter
 from brevia.dependencies import (
     get_dependencies,
 )
 from brevia.completions import CompletionParams, simple_completion_chain
-from brevia.models import test_models_in_use
+from brevia.callback import token_usage_callback, token_usage, TokensCallbackHandler
 
 router = APIRouter()
 
@@ -40,26 +38,24 @@ async def run_chain(
     completion_body: CompletionBody,
 ):
     """Run chain usign async methods and return result"""
-    with get_openai_callback() as callb:
+    with token_usage_callback() as callb:
         result = await chain.acall({
             'text': completion_body.text
         })
     return completion_result(
         result=result,
-        completion_body=completion_body,
         callb=callb,
     )
 
 
 def completion_result(
     result: dict,
-    completion_body: CompletionBody,
-    callb: OpenAICallbackHandler,
+    callb: TokensCallbackHandler,
 ) -> dict:
     """ Handle chat result: save chat history and return answer """
     answer = result['text'].strip(" \n")
 
-    print(callb)
     return {
-        'completion': answer
+        'completion': answer,
+        'usage': token_usage(callb),
     }

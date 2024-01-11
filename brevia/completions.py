@@ -3,7 +3,6 @@ from langchain.chains.base import Chain
 from langchain.chains.llm import LLMChain
 from langchain.prompts.loading import load_prompt_from_config
 from pydantic import BaseModel
-from brevia.callback import AsyncLoggingCallbackHandler
 from brevia.models import load_chatmodel
 from brevia.settings import get_settings
 
@@ -30,12 +29,8 @@ def simple_completion_chain(
     """
         Return simple completion chain for a generit Input text
 
-        completion_params:
-
-        answer_callbacks: callbacks to use in the final LLM answer to enable streaming
-            (default empty list)
-        conversation_callbacks: callback to handle conversation results
-            (default empty list)
+        completion_params: basic completion params including:
+            prompt: custom prompt for execute simple completion commands
     """
 
     settings = get_settings()

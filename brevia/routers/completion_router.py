@@ -1,4 +1,4 @@
-"""API endpoints for question answering and search"""
+"""Completion API endpoints"""
 from langchain.chains.base import Chain
 from fastapi import APIRouter
 from brevia.dependencies import (

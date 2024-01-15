@@ -16,4 +16,3 @@ def test_simple_completion_chain():
     result = simple_completion_chain(fake_prompt)
     assert result is not None
     assert isinstance(result, Chain)
-

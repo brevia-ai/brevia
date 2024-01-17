@@ -31,8 +31,8 @@ def test_evaluate():
     chat_hist = add_history(uuid.uuid4(), 'test_collection', 'who?', 'me')
     evaluation = {
         'uuid': str(chat_hist.uuid),
-        'evaluation': False,
-        'feedback': 'Lot of hallucinations!',
+        'user_evaluation': False,
+        'user_feedback': 'Lot of hallucinations!',
     }
     response = client.post(
         '/evaluate',
@@ -43,5 +43,5 @@ def test_evaluate():
 
     with Session(db_connection()) as session:
         history_item = session.get(ChatHistoryStore, chat_hist.uuid)
-        assert history_item.user_evaluation == evaluation['evaluation']
-        assert history_item.user_feedback == evaluation['feedback']
+        assert history_item.user_evaluation == evaluation['user_evaluation']
+        assert history_item.user_feedback == evaluation['user_feedback']

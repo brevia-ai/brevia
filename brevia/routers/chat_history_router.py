@@ -21,8 +21,8 @@ def read_chat_history(filter: Annotated[ChatHistoryFilter, Depends()]):
 class EvaluateBody(BaseModel):
     """ Evaluation creation model """
     uuid: str
-    evaluation: bool
-    feedback: str
+    user_evaluation: bool
+    user_feedback: str
 
 
 @router.post(
@@ -35,6 +35,6 @@ def evluate_chat_history(body: EvaluateBody):
     """ /evaluate endpoint, save chat history item user evaluation """
     history_evaluation(
         history_id=body.uuid,
-        evaluation=body.evaluation,
-        feedback=body.feedback,
+        user_evaluation=body.user_evaluation,
+        user_feedback=body.user_feedback,
     )

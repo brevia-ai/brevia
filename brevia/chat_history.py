@@ -206,12 +206,16 @@ def get_history_query(
     """Return get history query"""
     return (
         session.query(
+            ChatHistoryStore.uuid,
             ChatHistoryStore.question,
             ChatHistoryStore.answer,
             ChatHistoryStore.session_id,
             ChatHistoryStore.cmetadata,
             ChatHistoryStore.created,
             CollectionStore.name.label('collection'),
+            ChatHistoryStore.user_evaluation,
+            ChatHistoryStore.user_feedback,
+            ChatHistoryStore.chat_source,
         )
         .join(
             CollectionStore,
@@ -224,13 +228,13 @@ def get_history_query(
 
 def history_evaluation(
     history_id: str,
-    evaluation: bool,
-    feedback: str | None = None,
+    user_evaluation: bool,
+    user_feedback: str | None = None,
 ):
     """ Update evaluation of single history item """
     with Session(db_connection()) as session:
         chat_history = session.get(ChatHistoryStore, history_id)
-        chat_history.user_evaluation = evaluation
-        chat_history.user_feedback = feedback
+        chat_history.user_evaluation = user_evaluation
+        chat_history.user_feedback = user_feedback
         session.add(chat_history)
         session.commit()

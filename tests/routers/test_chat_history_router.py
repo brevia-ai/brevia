@@ -45,3 +45,18 @@ def test_evaluate():
         history_item = session.get(ChatHistoryStore, chat_hist.uuid)
         assert history_item.user_evaluation == evaluation['user_evaluation']
         assert history_item.user_feedback == evaluation['user_feedback']
+
+
+def test_evaluate_failure():
+    """Test /evaluate failure"""
+    evaluation = {
+        'uuid': str(uuid.uuid4()),
+        'user_evaluation': False,
+        'user_feedback': 'Lot of hallucinations!',
+    }
+    response = client.post(
+        '/evaluate',
+        headers={'Content-Type': 'application/json'},
+        content=json.dumps(evaluation),
+    )
+    assert response.status_code == 404

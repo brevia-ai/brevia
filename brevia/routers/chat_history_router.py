@@ -1,6 +1,6 @@
 """API endpoints definitions to handle audio input"""
 from typing_extensions import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
 from brevia.dependencies import get_dependencies
 from brevia.chat_history import get_history, history_evaluation, ChatHistoryFilter
@@ -33,8 +33,13 @@ class EvaluateBody(BaseModel):
 )
 def evluate_chat_history(body: EvaluateBody):
     """ /evaluate endpoint, save chat history item user evaluation """
-    history_evaluation(
+    result = history_evaluation(
         history_id=body.uuid,
         user_evaluation=body.user_evaluation,
         user_feedback=body.user_feedback,
     )
+    if not result:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            f"Chat history '{body.uuid}' was not found",
+        )

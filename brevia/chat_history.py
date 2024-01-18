@@ -230,11 +230,18 @@ def history_evaluation(
     history_id: str,
     user_evaluation: bool,
     user_feedback: str | None = None,
-):
-    """ Update evaluation of single history item """
+) -> bool:
+    """
+        Update evaluation of single history item.
+        Return false if history item is not found and true upon success.
+    """
     with Session(db_connection()) as session:
         chat_history = session.get(ChatHistoryStore, history_id)
+        if chat_history is None:
+            return False
         chat_history.user_evaluation = user_evaluation
         chat_history.user_feedback = user_feedback
         session.add(chat_history)
         session.commit()
+
+    return True

@@ -36,6 +36,12 @@ class ChatHistoryStore(BaseModel):
         server_default=sqlalchemy.sql.func.now()
     )
     cmetadata = sqlalchemy.Column(JSON, nullable=True)
+    user_evaluation = sqlalchemy.Column(
+        sqlalchemy.BOOLEAN(),
+        nullable=True,
+    )
+    user_feedback = sqlalchemy.Column(sqlalchemy.String)
+    chat_source = sqlalchemy.Column(sqlalchemy.String)
 
 
 def history(chat_history: list, session: str = None):
@@ -100,6 +106,7 @@ def add_history(
     question: str,
     answer: str,
     metadata: dict | None = None,
+    chat_source: str | None = None,
 ) -> (ChatHistoryStore | None):
     """Save chat history item to database """
     if not is_valid_uuid(session_id):
@@ -115,6 +122,7 @@ def add_history(
             question=question,
             answer=answer,
             cmetadata=metadata,
+            chat_source=chat_source,
         )
         session.expire_on_commit = False
         session.add(chat_history_store)
@@ -198,12 +206,16 @@ def get_history_query(
     """Return get history query"""
     return (
         session.query(
+            ChatHistoryStore.uuid,
             ChatHistoryStore.question,
             ChatHistoryStore.answer,
             ChatHistoryStore.session_id,
             ChatHistoryStore.cmetadata,
             ChatHistoryStore.created,
             CollectionStore.name.label('collection'),
+            ChatHistoryStore.user_evaluation,
+            ChatHistoryStore.user_feedback,
+            ChatHistoryStore.chat_source,
         )
         .join(
             CollectionStore,
@@ -212,3 +224,24 @@ def get_history_query(
         .filter(filter_min_date, filter_max_date, filter_collection, filter_session_id)
         .order_by(sqlalchemy.desc(ChatHistoryStore.created))
     )
+
+
+def history_evaluation(
+    history_id: str,
+    user_evaluation: bool,
+    user_feedback: str | None = None,
+) -> bool:
+    """
+        Update evaluation of single history item.
+        Return false if history item is not found and true upon success.
+    """
+    with Session(db_connection()) as session:
+        chat_history = session.get(ChatHistoryStore, history_id)
+        if chat_history is None:
+            return False
+        chat_history.user_evaluation = user_evaluation
+        chat_history.user_feedback = user_feedback
+        session.add(chat_history)
+        session.commit()
+
+    return True

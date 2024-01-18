@@ -34,7 +34,7 @@ async def read_collection(uuid: str):
 
 
 class CollectionBody(BaseModel):
-    """ summarize validation """
+    """ Collection creation model """
     name: str
     cmetadata: dict
 

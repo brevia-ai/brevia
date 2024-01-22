@@ -28,7 +28,7 @@ def simple_completion_chain(
     """
 
     settings = get_settings()
-    llm_conf = settings.qa_completion_llm
+    llm_conf = settings.qa_completion_llm.copy()
     comp_llm = load_chatmodel(llm_conf)
     verbose = settings.verbose_mode
     # Create chain for follow-up question using chat history (if present)

@@ -2,7 +2,7 @@
 from typing import List
 import uuid
 import logging
-from datetime import datetime
+from datetime import datetime, time
 from langchain_community.vectorstores.pgembedding import BaseModel, CollectionStore
 from pydantic import BaseModel as PydanticModel
 import sqlalchemy
@@ -155,8 +155,15 @@ def get_history(filter: ChatHistoryFilter) -> dict:
         Read chat history with optional filters
         using pagination data in response
     """
-    max_date = datetime.now() if filter.max_date is None else filter.max_date
-    min_date = datetime.fromtimestamp(0) if filter.min_date is None else filter.min_date
+    max_date = datetime.now()
+    if filter.max_date is not None:
+        max_date = datetime.strptime(filter.max_date, '%Y-%m-%d')
+    max_date = datetime.combine(max_date, time.max)
+
+    min_date = datetime.fromtimestamp(0)
+    if filter.min_date is not None:
+        min_date = datetime.strptime(filter.min_date, '%Y-%m-%d')
+    min_date = datetime.combine(min_date, time.min)
     filter_collection = CollectionStore.name == filter.collection
     if filter.collection is None:
         filter_collection = CollectionStore.name is not None

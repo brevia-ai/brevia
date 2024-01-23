@@ -62,8 +62,11 @@ def test_get_history_filters():
     create_collection('test_collection', {})
     session_id = uuid.uuid4()
     add_history(session_id, 'test_collection', 'who?', 'me')
+    today = datetime.strftime(datetime.now(), '%Y-%m-%d')
     yesterday = datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d')
     tomorrow = datetime.strftime(datetime.now() + timedelta(1), '%Y-%m-%d')
+    result = get_history(ChatHistoryFilter(max_date=today))
+    assert result['meta']['pagination']['count'] == 1
     result = get_history(ChatHistoryFilter(min_date=yesterday))
     assert result['meta']['pagination']['count'] == 1
     result = get_history(ChatHistoryFilter(min_date=tomorrow))

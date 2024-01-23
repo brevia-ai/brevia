@@ -53,43 +53,52 @@ async def chat_action(
         conversation_callbacks=[conversation_handler]
     )
 
-    if not chat_body.streaming or test_models_in_use():
-        return await run_chain(
+    with token_usage_callback() as token_callback:
+        if not chat_body.streaming or test_models_in_use():
+            return await run_chain(
+                chain=chain,
+                chat_body=chat_body,
+                lang=lang,
+                token_callback=token_callback,
+                x_chat_session=x_chat_session,
+            )
+
+        asyncio.create_task(run_chain(
             chain=chain,
             chat_body=chat_body,
             lang=lang,
+            token_callback=token_callback,
             x_chat_session=x_chat_session,
-        )
+        ))
 
-    asyncio.create_task(run_chain(
-        chain=chain,
-        chat_body=chat_body,
-        lang=lang,
-        x_chat_session=x_chat_session,
-    ))
+        async def event_generator(
+            stream_callback: AsyncIteratorCallbackHandler,
+            conversation_callback: ConversationCallbackHandler,
+            token_callback: TokensCallbackHandler,
+            chat_body: ChatBody,
+            x_chat_session: str | None = None,
+        ):
+            ait = stream_callback.aiter()
 
-    async def event_generator(
-        stream_callback: AsyncIteratorCallbackHandler,
-        conversation_callback: ConversationCallbackHandler,
-        source_docs: bool = False,
-    ):
-        ait = stream_callback.aiter()
+            async for token in ait:
+                yield token
 
-        async for token in ait:
-            yield token
-
-        if not source_docs:
-            yield ''
-        else:
             await conversation_callback.wait_conversation_done()
 
-            yield conversation_callback.chain_result()
+            yield conversation_callback.chain_result(
+                callb=token_callback,
+                question=chat_body.question,
+                collection=chat_body.collection,
+                x_chat_session=x_chat_session,
+            )
 
-    return StreamingResponse(event_generator(
-        stream_callback=stream_handler,
-        conversation_callback=conversation_handler,
-        source_docs=chat_body.source_docs,
-    ))
+        return StreamingResponse(event_generator(
+            stream_callback=stream_handler,
+            conversation_callback=conversation_handler,
+            token_callback=token_callback,
+            chat_body=chat_body,
+            x_chat_session=x_chat_session,
+        ))
 
 
 def chat_language(chat_body: ChatBody, cmetadata: dict) -> str:
@@ -117,11 +126,11 @@ async def run_chain(
     chain: Chain,
     chat_body: ChatBody,
     lang: str,
+    token_callback: TokensCallbackHandler,
     x_chat_session: str,
 ):
     """Run chain usign async methods and return result"""
-    with token_usage_callback() as callb:
-        result = await chain.acall({
+    result = await chain.acall({
             'question': chat_body.question,
             'chat_history': retrieve_chat_history(
                 history=chat_body.chat_history,
@@ -133,7 +142,7 @@ async def run_chain(
 
     return chat_result(
         result=result,
-        callb=callb,
+        callb=token_callback,
         chat_body=chat_body,
         x_chat_session=x_chat_session
     )
@@ -148,17 +157,21 @@ def chat_result(
     """ Handle chat result: save chat history and return answer """
     answer = result['answer'].strip(" \n")
 
-    chat_history.add_history(
+    chat_history_id = None
+    if not chat_body.streaming:
+        chat_hist = chat_history.add_history(
             session_id=x_chat_session,
             collection=chat_body.collection,
             question=chat_body.question,
             answer=answer,
             metadata=token_usage(callb),
-    )
+        )
+        chat_history_id = None if chat_hist is None else str(chat_hist.uuid)
 
     return {
         'bot': answer,
         'docs': None if not chat_body.source_docs else result['source_documents'],
+        'chat_history_id': chat_history_id,
         'token_data': None if not chat_body.token_data else token_usage(callb)
     }
 

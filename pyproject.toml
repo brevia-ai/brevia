@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Brevia"
-version = "0.0.17"
+version = "0.0.18"
 description = "Extensible API and framework to build your Retrieval Augmented Generation (RAG) and Information Extraction (IE) applications with LLMs"
 authors = [
   "Niki Corradetti <niki.corradetti@atlasconsulting.it>",

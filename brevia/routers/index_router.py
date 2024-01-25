@@ -3,11 +3,15 @@ from typing import Annotated
 from os import path
 import json
 import logging
-from langchain.docstore.document import Document
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, status, UploadFile, Form
-from langchain.vectorstores._pgvector_data_models import CollectionStore
-from brevia.dependencies import get_dependencies, save_upload_file_tmp
+from langchain.docstore.document import Document
+from langchain_community.vectorstores.pgembedding import CollectionStore
+from brevia.dependencies import (
+    get_dependencies,
+    save_upload_file_tmp,
+    check_collection_uuid,
+)
 from brevia import index, collections, load_file
 
 router = APIRouter()
@@ -17,11 +21,16 @@ class IndexBody(BaseModel):
     """ /index request body """
     content: str
     collection_id: str
-    metadata: dict | None = None
     document_id: str
+    metadata: dict = {}
 
 
-@router.post('/index', status_code=204, dependencies=get_dependencies())
+@router.post(
+    '/index',
+    status_code=204,
+    dependencies=get_dependencies(),
+    tags=['Index'],
+)
 def index_document(item: IndexBody):
     """ Add single document to collection index """
     collection = load_collection(collection_id=item.collection_id)
@@ -51,7 +60,8 @@ def load_collection(collection_id: str) -> CollectionStore:
 @router.post(
     '/index/upload',
     status_code=204,
-    dependencies=get_dependencies(json_content_type=False)
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Index'],
 )
 def upload_and_index(
     file: UploadFile,
@@ -64,8 +74,8 @@ def upload_and_index(
     """
     collection = load_collection(collection_id=collection_id)
     log = logging.getLogger(__name__)
-    log.info(f"Uploaded '{file.filename}' - {file.content_type} - {file.size}")
-    log.info(f"Collection '{collection.name}' - document {document_id}")
+    log.info("Uploaded '%s' - %s - %s", file.filename, file.content_type, file.size)
+    log.info("Collection '%s' - document %s", collection.name, document_id)
     if file.content_type not in ['application/pdf', 'text/plain']:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
@@ -97,7 +107,8 @@ def upload_and_index(
 @router.delete(
     '/index/{collection_id}/{document_id}',
     status_code=204,
-    dependencies=get_dependencies(json_content_type=False)
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Index'],
 )
 def remove_document(collection_id: str, document_id: str):
     """ Remove document from collection index """
@@ -109,11 +120,30 @@ def remove_document(collection_id: str, document_id: str):
 
 @router.get(
     '/index/{collection_id}/{document_id}',
-    dependencies=get_dependencies(json_content_type=False)
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Index'],
 )
 def read_document(collection_id: str, document_id: str):
     """ Read document from collection index """
     return index.read_document(
         collection_id=collection_id,
         document_id=document_id,
+    )
+
+
+class IndexMetaBody(BaseModel):
+    """ /index/metadata request body """
+    collection_id: str
+    document_id: str
+    metadata: dict = {}
+
+
+@router.post('/index/metadata', status_code=204, dependencies=get_dependencies())
+def index_metadata_document(item: IndexMetaBody):
+    """ Update metadata of a single document in a collection"""
+    check_collection_uuid(item.collection_id)
+    index.update_metadata(
+        collection_id=item.collection_id,
+        document_id=item.document_id,
+        metadata=item.metadata,
     )

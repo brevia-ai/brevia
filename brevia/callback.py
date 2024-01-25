@@ -1,13 +1,31 @@
 """ Callback class to handle conversation chain events """
-from typing import Dict, Any, Optional, List, Sequence, Union
+from typing import Dict, Any, List, Sequence, Union
 from uuid import UUID
 import asyncio
 import logging
 import json
+from langchain.callbacks import get_openai_callback
 from langchain.callbacks.base import BaseCallbackHandler, AsyncCallbackHandler
 from langchain.docstore.document import Document
 from langchain.schema import BaseMessage
 from langchain.schema.output import LLMResult
+from langchain.callbacks.openai_info import OpenAICallbackHandler
+
+# Only OpenAI token usage callback handler is supported for now
+# other LLMs will always return 0 as tokens usage (for now)
+token_usage_callback = get_openai_callback
+TokensCallbackHandler = OpenAICallbackHandler
+
+
+def token_usage(callb: TokensCallbackHandler) -> dict[str, int | float]:
+    """Tokens usage and costs details (only OpenAI for now)"""
+    return {
+        'completion_tokens': callb.completion_tokens,
+        'prompt_tokens': callb.prompt_tokens,
+        'total_tokens': callb.total_tokens,
+        'successful_requests': callb.successful_requests,
+        'total_cost': callb.total_cost,
+    }
 
 
 class ConversationCallbackHandler(AsyncCallbackHandler):
@@ -21,7 +39,7 @@ class ConversationCallbackHandler(AsyncCallbackHandler):
         messages: List[List[BaseMessage]],
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
+        parent_run_id: UUID | None = None,
         **kwargs: Any,
     ) -> Any:
         """Run when a chat model starts running."""
@@ -32,7 +50,7 @@ class ConversationCallbackHandler(AsyncCallbackHandler):
         inputs: Dict[str, Any],
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
+        parent_run_id: UUID | None = None,
         **kwargs: Any,
     ) -> None:
         """Run when chain starts running."""
@@ -43,7 +61,7 @@ class ConversationCallbackHandler(AsyncCallbackHandler):
         outputs: Dict[str, Any],
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
+        parent_run_id: UUID | None = None,
         **kwargs: Any,
     ) -> None:
         """Run when chain ends running."""
@@ -80,7 +98,7 @@ class AsyncLoggingCallbackHandler(AsyncCallbackHandler):
         messages: List[List[BaseMessage]],
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
+        parent_run_id: UUID | None = None,
         **kwargs: Any,
     ) -> Any:
         """Run when a chat model starts running."""
@@ -94,7 +112,7 @@ class AsyncLoggingCallbackHandler(AsyncCallbackHandler):
         inputs: Dict[str, Any],
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
+        parent_run_id: UUID | None = None,
         **kwargs: Any,
     ) -> None:
         """Run when chain starts running."""
@@ -107,7 +125,7 @@ class AsyncLoggingCallbackHandler(AsyncCallbackHandler):
         outputs: Dict[str, Any],
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
+        parent_run_id: UUID | None = None,
         **kwargs: Any,
     ) -> None:
         """Run when chain ends running."""
@@ -120,9 +138,9 @@ class AsyncLoggingCallbackHandler(AsyncCallbackHandler):
         query: str,
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
-        tags: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        parent_run_id: UUID | None = None,
+        tags: List[str] | None = None,
+        metadata: Dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         """Run on retriever start."""
@@ -135,8 +153,8 @@ class AsyncLoggingCallbackHandler(AsyncCallbackHandler):
         documents: Sequence[Document],
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
-        tags: Optional[List[str]] = None,
+        parent_run_id: UUID | None = None,
+        tags: List[str] | None = None,
         **kwargs: Any,
     ) -> None:
         """Run on retriever end."""
@@ -148,8 +166,8 @@ class AsyncLoggingCallbackHandler(AsyncCallbackHandler):
         error: Union[Exception, KeyboardInterrupt],
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
-        tags: Optional[List[str]] = None,
+        parent_run_id: UUID | None = None,
+        tags: List[str] | None = None,
         **kwargs: Any,
     ) -> None:
         """Run on retriever error."""
@@ -161,7 +179,7 @@ class AsyncLoggingCallbackHandler(AsyncCallbackHandler):
     #     text: str,
     #     *,
     #     run_id: UUID,
-    #     parent_run_id: Optional[UUID] = None,
+    #     parent_run_id: UUID | None = None,
     #     **kwargs: Any,
     # ) -> Any:
     #     """Run on arbitrary text."""
@@ -183,7 +201,7 @@ class LoggingCallbackHandler(BaseCallbackHandler):
         messages: List[List[BaseMessage]],
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
+        parent_run_id: UUID | None = None,
         **kwargs: Any,
     ) -> Any:
         """Run when a chat model starts running."""
@@ -197,7 +215,7 @@ class LoggingCallbackHandler(BaseCallbackHandler):
         inputs: Dict[str, Any],
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
+        parent_run_id: UUID | None = None,
         **kwargs: Any,
     ) -> None:
         """Run when chain starts running."""
@@ -210,7 +228,7 @@ class LoggingCallbackHandler(BaseCallbackHandler):
         outputs: Dict[str, Any],
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
+        parent_run_id: UUID | None = None,
         **kwargs: Any,
     ) -> None:
         """Run when chain ends running."""
@@ -223,9 +241,9 @@ class LoggingCallbackHandler(BaseCallbackHandler):
         prompts: List[str],
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
-        tags: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        parent_run_id: UUID | None = None,
+        tags: List[str] | None = None,
+        metadata: Dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> Any:
         """Run when LLM starts running."""
@@ -238,7 +256,7 @@ class LoggingCallbackHandler(BaseCallbackHandler):
         response: LLMResult,
         *,
         run_id: UUID,
-        parent_run_id: Optional[UUID] = None,
+        parent_run_id: UUID | None = None,
         **kwargs: Any,
     ) -> Any:
         """Run when LLM ends running."""
@@ -250,7 +268,7 @@ class LoggingCallbackHandler(BaseCallbackHandler):
     #     text: str,
     #     *,
     #     run_id: UUID,
-    #     parent_run_id: Optional[UUID] = None,
+    #     parent_run_id: UUID | None = None,
     #     **kwargs: Any,
     # ) -> Any:
     #     """Run on arbitrary text."""

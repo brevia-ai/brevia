@@ -28,3 +28,6 @@ brevia/extensions/*
 *.sw?
 /.history
 /.vscode
+
+# docs site
+site/

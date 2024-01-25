@@ -1,22 +1,23 @@
 """ DB connection utility functions """
-import os
 import subprocess
 import sys
 from urllib import parse
 import sqlalchemy
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import OperationalError
-from langchain.vectorstores._pgvector_data_models import CollectionStore
+from sqlalchemy.exc import DatabaseError
+from langchain_community.vectorstores.pgembedding import CollectionStore
+from brevia.settings import get_settings
 
 
 def connection_string() -> str:
     """ Postgres+pgvector db connection string """
-    driver = os.environ.get('PGVECTOR_DRIVER')
-    host = os.environ.get('PGVECTOR_HOST')
-    port = int(os.environ.get('PGVECTOR_PORT'))
-    database = os.environ.get('PGVECTOR_DATABASE')
-    user = os.environ.get('PGVECTOR_USER')
-    password = parse.quote_plus(os.environ.get('PGVECTOR_PASSWORD'))
+    conf = get_settings()
+    driver = conf.pgvector_driver
+    host = conf.pgvector_host
+    port = conf.pgvector_port
+    database = conf.pgvector_database
+    user = conf.pgvector_user
+    password = parse.quote_plus(conf.pgvector_password)
 
     return f"postgresql+{driver}://{user}:{password}@{host}:{port}/{database}"
 
@@ -25,7 +26,7 @@ def db_connection() -> sqlalchemy.engine.Connection:
     """ SQLAlchemy db connection """
     engine = sqlalchemy.create_engine(
         connection_string(),
-        pool_size=int(os.environ.get('PGVECTOR_POOL_SIZE', '10')),
+        pool_size=get_settings().pgvector_pool_size,
     )
     return engine.connect()
 
@@ -40,7 +41,7 @@ def test_connection() -> bool:
                 .all()
             )
         return True
-    except OperationalError:
+    except DatabaseError:
         print('Error performing a simple SQL query', file=sys.stderr)
         return False
 
@@ -49,13 +50,14 @@ def psql_command(
     cmd: str,
 ) -> bool:
     """Perform command on db using `psql`"""
-    host = os.environ.get('PGVECTOR_HOST')
-    port = os.environ.get('PGVECTOR_PORT')
-    database = os.environ.get('PGVECTOR_DATABASE')
-    user = os.environ.get('PGVECTOR_USER')
-    password = os.environ.get('PGVECTOR_PASSWORD')
+    conf = get_settings()
+    host = conf.pgvector_host
+    port = conf.pgvector_port
+    database = conf.pgvector_database
+    user = conf.pgvector_user
+    password = conf.pgvector_password
 
-    cmd = ['psql', '-U', user, '-h', host, '-p', port, '-c', f"{cmd}", database]
+    cmd = ['psql', '-U', user, '-h', host, '-p', f'{port}', '-c', cmd, database]
 
     with subprocess.Popen(
         cmd,

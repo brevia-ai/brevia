@@ -1,9 +1,0 @@
-_type: prompt
-input_variables:
-    ["text","num_items"]
-template: |
-    Scrivi un riassunto in {num_items} punti e in italiano del seguente testo fornito:
-
-    {text}
-
-    RIASSUNTO IN ITALIANO IN {num_items} PUNTI:

@@ -1,5 +1,5 @@
 """Collections handling functions"""
-from langchain.vectorstores._pgvector_data_models import CollectionStore
+from langchain_community.vectorstores.pgembedding import CollectionStore
 from sqlalchemy.orm import Session
 from brevia import connection
 

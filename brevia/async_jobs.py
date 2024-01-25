@@ -6,7 +6,7 @@ from datetime import datetime
 import sqlalchemy
 from sqlalchemy.dialects.postgresql import JSON, TIMESTAMP, SMALLINT
 from sqlalchemy.orm import Session
-from langchain.vectorstores.pgvector import BaseModel
+from langchain_community.vectorstores.pgembedding import BaseModel
 from brevia.connection import db_connection
 from brevia.services import BaseService
 
@@ -137,8 +137,8 @@ def run_job_service(
         result = service.run(job_store.payload)
 
     except Exception as exc:  # pylint: disable=broad-exception-caught
-        msg = exc.args[0]
-        log.error("Error in SummarizeFileService %s", msg)
+        msg = f'{type(exc).__name__}: {exc}'
+        log.error('Error in job service %s: %s', job_store.service, msg)
         result = {'error': msg}
 
     finally:

@@ -1,11 +1,361 @@
 {
 	"info": {
-		"_postman_id": "ac3146c5-af00-441c-a02c-48d3dc25de33",
-		"name": "brevia API",
+		"_postman_id": "b8d07c1e-d4fa-4b02-8759-d4ed41e1f7ce",
+		"name": "Brevia API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "234034"
 	},
 	"item": [
+		{
+			"name": "Chat",
+			"item": [
+				{
+					"name": "chat - Basic chat",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Chat-Session",
+								"value": "{{session_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"question\" : \"{{query}}\",\n    \"collection\" : \"{{collection}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "chat - Question/Answer flow with additional parameters",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Chat-Session",
+								"value": "{{session_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"question\" : \"{{query}}\",\n    \"collection\" : \"{{collection}}\",\n    \"source_docs\": true,\n    \"docs_num\": 6,\n    \"token_data\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "chat - Question/Answer flow with chat history",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"question\" : \"{{query}}\",\n    \"collection\" : \"{{collection}}\",\n    \"chat_history\": [\n        {\n            \"query\": \"what is artificial intelligence?\",\n            \"answer\": \"Artificial intelligence (AI) refers to the simulation or approximation of human intelligence in machines. The goals of artificial intelligence include computer-enhanced learning, reasoning, and perception\"\n        },\n        {\n            \"query\": \"Is AI good or bad?\",\n            \"answer\": \"These technologies not only save time, but also potentially save lives by minimizing human error and ensuring a safer working environment. In addition, automating repetitive tasks in design, planning, and management with AI frees up human workers to focus on more complex and creative aspects.\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "chat - Question/Answer flow with filter",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"question\" : \"{{query}}\",\n    \"collection\" : \"{{collection}}\",\n    \"filter\": {\"category\": \"first\"}\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/chat",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "completion - Completion with custom prompt",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Chat-Session",
+								"value": "{{session_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum\",\n    \"prompt\": {\n        \"_type\": \"prompt\",\n        \"input_variables\": [\n            \"text\"\n        ],\n        \"template\": \"formatta il seguente testo in formato EMAIL :\\n\\n{text}\\n\\n SCRIVI L'EMAIL:\"\n    },\n    \"token_data\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/completion",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"completion"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Chat History",
+			"item": [
+				{
+					"name": "chat history - Read chat history",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat_history",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat_history"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "chat history - Read chat history with filters",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat_history?max_date=2023-04-20&collection={{collection}}&page=1&page_size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat_history"
+							],
+							"query": [
+								{
+									"key": "max_date",
+									"value": "2023-04-20"
+								},
+								{
+									"key": "collection",
+									"value": "{{collection}}"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "evaluate - Evaluate chat history item",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"try {",
+									"    tests[\"Status code is 204\"] = responseCode.code === 204;",
+									"} catch (e) {",
+									"    tests[\"Error in parsing response\"] = e;",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"uuid\": \"{{chat_history_id}}\",\n    \"user_evaluation\": false,\n    \"user_feedback\": \"Too many hallucinations! Are you high?\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/evaluate",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"evaluate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
 		{
 			"name": "Collections",
 			"item": [
@@ -123,7 +473,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"prova-prova-collection\",\n    \"cmetadata\": {\n        \"note\": \"note di prova\",\n        \"description\": \"descrizione di prova\"\n    }\n}",
+							"raw": "{\n    \"name\": \"{{collection}}\",\n    \"cmetadata\": {\n        \"note\": \"some notes\",\n        \"description\": \"a description\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -427,121 +777,631 @@
 			]
 		},
 		{
-			"name": "summarize - Summarization",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
+			"name": "Summarize",
+			"item": [
+				{
+					"name": "Summarization",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Chat-Session",
+								"value": "{{session_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum\",\n    \"chain_type\": \"stuff\",\n    \"token_data\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/summarize",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"summarize"
+							]
 						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
 					},
-					{
-						"key": "X-Chat-Session",
-						"value": "{{session_id}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"text\" : \"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum\",\n    \"summ_prompt\" : \"summarize_point\",\n    \"num_items\" : \"8\",\n    \"token_data\": true\n}"
+					"response": []
 				},
-				"url": {
-					"raw": "{{baseUrl}}/summarize",
-					"host": [
-						"{{baseUrl}}"
+				{
+					"name": "Custom Prompt - 5 point",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Chat-Session",
+								"value": "{{session_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"The Rodrigues night heron (Nycticorax megacephalus) is an extinct species of heron that was endemic to the Mascarene island of Rodrigues in the Indian Ocean. The species was first mentioned as \\\"bitterns\\\" in two accounts from 1691–1693 and 1725–1726, and these were correlated with subfossil remains found and described in the latter part of the 19th century. The bones showed that the bird was a heron, first named Ardea megacephala in 1873, but moved to the night heron genus Nycticorax in 1879 after more remains were described. The specific name megacephala is Greek for \\\"great-headed\\\". Two related extinct species from the other Mascarene islands have also been identified from accounts and remains: the Mauritius night heron and the Réunion night heron. The Rodrigues night heron was robust, its bill was comparatively large, stout and straight, and its legs were short and strong. It is estimated to have been 60 cm (24 in) long, and its appearance in life is uncertain. There was marked sexual dimorphism, males being larger. Little is known about its behaviour, but the contemporary accounts indicate that it ate lizards (probably the Rodrigues day gecko), was adapted to running, and although able to fly, rarely did so. Examinations of the known remains have confirmed its terrestrial adaptations; one researcher thought the species flightless but this idea has not been accepted by others. The species could not be found by 1763, and it is thought to have been driven to extinction by human-related factors such as the introduction of cats.\",\n    \"chain_type\": \"stuff\",\n    \"initial_prompt\": {\n        \"_type\": \"prompt\",\n        \"input_variables\": [\n            \"text\"\n        ],\n        \"template\": \"Write 5 arguments extracted from the following text:\\n\\n{text}\\n\\n WRITE THE ARGUMENTS:\"\n    },\n    \"token_data\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/summarize",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"summarize"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Custom Prompt - Simple Topic Extraction",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Chat-Session",
+								"value": "{{session_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"The Rodrigues night heron (Nycticorax megacephalus) is an extinct species of heron that was endemic to the Mascarene island of Rodrigues in the Indian Ocean. The species was first mentioned as \\\"bitterns\\\" in two accounts from 1691–1693 and 1725–1726, and these were correlated with subfossil remains found and described in the latter part of the 19th century. The bones showed that the bird was a heron, first named Ardea megacephala in 1873, but moved to the night heron genus Nycticorax in 1879 after more remains were described. The specific name megacephala is Greek for \\\"great-headed\\\". Two related extinct species from the other Mascarene islands have also been identified from accounts and remains: the Mauritius night heron and the Réunion night heron. The Rodrigues night heron was robust, its bill was comparatively large, stout and straight, and its legs were short and strong. It is estimated to have been 60 cm (24 in) long, and its appearance in life is uncertain. There was marked sexual dimorphism, males being larger. Little is known about its behaviour, but the contemporary accounts indicate that it ate lizards (probably the Rodrigues day gecko), was adapted to running, and although able to fly, rarely did so. Examinations of the known remains have confirmed its terrestrial adaptations; one researcher thought the species flightless but this idea has not been accepted by others. The species could not be found by 1763, and it is thought to have been driven to extinction by human-related factors such as the introduction of cats.\",\n    \"chain_type\": \"stuff\",\n    \"initial_prompt\": {\n        \"_type\": \"prompt\",\n        \"input_variables\": [\n            \"text\"\n        ],\n        \"template\": \"Extract 5 topics for classification purpose the following text: {text} :\"\n    },\n    \"token_data\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/summarize",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"summarize"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Custom Prompt - Map Reduce",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Chat-Session",
+								"value": "{{session_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"The Rodrigues night heron (Nycticorax megacephalus) is an extinct species of heron that was endemic to the Mascarene island of Rodrigues in the Indian Ocean. The species was first mentioned as \\\"bitterns\\\" in two accounts from 1691–1693 and 1725–1726, and these were correlated with subfossil remains found and described in the latter part of the 19th century. The bones showed that the bird was a heron, first named Ardea megacephala in 1873, but moved to the night heron genus Nycticorax in 1879 after more remains were described. The specific name megacephala is Greek for \\\"great-headed\\\". Two related extinct species from the other Mascarene islands have also been identified from accounts and remains: the Mauritius night heron and the Réunion night heron.The Rodrigues night heron was robust, its bill was comparatively large, stout and straight, and its legs were short and strong. It is estimated to have been 60 cm (24 in) long, and its appearance in life is uncertain. There was marked sexual dimorphism, males being larger. Little is known about the bird's behaviour, but the contemporary accounts indicate that it ate lizards (probably the Rodrigues day gecko), was adapted to running, and although able to fly, rarely did so. Examinations of the known remains have confirmed its terrestrial adaptations; one researcher thought the species flightless but this idea has not been accepted by others. The species could not be found by 1763, and it is thought to have been driven to extinction by human-related factors such as the introduction of cats.\\n\\nTaxonomy\\n\\n The French traveler Francois Leguat mentioned \\\"bitterns\\\" in his 1708 memoir A New Voyage to the East Indies about his stay on the Mascarene island of Rodrigues from 1691–93. Leguat was the leader of a group of nine French Huguenot refugees who settled on Rodrigues after they were marooned there.[2][3] Leguat's observations on the local fauna are considered some of the first cohesive accounts of animal behaviour in the wild.[4] In 1873, the French zoologist Alphonse Milne-Edwards described subfossil bird bones from Rodrigues he had received via the British ornithologist Alfred Newton. These had been excavated in 1865 under the supervision of his brother, Colonial Secretary Edward Newton, by the police magistrate George Jenner, who found the specimens in a cave on the Plaine Corail, near Rodrigues solitaire remains.[5][6][7] Milne-Edwards correlated the bones with the \\\"bitterns\\\" of Leguat's account, but found that they were instead consistent with belonging to a species of heron, whose large head and short legs made it understandable that it was compared to a bittern. He considered the skull different from all other herons in size and shape, but found the tarsometatarsal foot bone similar to that of the extant heron genus Ardea, and therefore named the new species Ardea megacephala.[5] The specific name megacephala is Greek for \\\"great-headed\\\", and references the large head and jaws of this species.[7][8] The bones examined by Milne-Edwards included the skull, tarsometatarsus, tibiotarsus (lower leg bone), femur (thigh-bone), sternum (breast-bone), coracoids (part of the shoulder-girdle), humerus (upper arm bone), and metacarpals (\\\"hand\\\" bones).[5] The holotype specimen (the specimen the specific name and original scientific description is attached to) is an incomplete but probably associated specimen catalogued as UMZC 572 at the Cambridge University Museum of Zoology. This specimen since appears to have lost a humerus, a dorsal rib, both femora, a tibiotarsus, and both tarsometatarsi.[7] In 1875, A. Newton correlated references to \\\"bitterns\\\" with the heron in the then recently rediscovered 1725–26 account of the French sailor Julien Tafforet, Relation de l'Ile Rodrigue, which he thought confirmed Milne-Edwards's conclusions.[9][3] More fossils were obtained from caves by the palaeontologist Henry H. Slater in 1874, and these were described by the German zoologist Albert Günther and E. Newton in 1879, with the benefit of bones not known at the time of Milne-Edwards's original description. They included the two last cervical vertebrae (of the neck), fifth dorsal vertebra (of the back), pelvis, scapula (shoulder blade), ulna (lower arm bone), radius (lower arm bone), second phalanx of the inner toe, and first of the hind toe. These bones are now part of the collection of the Natural History Museum, London. Günther and Newton did not find it necessary to describe these bones, as they were the same form as in other herons, particularly the night heron genus Nycticorax, and they therefore transferred the Rodrigues species there, as Nycticorax megacephalus.[10][7] In 1893, E. Newton and the German ornithologist Hans Gadow referred to the bird as Ardea (Nycticorax) megacephala, and the British zoologist Walter Rothschild used the original name Ardea megacephala in 1907, while noting that he was inclined to believe the three extinct Mascarene herons (which had previously been assigned to either Ardea or Butorides) all belonged in Nycticorax.[11][12] The Japanese ornithologist Masauji Hachisuka concluded in 1937 that this species was little related to any other heron, and moved it to a new genus as Megaphoyx megacephala. He also used the common name \\\"Rodriguez flightless heron\\\", due to his conviction that it had lost the ability to fly.[13][7] In 1953, Hachisuka used the name \\\"flightless heron\\\" and added that this species was \\\"quite remarkable\\\" among herons, and not closely related to any other heron, extant or extinct.[14] The American ornithologist Pierce Brodkorb kept the species in Nycticorax in 1963.[15] The black-crowned night heron, an extant relative in the same genus The British ecologist Anthony S. Cheke referred to the bird as Nycticorax ('Megaphoyx') megacephalus in 1987; in the same book, the British ornithologist Graham S. Cowles stated that a then recently rediscovered skull in the NHM confirmed that the species was a Nycticorax night heron. He also considered the two extinct herons of the other Mascarene islands, the Mauritius night heron (N. mauritianus) and the Réunion night heron (N. duboisi), to belong to that genus.[16][17] In 1999, the French palaeontologist Cécile Mourer-Chauviré and colleagues considered the tarsometatarsi of the Mascarene night herons closer in proportion to the black-crowned night heron (N. nycticorax) than to other members of the genus, particularly the nankeen night heron (N. caledonicus). An associated but incomplete skeleton preserving the skull and jaws was discovered in Caverne Poule Rouge in 2006. Cheke and the British paleontologist Julian P. Hume stated in 2007 that although the Mascarene night herons may have originated in Madagascar, the black-crowned night heron that they probably descended from is so widespread that they could also have colonised from Asia. Due to the diminished flight capabilities of the Rodrigues and Mauritius night herons, they suggested that the Mascarenes must have been colonised twice in any case, as these birds could not have been the ancestors of the longer-winged Réunion night heron. Hume explained in 2023 that night herons have successfully colonised oceanic islands and archipelagos, the island endemic species becoming increasingly adapted to a terrestrial lifestyle due to a lack of terrestrial mammals. This led to increased size and robustness in their legs, with a corresponding shortening of the wings, which led to lesser flight capabilities compared to their ancestral populations, as well as more robust jaws. Hume stated that while there had been no molecular analysis to examine the interrelationships of the Mascarene herons, the Rodrigues and Mauritius species appear to have been closely related. Hume added that a complete Rodrigues night heron sternum he had found in Caverne Dora in Plaine Corail near other subfossil bird bones was the only known specimen of this species photographed in the location it was found, and that radiocarbon dating of a nearby Rodrigues scops owl humerus gave a range of 3060–2870 years before present. Description Rodrigues night heron pelvis (G, middle two, from below and above) compared to that of the black-crowned night heron (H, at left and right), 1879 The Rodrigues night heron was robust, its bill was comparatively large, stout and straight, and its legs were short and strong, and more robust than those of the related Mauritius night heron.[4][3] There was marked sexual dimorphism in the Rodrigues night heron, which is also present in the black-crowned night heron, and the male was the largest. There is a 17.5% length difference in the tibiotarsus between male and female specimens, 9.3% difference in the tarsometatarsus, and a 9.1% difference in the available mandibles. The difference was almost the same in the Mauritius night heron, and there was little dimorphism in the Réunion night heron.[7] The Rodrigues night heron is estimated to have been 60 cm (24 in) long.[21] Measurements of the bones available by the late 19th century show that the skull was 154 mm (6.1 in) long, the upper mandible was 94 mm (3.7 in) long and 22 mm (0.87 in) wide at the base, and the lower mandible was 147 mm (5.8 in) long. The sternum was 64–88 mm (2.5–3.5 in) long, the scapula 72 mm (2.8 in), the coracoid 59–67 mm (2.3–2.6 in), the humerus 118–180 mm (4.6–7.1 in), the ulna 121 mm (4.8 in), the radius 117 mm (4.6 in), and the metacarpal 62–98 mm (2.4–3.9 in). The pelvis was 63 mm (2.5 in) long, the femur 90–92 mm (3.5–3.6 in), the tibiotarsus 140–210 mm (5.5–8.3 in), the tarsometatarsus 95–162 mm (3.7–6.4 in), and the second phalanx bone 20 mm (0.79 in).[12][10] The Réunion night heron was the largest of the three Mascarene night heron species in most features, except for in the tarsometatarsus, which was almost the same size as in the Rodrigues night heron, and the femur, which was smaller than in the Rodrigues species. In the Rodrigues night heron, the supratendinal bridge (\\\"bridge\\\" over a tendon) of the tibiotarsus was entirely ossified (turned to bone), whereas it was incompletely ossified in the Réunion species, and unknown in that of Mauritius. The wing-bones of the Rodrigues and Mauritis species, including the humeri, ulnae, and carpometacarpi, were quite reduced, and the legs, the femora in particular, were longer than in extant species. The short and thick proportions of the tarsometatarsi in the Mascarene species were closest to the black-crowned night heron within their genus, this robustness probably being accentuated by the reduced flight abilities of the Rodrigues and Mauritius species.[18] The life appearance of the Rodrigues night heron is uncertain. Hachisuka speculated that Leguat referred to these birds as \\\"bitterns\\\" because their colouration may have reminded him of the plumage of the bitterns native to France, whose feathers are buffish, mottled with black. On the other hand, Tafforet likened them to egrets, which are white, so Hachisuka thought this a contradiction of Leguat, if it also referred to colouration.[13][21] One 1674 account stated that the related Réunion night heron had \\\"grey plumage, each feather tipped with white, the neck and beak like a heron and the feet green\\\", which is similar to juveniles of extant Nycticorax herons.[3] Hume stated in 2023 that this probably means that the Mascarene herons retained their juvenile (paedomorphic) plumage into adulthood, as is the case for some other island birds.[7] Behaviour and ecology Restoration of a Rodrigues night heron eating a Rodrigues day gecko, based on contemporary accounts, remains, and related species Little is known about the behaviour of the Rodrigues night heron apart from the two contemporary descriptions, but it was better documented that its Mauritius relative.[3][7] Leguat's 1708 description reads as follows, referring to these birds as \\\"bitterns\\\": We had Bitterns as big and as fat as capons. They are tamer and more easily caught than the 'gelinotes' [Rodrigues rails]... The lizards often serve as prey for the birds, especially for the Bitterns. When we shook them down from the branches with a pole, these birds ran up and gobbled them down in front of us, in spite of all we could do to prevent them; and even if we only pretended to do so they came in the same manner and always followed us about.[12][3] The \\\"lizards\\\" mentioned were probably geckos of the genus Phelsuma (there were six gecko species on Mauritius), such as the now extinct Rodrigues day gecko, which reached 23 cm (9.1 in) in length.[3][7][22] Leguat and his companions were fond of these quite tame lizards, letting them feed from their tables, and therefore tried to protect them from the aggressive herons.[21][4] In 2023, Hume interpreted Leguat's account as indicating that the bird was very tame and confiding, and not afraid of humans, as is common in many island birds.[7] Cheke and Hume suggested in 2007 that the Rodrigues night heron fed on snails as well as the geckos, and that it and the Mauritius night heron fed on land rather than wetlands or shores, as some extant herons do on Cuba.[4] Hume and colleagues listed the Rodrigues night heron as a possible predator of giant tortoise eggs and hatchlings in 2021.[22] Hume speculated in 2023 that the increased sexual dimorphism in the species was a result of competition between the sexes. This kind of difference is mainly an effect of food availability, and each sex may have exploited different food items due to living on an island with limited resources. He also noted that the comparatively long and wide jaws suggest that the bird fed on larger prey. It may have inhabited and foraged in open forests containing palms with geckos, which is also the main habitat of invertebrates that live in leaf-litter, such as terrestrial crabs, and at other times of the year it could have scavenged from coastal seabird colonies and giant tortoise breeding grounds. Hume suggested that it probably nested on the ground or in low bushes.[7] Many other species endemic to Rodrigues became extinct after humans arrived, and the island's ecosystem is heavily damaged. Before humans arrived, forests covered the island entirely, but very little remains today. The Rodrigues night heron lived alongside other recently extinct birds, such as the Rodrigues solitaire, Rodrigues parrot, Newton's parakeet, Rodrigues rail, Rodrigues scops owl, Rodrigues starling, and the Rodrigues pigeon. Extinct reptiles include the domed Rodrigues giant tortoise, the saddle-backed Rodrigues giant tortoise, and the Rodrigues day gecko.[4] Flight and terrestrial abilities Drawing of houses on Rodrigues Frontispiece to François Leguat's 1708 memoir, showing his settlement on Rodrigues; a lizard can be seen in a palm-tree (right) Milne-Edwards concluded in 1873 that the sternum of the Rodrigues night heron was weak, and therefore did not belong to a bird with powerful wings (like the grey heron, purple heron, or egrets), and the wings were weak as well, since their bones were not particularly large. He also found the legs to be proportionally short in relation to the large head, but with a well-developed femur, which he inferred to mean that the body of the bird was bulky.[5] After studying Tafforet's 1725–26 account, A. Newton stated in 1875 that it confirmed Milne-Edwards' observation that the bird was short-winged.[9] Tafforet's account reads as follows: There are not a few Bitterns which are birds which only fly a very little, and run uncommonly well when they are chased. They are of the size of an egret and something like them.[3] Günther and A. Newton agreed with Milne-Edwards in 1879 after comparing the sternum and wing-bones of the Rodrigues night heron with bones they thought belonged to the European subspecies of black-crowned night heron (N. n. nycticorax), finding them to be proportionally smaller. On the other hand, they found the leg bones to be better developed and the body size equal to the extant night heron, since they could compare the pelvis, which had been unknown to Milne-Edwards. They found the foot-bones to be very well-developed, thicker than in the black-crowned night heron, and considered this a sign that the bird was much more cursorial (adapted to running), and would have chased swift, terrestrial animals (such as lizards) rather than aquatic prey. They concluded that the bird had become short-winged without losing the power of flight but it compensated for this by the increased development of the legs, especially by enlarging the metatarsus so it could receive and serve as a base for the foot's tendons.[10][17] Hachisuka disregarded Tafforet's account in 1937, believing it unlikely that the bird would have been able to rise from the ground because its sternum and wing remains indicated it had become flightless (while he quoted but ignored Günther and Newton's statement that it had not lost the power of flight). He concluded that take-off would only have been possible from sloping ground.[13][16] The American ornithologists Storrs L. Olson and Alexander Wetmore pointed out in 1976 that the fossils of this heron did not indicate it was entirely flightless, contrary to Hachisuka's claim, as its sternal carina (or keel) was still rather well-developed, and the wing-elements not very reduced.[23] Cowles argued in 1987 that Hachisuka's claim of flightlessness was dubious, and pointed out that Günther and Newton had thought they were using the bones of the European subspecies of the black-crowned night heron for comparison, but they had actually used the bones of the large South American subspecies (N. n. obscurus). This gave them the impression that the wings of the Rodrigues night heron were unusually small; Cowles noted they are not when compared to the European subspecies. He instead found that the femur, tibiotarsus, and tarsometatarsus of the Rodrigues night heron were broader, longer, and more robust than those of the European black-crowned night heron, showing that its legs had become stronger as its need to fly decreased, an adaptation which can also be seen in other species endemic to oceanic islands.[17] In 2007, Cheke and Hume called the night herons of Rodrigues and Mauritius \\\"behaviourally flightless\\\", though still able to fly when required.[4] Hume stated in 2023 that the hypotarsus (a process on the hind side of the tarsometatarsus that support the tendons of the toes) of the Rodrigues night heron was particularly distinct and had very large sulci (grooves) for the tendons that would have given it strong control over the flexion of its toes when it walked and ran. He concluded that although the Rodrigues night heron was still capable of weak flight, it was on the way to flightlessness, and that its adaptations for a terrestrial lifestyle in the forest (stronger than those of the other Mascarene herons) was influenced by the lack of standing water and wetlands on Rodrigues.[7] Extinction Map of Rodrigues, decorated with solitaires Map of human settlement on Rodrigues Leguat's 1708 maps of Rodrigues and his settlement. The night heron species that inhabit continents and large islands are not threatened, but those restricted to small islands have been vulnerable to human activities, and six out of nine species and a subspecies are therefore extinct (three more unnamed extinct species are known). Hume pointed out in 2023 that the night herons of the Mascarenes appear to have survived alongside introduced rats for centuries, and were common until the late 17th and early 18th centuries. These large birds would have been able to defend themselves and their offspring from rats with their strong bills. Cats were introduced to counter the rats, but went feral, and became a threat to the herons, especially the juveniles.[7] In 1763, the French astronomer Alexandre Guy Pingré noted the absence of the Rodrigues night heron and other birds by the time of his visit on Rodrigues to observe the 1761 transit of Venus: I heard said of neither gélinottes [Rodrigues rail], nor butors [Rodrigues night heron], nor alouettes [small waders], nor bécassines [shearwaters or petrels]; there may have been some at the time of François Leguat, but they have either retreated from their homes or, more likely, the races no longer survive, since the island has been populated with cats.[24] No later visitors mentioned the Rodrigues night heron, and it had probably gone extinct by this time.[21] Milne-Edwards suggested in 1873 that the bird was unable to escape the destruction that threatened it due to its diminished flight capabilities.[5] Hume and the British ornithologist Michael Walters stated in 2012 that the extinction was a consequence of severe deforestation and introduced predators, such as cats.[25] Cheke responded in 2013 that there was no deforestation at the time, the species appeared to have survived introduced rats, and that cats were the main culprits.[26] Hume stated in 2023 that the Rodrigues night heron had been numerous during Leguat's and Tafforet's visits, but that when a small French population colonised the island in 1736 to hunt giant tortoises, this marked the beginning of the end for the heron and other terrestrial birds. Tortoise hunting was no longer viable by the 1770s, and although the hunters probably also killed the birds, it was probably the introduction of cats in 1750 that led to their extinction, most likely by Pingré's 1761 visit a decade later. Hume noted that night herons have proven adept at colonising remote islands (with populations still reaching new islands) but are vulnerable when switching from aquatic to terrestrial life, which increases the impact of overhunting, habitat destruction, invasive predators, and loss of food. He therefore considered the fossil record important to the understanding of extinctions of island avifauna, but cautioned that many islands have inadequate records, and that more extinct island herons await discovery, the group having a much higher extinction rate than currently known.[7]\",\n    \"chain_type\": \"map_reduce\",\n    \"initial_prompt\": {\n        \"_type\": \"prompt\",\n        \"input_variables\": [\n            \"text\"\n        ],\n        \"template\": \"Write a concise summary of the following: \\\"{text}\\\" CONCISE SUMMARY:\"\n    },\n    \"iteration_prompt\": {\n        \"_type\": \"prompt\",\n        \"input_variables\": [\n            \"text\"\n        ],\n        \"template\": \"Write a final summary of the following: \\\"{text}\\\" FINAL SUMMARY:\"\n    },\n    \"token_data\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/summarize",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"summarize"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Custom Prompt - Refine",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "X-Chat-Session",
+								"value": "{{session_id}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"The Rodrigues night heron (Nycticorax megacephalus) is an extinct species of heron that was endemic to the Mascarene island of Rodrigues in the Indian Ocean. The species was first mentioned as \\\"bitterns\\\" in two accounts from 1691–1693 and 1725–1726, and these were correlated with subfossil remains found and described in the latter part of the 19th century. The bones showed that the bird was a heron, first named Ardea megacephala in 1873, but moved to the night heron genus Nycticorax in 1879 after more remains were described. The specific name megacephala is Greek for \\\"great-headed\\\". Two related extinct species from the other Mascarene islands have also been identified from accounts and remains: the Mauritius night heron and the Réunion night heron. The Rodrigues night heron was robust, its bill was comparatively large, stout and straight, and its legs were short and strong. It is estimated to have been 60 cm (24 in) long, and its appearance in life is uncertain. There was marked sexual dimorphism, males being larger. Little is known about its behaviour, but the contemporary accounts indicate that it ate lizards (probably the Rodrigues day gecko), was adapted to running, and although able to fly, rarely did so. Examinations of the known remains have confirmed its terrestrial adaptations; one researcher thought the species flightless but this idea has not been accepted by others. The species could not be found by 1763, and it is thought to have been driven to extinction by human-related factors such as the introduction of cats.\",\n    \"chain_type\": \"refine\",\n    \"token_data\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/summarize",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"summarize"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload_summarize - Upload PDF file and summarize",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseJSON;",
+									"try {",
+									"    responseJSON = JSON.parse(responseBody); ",
+									"    tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"    if (responseJSON && responseJSON.job) {",
+									"        postman.setEnvironmentVariable(\"job_id\", responseJSON.job);",
+									"    }",
+									"} catch (e) {",
+									"    tests[\"Error in parsing response\"] = e;",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
 					],
-					"path": [
-						"summarize"
-					]
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "chain_type",
+									"value": "map_reduce",
+									"type": "text"
+								},
+								{
+									"key": "token_data",
+									"value": "true",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/upload_summarize",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"upload_summarize"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload_summarize - Upload PDF content as base64 string",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file_content",
+									"value": "",
+									"type": "text"
+								},
+								{
+									"key": "chain_type",
+									"value": "map_reduce",
+									"type": "text"
+								},
+								{
+									"key": "token_data",
+									"value": "true",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/upload_summarize",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"upload_summarize"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload_summarize - Custom prompt",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseJSON;",
+									"try {",
+									"    responseJSON = JSON.parse(responseBody); ",
+									"    tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"    if (responseJSON && responseJSON.job) {",
+									"        postman.setEnvironmentVariable(\"job_id\", responseJSON.job);",
+									"    }",
+									"} catch (e) {",
+									"    tests[\"Error in parsing response\"] = e;",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "chain_type",
+									"value": "map_reduce",
+									"type": "text"
+								},
+								{
+									"key": "token_data",
+									"value": "true",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/upload_summarize",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"upload_summarize"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "upload_summarize - Upload PDF file and summarize",
-			"event": [
+			"name": "Search",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"var responseJSON;",
-							"try {",
-							"    responseJSON = JSON.parse(responseBody); ",
-							"    tests[\"Status code is 200\"] = responseCode.code === 200;",
-							"    if (responseJSON && responseJSON.job) {",
-							"        postman.setEnvironmentVariable(\"job_id\", responseJSON.job);",
-							"    }",
-							"} catch (e) {",
-							"    tests[\"Error in parsing response\"] = e;",
-							"}"
+					"name": "search - Basic search",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
 						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"protocolProfileBehavior": {
-				"disabledSystemHeaders": {}
-			},
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"query\" : \"{{query}}\",\r\n    \"collection\" : \"{{collection}}\"\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/search",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search"
+							]
 						}
-					]
+					},
+					"response": []
 				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "file",
-							"type": "file",
-							"src": "/home/ste/Downloads/Sprint 1 ENPACL.pdf"
+				{
+					"name": "search - Search with additional parameters",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
 						},
-						{
-							"key": "summ_prompt",
-							"value": "summarize",
-							"type": "text"
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"query\" : \"{{query}}\",\r\n    \"collection\" : \"{{collection}}\",\r\n    \"docs_num\" : 6,\r\n    \"distance_strategy_name\" : \"euclidean\"\r\n}"
 						},
-						{
-							"key": "num_items",
-							"value": "4",
-							"type": "text"
-						},
-						{
-							"key": "token_data",
-							"value": "true",
-							"type": "text"
+						"url": {
+							"raw": "{{baseUrl}}/search",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search"
+							]
 						}
-					]
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "{{baseUrl}}/upload_summarize",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"upload_summarize"
-					]
+				{
+					"name": "search - Search with metadata filter",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"query\" : \"{{query}}\",\r\n    \"collection\" : \"{{collection}}\",\r\n    \"filter\": {\"category\": \"first\", \"type\": {\"in\": [\"a\", \"b\"]}}\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/search",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"search"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
+		},
+		{
+			"name": "Status",
+			"item": [
+				{
+					"name": "status - read API status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "status - use status token",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/status?token={{status_token}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"status"
+							],
+							"query": [
+								{
+									"key": "token",
+									"value": "{{status_token}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "status - head API status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "HEAD",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		},
 		{
 			"name": "upload_analyze - Upload file and analyze using extension",
@@ -586,8 +1446,8 @@
 					"formdata": [
 						{
 							"key": "file",
-							"type": "file",
-							"src": ""
+							"value": "",
+							"type": "file"
 						},
 						{
 							"key": "service",
@@ -653,375 +1513,6 @@
 					],
 					"path": [
 						"transcribe"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "upload_summarize - Upload PDF content as base64 string",
-			"protocolProfileBehavior": {
-				"disabledSystemHeaders": {}
-			},
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "file_content",
-							"value": "",
-							"type": "text"
-						},
-						{
-							"key": "summ_prompt",
-							"value": "summarize",
-							"type": "text"
-						},
-						{
-							"key": "num_items",
-							"value": "4",
-							"type": "text"
-						},
-						{
-							"key": "token_data",
-							"value": "true",
-							"type": "text"
-						}
-					]
-				},
-				"url": {
-					"raw": "{{baseUrl}}/upload_summarize",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"upload_summarize"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "summarize_binary - post binary data",
-			"protocolProfileBehavior": {
-				"disabledSystemHeaders": {
-					"content-type": true
-				}
-			},
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/octet-stream",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "file",
-					"file": {
-						"src": "/home/ste/Downloads/TestSummary.pdf"
-					}
-				},
-				"url": {
-					"raw": "{{baseUrl}}/summarize_binary",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"summarize_binary"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "chat - Question/Answer flow",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					},
-					{
-						"key": "X-Chat-Session",
-						"value": "{{session_id}}",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"question\" : \"quando è nata la repubblica in Italia?\",\n    \"collection\" : \"storia-novecento\",\n    \"source_docs\": true,\n    \"docs_num\": 3,\n    \"token_data\": false\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/chat",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"chat"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "chat - Question/Answer flow with History",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"question\" : \"mi puoi tradurre l'ultima risposta in italiano?\",\n    \"chat_history\": [\n        {\n            \"query\": \"cos'è il floor?\",\n            \"answer\": \"Il floor è il minimo valore a cui è possibile convertire il proprio investimento in strumenti convertibili, che tutela l'imprenditore da un eccessivo ribasso della valutazione.\"\n        },\n        {\n            \"query\": \"cos'è il mifid?\",\n            \"answer\": \"MiFID sta per \\\"Markets in Financial Instruments Directive\\\", ovvero la direttiva sui mercati degli strumenti finanziari.\"\n        },\n        {\n            \"query\": \"quanto bisogna pagare per fare un finanziamento?\",\n            \"answer\": \"The cost of obtaining finance from Doorway varies depending on whether you are an investor or a company seeking funding. For investors, there is a 1% annual fee based on the investment amount for administrative and accounting costs, as well as a potential 20% commission on returns exceeding 7%. For companies seeking funding, Doorway charges a success fee between 6% and 8% of the amount raised.\"\n        }\n\n    ],\n    \"collection\" : \"doorway\"\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/chat",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"chat"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "search - Relevant documents",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"query\" : \"cos'è il floor?\",\r\n    \"collection\" : \"doorway\",\r\n    \"docs_num\" : 6,\r\n    \"distance_strategy_name\" : \"cosine\"\r\n}"
-				},
-				"url": {
-					"raw": "{{baseUrl}}/search",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"search"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "status - read API status",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/status",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"status"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "status - head API status",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "HEAD",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/status",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"status"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "chat history - Read chat history",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/chat_history",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"chat_history"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "chat history - Read chat history with filters",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{access_token}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json",
-						"type": "text",
-						"disabled": true
-					}
-				],
-				"url": {
-					"raw": "{{baseUrl}}/chat_history?max_date=2023-04-20&collection={{collection}}&page=1&page_size=20",
-					"host": [
-						"{{baseUrl}}"
-					],
-					"path": [
-						"chat_history"
-					],
-					"query": [
-						{
-							"key": "max_date",
-							"value": "2023-04-20"
-						},
-						{
-							"key": "collection",
-							"value": "{{collection}}"
-						},
-						{
-							"key": "page",
-							"value": "1"
-						},
-						{
-							"key": "page_size",
-							"value": "20"
-						}
 					]
 				}
 			},

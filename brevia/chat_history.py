@@ -2,16 +2,16 @@
 from typing import List
 import uuid
 import logging
-from datetime import datetime
-from os import environ
-from langchain.vectorstores.pgvector import BaseModel
-from langchain.vectorstores._pgvector_data_models import CollectionStore
+from datetime import datetime, time
+from langchain_community.vectorstores.pgembedding import BaseModel, CollectionStore
+from pydantic import BaseModel as PydanticModel
 import sqlalchemy
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, Query, Session
 from sqlalchemy.sql.expression import BinaryExpression
 from brevia.connection import db_connection
-from brevia.index import get_embeddings
+from brevia.models import load_embeddings
+from brevia.settings import get_settings
 
 
 class ChatHistoryStore(BaseModel):
@@ -36,6 +36,12 @@ class ChatHistoryStore(BaseModel):
         server_default=sqlalchemy.sql.func.now()
     )
     cmetadata = sqlalchemy.Column(JSON, nullable=True)
+    user_evaluation = sqlalchemy.Column(
+        sqlalchemy.BOOLEAN(),
+        nullable=True,
+    )
+    user_feedback = sqlalchemy.Column(sqlalchemy.String)
+    chat_source = sqlalchemy.Column(sqlalchemy.String)
 
 
 def history(chat_history: list, session: str = None):
@@ -43,7 +49,7 @@ def history(chat_history: list, session: str = None):
     if len(chat_history) > 0:
         return [(x["query"], x["answer"]) for x in chat_history]
 
-    if not is_valid_uuid(session) or bool(environ.get('QA_NO_CHAT_HISTORY')):
+    if not is_valid_uuid(session) or get_settings().qa_no_chat_history:
         return []
 
     return history_from_db(session)
@@ -51,25 +57,25 @@ def history(chat_history: list, session: str = None):
 
 def is_related(chat_history: list, question: str):
     """
-    Determina se una domanda è correlata a una sequenza di frasi.
-    Utilizza gli embedding delle frasi e della domanda per calcolare il prodotto
-    scalare tra i vettori (in questo caso = similarity) e confrontarlo
-    con una soglia specificata dalle variabili d'ambiente.
+    Determine whether a question is related to a sequence of sentences.
+    Use sentence and question embeddings to calculate the product
+    scale between the vectors (in this case = similarity) and compare it
+    with a threshold specified by environment variables.
     """
-    embeddings = get_embeddings()
+    embeddings = load_embeddings()
     q_e = embeddings.embed_query(question)
     h_e = embeddings.embed_query(
         ''.join([sentence for tuple in chat_history for sentence in tuple])
     )
     sim = dot_product(q_e, h_e)
     logging.getLogger(__name__).info("similarity: %s", sim)
-    threshold = float(environ.get('QA_FOLLOWUP_SIM_THRESHOLD', False))
+    threshold = get_settings().qa_followup_sim_threshold
     return sim >= threshold
 
 
 def dot_product(v1_list, v2_list):
     """
-    Calcola il prodotto scalare tra due vettori (similarity).
+    Calculate the scalar product between two vectors (similarity).
     """
     return sum(x * y for x, y in zip(v1_list, v2_list))
 
@@ -100,6 +106,7 @@ def add_history(
     question: str,
     answer: str,
     metadata: dict | None = None,
+    chat_source: str | None = None,
 ) -> (ChatHistoryStore | None):
     """Save chat history item to database """
     if not is_valid_uuid(session_id):
@@ -115,6 +122,7 @@ def add_history(
             question=question,
             answer=answer,
             cmetadata=metadata,
+            chat_source=chat_source,
         )
         session.expire_on_commit = False
         session.add(chat_history_store)
@@ -132,31 +140,48 @@ def is_valid_uuid(val) -> bool:
         return False
 
 
-def get_history(
-    max_date: str | None = None,
-    collection: str | None = None,
-    page: int = 1,
-    page_size: int = 50,
-) -> dict:
+class ChatHistoryFilter(PydanticModel):
+    """ Chat history filter """
+    min_date: str | None = None
+    max_date: str | None = None
+    collection: str | None = None
+    session_id: str | None = None
+    page: int = 1
+    page_size: int = 50
+
+
+def get_history(filter: ChatHistoryFilter) -> dict:
     """
-        Read chat history with optional date and collection filters
+        Read chat history with optional filters
         using pagination data in response
     """
-    max_date = datetime.now() if max_date is None else max_date
-    filter_date = ChatHistoryStore.created <= max_date
-    filter_collection = CollectionStore.name == collection
-    if collection is None:
-        filter_collection = CollectionStore.name is not None
+    max_date = datetime.now()
+    if filter.max_date is not None:
+        max_date = datetime.strptime(filter.max_date, '%Y-%m-%d')
+    max_date = datetime.combine(max_date, time.max)
 
-    page = max(1, page)  # min page number is 1
-    page_size = min(1000, page_size)  # max page size is 1000
+    min_date = datetime.fromtimestamp(0)
+    if filter.min_date is not None:
+        min_date = datetime.strptime(filter.min_date, '%Y-%m-%d')
+    min_date = datetime.combine(min_date, time.min)
+    filter_collection = CollectionStore.name == filter.collection
+    if filter.collection is None:
+        filter_collection = CollectionStore.name is not None
+    filter_session_id = sqlalchemy.text('1 = 1')  # (default) always true expression
+    if filter.session_id and is_valid_uuid(filter.session_id):
+        filter_session_id = ChatHistoryStore.session_id == filter.session_id
+
+    page = max(1, filter.page)  # min page number is 1
+    page_size = min(1000, filter.page_size)  # max page size is 1000
     offset = (page - 1) * page_size
 
     with Session(db_connection()) as session:
         query = get_history_query(
             session=session,
-            filter_date=filter_date,
+            filter_min_date=ChatHistoryStore.created >= min_date,
+            filter_max_date=ChatHistoryStore.created <= max_date,
             filter_collection=filter_collection,
+            filter_session_id=filter_session_id,
         )
         count = query.count()
         results = [u._asdict() for u in query.offset(offset).limit(page_size).all()]
@@ -180,23 +205,50 @@ def get_history(
 
 def get_history_query(
     session: Session,
-    filter_date: BinaryExpression,
+    filter_min_date: BinaryExpression,
+    filter_max_date: BinaryExpression,
     filter_collection: BinaryExpression,
+    filter_session_id: BinaryExpression,
 ) -> Query:
     """Return get history query"""
     return (
         session.query(
+            ChatHistoryStore.uuid,
             ChatHistoryStore.question,
             ChatHistoryStore.answer,
             ChatHistoryStore.session_id,
             ChatHistoryStore.cmetadata,
             ChatHistoryStore.created,
             CollectionStore.name.label('collection'),
+            ChatHistoryStore.user_evaluation,
+            ChatHistoryStore.user_feedback,
+            ChatHistoryStore.chat_source,
         )
         .join(
             CollectionStore,
             CollectionStore.uuid == ChatHistoryStore.collection_id
         )
-        .filter(filter_date, filter_collection)
+        .filter(filter_min_date, filter_max_date, filter_collection, filter_session_id)
         .order_by(sqlalchemy.desc(ChatHistoryStore.created))
     )
+
+
+def history_evaluation(
+    history_id: str,
+    user_evaluation: bool,
+    user_feedback: str | None = None,
+) -> bool:
+    """
+        Update evaluation of single history item.
+        Return false if history item is not found and true upon success.
+    """
+    with Session(db_connection()) as session:
+        chat_history = session.get(ChatHistoryStore, history_id)
+        if chat_history is None:
+            return False
+        chat_history.user_evaluation = user_evaluation
+        chat_history.user_feedback = user_feedback
+        session.add(chat_history)
+        session.commit()
+
+    return True

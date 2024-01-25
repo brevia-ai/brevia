@@ -1,38 +1,39 @@
 """API endpoints for question answering and search"""
 from typing import Annotated
 import asyncio
-from langchain.callbacks import AsyncIteratorCallbackHandler, get_openai_callback
-from langchain.callbacks.openai_info import OpenAICallbackHandler
+from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain.chains.base import Chain
 from fastapi import APIRouter, Header
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
-from brevia import query, chat_history
+from brevia import chat_history
 from brevia.dependencies import (
     get_dependencies,
     check_collection_name,
 )
-from brevia.callback import ConversationCallbackHandler
+from brevia.callback import (
+    ConversationCallbackHandler,
+    token_usage_callback,
+    token_usage,
+    TokensCallbackHandler,
+)
 from brevia.language import Detector
+from brevia.query import SearchQuery, ChatParams, conversation_chain, search_vector_qa
+from brevia.models import test_models_in_use
 
 router = APIRouter()
 
 
-class ChatBody(BaseModel):
+class ChatBody(ChatParams):
     """ /chat request body """
     question: str
     collection: str
     chat_history: list = []
-    docs_num: int | None = None
     chat_lang: str | None = None
-    streaming: bool = False
-    distance_strategy_name: str | None = None
-    source_docs: bool = False
     token_data: bool = False
 
 
-@router.post('/prompt', dependencies=get_dependencies(), deprecated=True)
-@router.post('/chat', dependencies=get_dependencies())
+@router.post('/prompt', dependencies=get_dependencies(), deprecated=True, tags=['Chat'])
+@router.post('/chat', dependencies=get_dependencies(), tags=['Chat'])
 async def chat_action(
     chat_body: ChatBody,
     x_chat_session: Annotated[str | None, Header()] = None,
@@ -40,20 +41,19 @@ async def chat_action(
     """ /chat endpoint, ask chatbot about a collection of documents """
     collection = check_collection_name(chat_body.collection)
     if not collection.cmetadata:
-        collection.cmetadata = dict()
+        collection.cmetadata = {}
     lang = chat_language(chat_body=chat_body, cmetadata=collection.cmetadata)
 
     conversation_handler = ConversationCallbackHandler()
     stream_handler = AsyncIteratorCallbackHandler()
-    chain = query.conversation_chain(
+    chain = conversation_chain(
         collection=collection,
-        docs_num=chat_body.docs_num,
-        streaming=chat_body.streaming,
+        chat_params=ChatParams(**chat_body.model_dump()),
         answer_callbacks=[stream_handler] if chat_body.streaming else [],
         conversation_callbacks=[conversation_handler]
     )
 
-    if not chat_body.streaming:
+    if not chat_body.streaming or test_models_in_use():
         return await run_chain(
             chain=chain,
             chat_body=chat_body,
@@ -120,7 +120,7 @@ async def run_chain(
     x_chat_session: str,
 ):
     """Run chain usign async methods and return result"""
-    with get_openai_callback() as callb:
+    with token_usage_callback() as callb:
         result = await chain.acall({
             'question': chat_body.question,
             'chat_history': retrieve_chat_history(
@@ -141,7 +141,7 @@ async def run_chain(
 
 def chat_result(
     result: dict,
-    callb: OpenAICallbackHandler,
+    callb: TokensCallbackHandler,
     chat_body: ChatBody,
     x_chat_session: str | None = None,
 ) -> dict:
@@ -153,26 +153,18 @@ def chat_result(
             collection=chat_body.collection,
             question=chat_body.question,
             answer=answer,
-            metadata=callb.__dict__,
+            metadata=token_usage(callb),
     )
 
     return {
         'bot': answer,
         'docs': None if not chat_body.source_docs else result['source_documents'],
-        'token_data': None if not chat_body.token_data else callb.__dict__
+        'token_data': None if not chat_body.token_data else token_usage(callb)
     }
 
 
-class SearchBody(BaseModel):
-    """ /search request body """
-    query: str
-    collection: str
-    docs_num: int | None = None
-    distance_strategy_name: str | None = None
-
-
-@router.post('/search', dependencies=get_dependencies())
-def search_documents(search: SearchBody):
+@router.post('/search', dependencies=get_dependencies(), tags=['Index'])
+def search_documents(search: SearchQuery):
     """
         /search endpoint:
         Search the first {docs_num} relevant documents for a question
@@ -183,11 +175,9 @@ def search_documents(search: SearchBody):
             MAX_INNER_PRODUCT = EmbeddingStore.embedding.max_inner_product
     """
     collection = check_collection_name(search.collection)
-
-    params = {k: v for k, v in search.dict().items() if v is not None}
-    if 'docs_num' not in params and 'docs_num' in collection.cmetadata:
-        params['docs_num'] = collection.cmetadata['docs_num']
-    result = query.search_vector_qa(**params)
+    if search.docs_num is None and 'docs_num' in collection.cmetadata:
+        search.docs_num = int(collection.cmetadata['docs_num'])
+    result = search_vector_qa(search=search)
 
     return extract_content_score(result)
 

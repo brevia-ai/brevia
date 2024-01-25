@@ -1,19 +1,17 @@
 """API endpoint definitions with FastAPI."""
 from pathlib import Path
-from os import environ
-from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from brevia.routers.app_routers import add_routers
+from brevia.utilities.openapi import metadata
 
-load_dotenv()
 
-app = FastAPI()
+meta = metadata(f'{Path(__file__).parent}/pyproject.toml')
+app = FastAPI(**meta)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    # allow_credentials=True,
     allow_methods=["POST"],
     allow_headers=["*"],
 )
@@ -22,8 +20,6 @@ add_routers(app)
 
 if __name__ == '__main__':
     run_opts = {
-        'port': int(environ.get('API_PORT', '8000')),
-        'host': '0.0.0.0',
         'reload': True,
         'reload_excludes': ['*.log', './history/*'],
         'reload_dirs': ['brevia/'],

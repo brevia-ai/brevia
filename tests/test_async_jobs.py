@@ -112,4 +112,20 @@ def test_run_job_service():
     retrieved_job = single_job(job.uuid)
     assert retrieved_job is not None
     assert retrieved_job.completed is not None
-    assert retrieved_job.result == {'success': True}
+    assert retrieved_job.result == {'output': 'ok'}
+
+
+def test_run_job_failure():
+    """ Test run job service failure """
+    service = 'brevia.services.NotExistingService'
+    job = create_job(service, {})
+    assert job is not None
+    run_job_service(job.uuid)
+
+    # Verify that the job is completed
+    retrieved_job = single_job(job.uuid)
+    assert retrieved_job is not None
+    assert retrieved_job.completed is not None
+    exp = 'ValueError: Class "NotExistingService" not found'
+    assert 'error' in retrieved_job.result
+    assert retrieved_job.result['error'].startswith(exp)

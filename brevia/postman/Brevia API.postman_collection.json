@@ -704,6 +704,44 @@
 					"response": []
 				},
 				{
+					"name": "index/metadata - Add document metadata to index",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"collection_id\" : \"{{collection_id}}\",\r\n    \"document_id\" : \"{{document_id}}\",\r\n    \"metadata\" : {\"category\": \"cat2\"}\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/index/metadata",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"metadata"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "index - Read document from index",
 					"request": {
 						"auth": {

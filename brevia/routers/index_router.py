@@ -68,6 +68,7 @@ def upload_and_index(
     collection_id: Annotated[str, Form()],
     document_id: Annotated[str, Form()],
     metadata: Annotated[str | None, Form()] = None,
+    options: Annotated[str | None, Form()] = None,
 ):
     """
     Upload a PDF file and perform index on a collection
@@ -92,8 +93,8 @@ def upload_and_index(
         collection_id=collection_id,
         document_id=document_id,
     )
-
-    text = load_file.read(file_path=tmp_path)
+    read_options = {} if options is None else json.loads(options)
+    text = load_file.read(file_path=tmp_path, **read_options)
     index.add_document(
         document=Document(
             page_content=text,

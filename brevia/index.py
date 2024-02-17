@@ -119,3 +119,27 @@ def update_metadata(
         query = session.query(EmbeddingStore).filter(filter_collection, filter_document)
         query.update({EmbeddingStore.cmetadata: metadata})
         session.commit()
+
+
+def documents_metadata(
+    collection_id: str,
+    filter: dict[str, str] = {},
+):
+    """ Read documents metadata of a collection"""
+    filter_collection = EmbeddingStore.collection_id == collection_id
+    with Session(connection.db_connection()) as session:
+        query = session.query(EmbeddingStore.custom_id, EmbeddingStore.cmetadata)
+        query = query.filter(filter_collection)
+        for key in filter.keys():
+            query = query.filter(
+                EmbeddingStore.cmetadata[key].astext == str(filter[key])
+            )
+        result = []
+        docs = []
+        for row in query.all():
+            item = row._asdict()
+            if (item['custom_id'] not in docs):
+                docs.append(item['custom_id'])
+                result.append(item)
+
+        return result

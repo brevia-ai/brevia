@@ -120,6 +120,27 @@ def remove_document(collection_id: str, document_id: str):
 
 
 @router.get(
+    '/index/{collection_id}/documents_metadata',
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Index'],
+)
+def index_docs_metadata(collection_id: str, filter: str = '{}'):
+    """ Read collection documents metadata"""
+    try:
+        filter = json.loads(filter)
+    except ValueError:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "Bad 'filter' query string",
+        )
+
+    return index.documents_metadata(
+        collection_id=collection_id,
+        filter=filter
+    )
+
+
+@router.get(
     '/index/{collection_id}/{document_id}',
     dependencies=get_dependencies(json_content_type=False),
     tags=['Index'],

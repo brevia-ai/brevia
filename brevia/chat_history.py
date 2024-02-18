@@ -12,6 +12,7 @@ from sqlalchemy.sql.expression import BinaryExpression
 from brevia.connection import db_connection
 from brevia.models import load_embeddings
 from brevia.settings import get_settings
+from brevia.utilities.json_api import query_data_pagination
 
 
 class ChatHistoryStore(BaseModel):
@@ -171,10 +172,6 @@ def get_history(filter: ChatHistoryFilter) -> dict:
     if filter.session_id and is_valid_uuid(filter.session_id):
         filter_session_id = ChatHistoryStore.session_id == filter.session_id
 
-    page = max(1, filter.page)  # min page number is 1
-    page_size = min(1000, filter.page_size)  # max page size is 1000
-    offset = (page - 1) * page_size
-
     with Session(db_connection()) as session:
         query = get_history_query(
             session=session,
@@ -183,24 +180,14 @@ def get_history(filter: ChatHistoryFilter) -> dict:
             filter_collection=filter_collection,
             filter_session_id=filter_session_id,
         )
-        count = query.count()
-        results = [u._asdict() for u in query.offset(offset).limit(page_size).all()]
-        pcount = int(count / page_size)
-        pcount += 0 if (count % page_size) == 0 else 1
+        result = query_data_pagination(
+            query=query,
+            page=filter.page,
+            page_size=filter.page_size
+        )
         session.close()
 
-        return {
-            'data': results,
-            'meta': {
-                'pagination': {
-                    'count': count,
-                    'page': page,
-                    'page_count': pcount,
-                    'page_items': len(results),
-                    'page_size': page_size,
-                },
-            }
-        }
+        return result
 
 
 def get_history_query(

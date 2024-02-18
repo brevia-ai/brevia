@@ -119,6 +119,32 @@ def remove_document(collection_id: str, document_id: str):
     )
 
 
+def read_metadata_filter(input: str):
+    """ Read metadata filter from a string and decodes it"""
+    try:
+        return json.loads(input)
+    except ValueError as exc:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "Bad 'filter' query string",
+        ) from exc
+
+
+@router.get(
+    '/index/{collection_id}',
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Index'],
+)
+def index_docs(collection_id: str, filter: str = '{}', page: str = '1', page_size: str = '50'):
+    """ Read collection documents with metadata filter """
+    return index.collection_documents(
+        collection_id=collection_id,
+        filter=read_metadata_filter(filter),
+        page=int(page),
+        page_size=int(page_size)
+    )
+
+
 @router.get(
     '/index/{collection_id}/documents_metadata',
     dependencies=get_dependencies(json_content_type=False),
@@ -126,17 +152,9 @@ def remove_document(collection_id: str, document_id: str):
 )
 def index_docs_metadata(collection_id: str, filter: str = '{}'):
     """ Read collection documents metadata"""
-    try:
-        filter = json.loads(filter)
-    except ValueError:
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST,
-            "Bad 'filter' query string",
-        )
-
     return index.documents_metadata(
         collection_id=collection_id,
-        filter=filter
+        filter=read_metadata_filter(filter)
     )
 
 

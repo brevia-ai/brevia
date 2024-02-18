@@ -1,6 +1,5 @@
 """Chat history table & utilities"""
 from typing import List
-import uuid
 import logging
 from datetime import datetime, time
 from langchain_community.vectorstores.pgembedding import BaseModel, CollectionStore
@@ -13,6 +12,7 @@ from brevia.connection import db_connection
 from brevia.models import load_embeddings
 from brevia.settings import get_settings
 from brevia.utilities.json_api import query_data_pagination
+from brevia.utilities.uuid import is_valid_uuid
 
 
 class ChatHistoryStore(BaseModel):
@@ -130,15 +130,6 @@ def add_history(
         session.commit()
 
         return chat_history_store
-
-
-def is_valid_uuid(val) -> bool:
-    """ Check UUID validity """
-    try:
-        uuid.UUID(str(val))
-        return True
-    except (ValueError, TypeError):
-        return False
 
 
 class ChatHistoryFilter(PydanticModel):

@@ -2,9 +2,10 @@
 from typing import Annotated
 from os import path
 import json
+import re
 import logging
 from pydantic import BaseModel
-from fastapi import APIRouter, HTTPException, status, UploadFile, Form
+from fastapi import APIRouter, HTTPException, Request, status, UploadFile, Form
 from langchain.docstore.document import Document
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from brevia.dependencies import (
@@ -130,18 +131,31 @@ def read_metadata_filter(input: str):
         ) from exc
 
 
+def read_filter(request: Request) -> dict:
+    """Read metadata filter dict from query string"""
+    result = {}
+    regexp = r'filter\[(.*?)\]'
+    for key in request.query_params.keys():
+        if re.match(regexp, key):
+            f_key = re.search(regexp, key).group(1)
+            result[f_key] = request.query_params.get(key)
+
+    return result
+
+
 @router.get(
     '/index/{collection_id}',
     dependencies=get_dependencies(json_content_type=False),
     tags=['Index'],
 )
-def index_docs(collection_id: str, filter: str = '{}', page: str = '1', page_size: str = '50'):
+def index_docs(collection_id: str, request: Request, page: int = 1, page_size: int = 50):
     """ Read collection documents with metadata filter """
+    load_collection(collection_id=collection_id)
     return index.collection_documents(
         collection_id=collection_id,
-        filter=read_metadata_filter(filter),
-        page=int(page),
-        page_size=int(page_size)
+        filter=read_filter(request=request),
+        page=page,
+        page_size=page_size,
     )
 
 
@@ -150,11 +164,12 @@ def index_docs(collection_id: str, filter: str = '{}', page: str = '1', page_siz
     dependencies=get_dependencies(json_content_type=False),
     tags=['Index'],
 )
-def index_docs_metadata(collection_id: str, filter: str = '{}'):
+def index_docs_metadata(collection_id: str, request: Request):
     """ Read collection documents metadata"""
+    load_collection(collection_id=collection_id)
     return index.documents_metadata(
         collection_id=collection_id,
-        filter=read_metadata_filter(filter)
+        filter=read_filter(request=request),
     )
 
 
@@ -164,7 +179,7 @@ def index_docs_metadata(collection_id: str, filter: str = '{}'):
     tags=['Index'],
 )
 def read_document(collection_id: str, document_id: str):
-    """ Read document from collection index """
+    """ Read single document from collection index """
     return index.read_document(
         collection_id=collection_id,
         document_id=document_id,

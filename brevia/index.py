@@ -109,7 +109,9 @@ def read_document(
 
 
 def metadata_filters(filter: dict[str, str] = {}):
-    """Returns a list of metadata filters in embeddings table to be use as query filter"""
+    """
+        Returns a list of metadata to be use as query filter in embeddings table
+    """
     res = []
     for key in filter.keys():
         res.append(EmbeddingStore.cmetadata[key].astext == str(filter[key]))

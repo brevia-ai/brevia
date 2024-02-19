@@ -148,7 +148,12 @@ def read_filter(request: Request) -> dict:
     dependencies=get_dependencies(json_content_type=False),
     tags=['Index'],
 )
-def index_docs(collection_id: str, request: Request, page: int = 1, page_size: int = 50):
+def index_docs(
+    collection_id: str,
+    request: Request,
+    page: int = 1,
+    page_size: int = 50
+):
     """ Read collection documents with metadata filter """
     load_collection(collection_id=collection_id)
     return index.collection_documents(

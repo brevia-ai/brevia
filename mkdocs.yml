@@ -6,10 +6,15 @@ nav:
   - Brevia: index.md
   - Setup: setup.md
   - Configuration: config.md
-  - Database: database.md
-  - Document Index: document_index.md
-  - Chat and search: chat_search.md
-  - Analyze services: services.md
+  - Security: security.md
+  - Tutorials:
+    - Create Simple RAG: tutorials/create_collection.md
+    - Create Summarization Analysis: tutorials/summarization.md
+  - Modules:
+    - Database: database.md
+    - Document Index: document_index.md
+    - Chat and search: chat_search.md
+    - Analyze services: services.md
   - Models:
     - OpenAI: models/openai.md
     - Cohere: models/cohere.md
@@ -21,4 +26,5 @@ nav:
     - Summarize & Analyze: endpoints/summarize_analyze.md
     - Transcribe:  endpoints/transcribe.md
     - Status: endpoints/status.md
-  - Security: security.md
+  - Reference:
+    - REST API Reference:  redoc/

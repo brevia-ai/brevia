@@ -14,7 +14,7 @@ Additionally, Brevia seamlessly integrates with an OCR tool to extract text from
 **Efficient Indexing**: BrevIA's optimized indexing process ensures fast and efficient vectorization of documents, enabling rapid retrieval and analysis of relevant information.
 
 ## Configuration
-Make sure to create a .env file in your project directory and include the following variables. (see [configuration](/config))
+Make sure to create a `.env` file in your project directory and include the following variables. (see [configuration](/config))
 
 ### Embeddings
 This variable specifies the type of embedding model used to convert text documents into numerical vectors. In this case, it's set to `openai-embeddings`, indicating that you'll be using OpenAI's embedding service.

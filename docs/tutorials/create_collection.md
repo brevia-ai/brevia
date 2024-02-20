@@ -7,12 +7,13 @@ The default RAG system in Brevia includes:
 - Integrated OCR in the indexing of PDF documents.
 - Textsplitter using NTKL for coherent text segmentation.
 
-##  Setup & Configuration
+## Prerequisites
 
-In order to obtain more detailed information about the configuration and setup of all parameters, please refer to the [Setup](/setup) and [Configuration](/configuration) pages in the documentation.
+Please refer to the [Setup](/setup) and [Configuration](/configuration) pages in the documentation for setup and base configuration the environment and database.
 
+## Configurations
 
-### Base RAG Configuration:
+### RAG
 
 This JSON snippets provides configuration settings for basic RAG functionalities.
 Two main components are defined:
@@ -42,7 +43,43 @@ QA_FOLLOWUP_LLM='{
 Replace `your_llm_type` and `your_llm_model` with your chosen LLM provider and specific model (e.g., "openai-chat", "gpt-3.5-turbo-16k").
 Adjust `temperature` and `max_tokens` parameters as needed.
 
+## Database
+
+### Docker Compose
+
+Run docker compose to spin up a PostgreSQL database with pg_vector.
+
+```bash
+docker compose up
+```
+
+### pgAdmin Integration
+
+Run docker compose --profile admin up to launch both Postgres+pgvector and pgAdmin container.
+Access pgAdmin in your browser at http://localhost:4000 (port configurable in .env file).
+
+```bash
+docker compose --profile admin up
+```
+
+### Migrations
+
+Run db_upgrade (using [Alembic](https://alembic.sqlalchemy.org)) to create or update the database schema.
+
+```bash
+db_upgrade
+```
+
+## Launch API Server
+
+You are now ready to go, simply run
+
+```bash
+uvicorn --env-file .env main:app`
+```
+
 ## Create a new Collection
+
 Use the `/collections` API endpoint with a **POST** request and the following payload:
 
 ```JSON
@@ -64,8 +101,8 @@ Supported file formats include *txt*, *pdf* (including images, through *OCR*).
 
 > **Note**: Through the .env file, it is possible to parameterize the chunk size and overlap, see [configuration](/config).
 
-
 ### Text Content:
+
 Use the `/index` endpoint with a **POST** request and the following payload:
 
 ```JSON
@@ -82,6 +119,7 @@ Use the `/index` endpoint with a **POST** request and the following payload:
 >Note: You will need to replace placeholder values like `{{collection_id}}` with your specific information based on your setup.
 
 ### PDF Files:
+
 Use the `/index/upload` endpoint with a **POST** request and form data (example using JavaScript):
 
 ```Javascript
@@ -95,6 +133,7 @@ data.append('metadata', '{"type": "files", "file": "test.pdf"}');
 > Note: Brevia uses OCR to extract text from images within PDFs.
 
 ## Query Your RAG System
+
 Use the `/chat` endpoint with a POST request and the following payload:
 
 ```JSON

@@ -89,11 +89,20 @@ Payload:
 }
 ```
 
+### GET `/index/{collection_id}`
+
+Returns a paginated list of documents indexed in a collection; each item corresponds to a pg_embeddings record, so you can get usually more items for the same document
+
 ### GET `/index/{{collection_id}}/{{document_id}}`
+
 Retrieves information about an indexed document.
 
+### GET `/index/{collection_id}/index_metadata`
+
+Returns a list of documents metadata in a collection, so you will get unique items with cmetadata and custom_id (alias for document id in brevia)
+
 ### DELETE `/index/{{collection_id}}/{{document_id}}`
+
 Deletes an indexed document.
 
 ## Example Usage (Python) ?
-

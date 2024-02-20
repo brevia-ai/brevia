@@ -120,17 +120,6 @@ def remove_document(collection_id: str, document_id: str):
     )
 
 
-def read_metadata_filter(input: str):
-    """ Read metadata filter from a string and decodes it"""
-    try:
-        return json.loads(input)
-    except ValueError as exc:
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST,
-            "Bad 'filter' query string",
-        ) from exc
-
-
 def read_filter(request: Request) -> dict:
     """Read metadata filter dict from query string"""
     result = {}

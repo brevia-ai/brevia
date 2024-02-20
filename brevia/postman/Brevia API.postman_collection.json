@@ -473,7 +473,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"{{collection}}\",\n    \"cmetadata\": {\n        \"note\": \"some notes\",\n        \"description\": \"a description\"\n    }\n}",
+							"raw": "{\n    \"name\": \"{{collection}}\",\n    \"cmetadata\": {\n        \"title\": \"collection title\",\n        \"description\": \"a description\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -550,7 +550,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"nuovo-nome-nuovo\",\n    \"cmetadata\": {\n        \"note\": \"note di prova prova\",\n        \"description\": \"descrizione di prova prova\"\n    }\n}",
+							"raw": "{\n    \"name\": \"{{collection}}\",\n    \"cmetadata\": {\n        \"title\": \"brand new title\",\n        \"description\": \"brand new description\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -633,7 +633,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"content\" : \"Lorem ipsum dolor sit amet, consectetur adipisci elit, sed do eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrum exercitationem ullamco laboriosam, nisi ut aliquid ex ea commodi consequatur. Duis aute irure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\",\r\n    \"collection_id\" : \"{{collection_id}}\",\r\n    \"document_id\" : \"{{document_id}}\",\r\n    \"metadata\" : {\"category\": \"cat1\"}\r\n}"
+							"raw": "{\r\n    \"content\" : \"Lorem ipsum dolor sit amet, consectetur adipisci elit, sed do eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrum exercitationem ullamco laboriosam, nisi ut aliquid ex ea commodi consequatur. Duis aute irure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\",\r\n    \"collection_id\" : \"{{collection_id}}\",\r\n    \"document_id\" : \"{{document_id}}\",\r\n    \"metadata\" : {\"type\": \"questions\"}\r\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/index",
@@ -772,6 +772,165 @@
 								"index",
 								"{{collection_id}}",
 								"{{document_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index - Read documents metadata in a collection",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/index/{{collection_id}}/documents_metadata",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"{{collection_id}}",
+								"documents_metadata"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index - Read documents metadata in a collection with filter",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/index/{{collection_id}}/documents_metadata?filter[type]=questions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"{{collection_id}}",
+								"documents_metadata"
+							],
+							"query": [
+								{
+									"key": "filter[type]",
+									"value": "questions"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index - Read documents in a collection",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/index/{{collection_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"{{collection_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index - Read documents in a collection with filter and pagination",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/index/{{collection_id}}/?filter[type]=questions&page_size=15",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"{{collection_id}}",
+								""
+							],
+							"query": [
+								{
+									"key": "filter[type]",
+									"value": "questions"
+								},
+								{
+									"key": "page_size",
+									"value": "15"
+								}
 							]
 						}
 					},

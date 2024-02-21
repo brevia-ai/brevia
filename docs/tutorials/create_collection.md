@@ -1,6 +1,6 @@
 # Setting Up a RAG System with Brevia Library
 
-This guide describes how to set up the simplest Retrieval-Augmented Generation (RAG) system using the Brevia library.
+This tutorial describes how to set up the simplest Retrieval-Augmented Generation (RAG) system using the Brevia library.
 The default RAG system in Brevia includes:
 
 - Conversational memory system, with a simple parameterized topic identification system.

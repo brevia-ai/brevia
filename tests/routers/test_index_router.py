@@ -155,3 +155,62 @@ def test_index_metadata_document():
     docs = read_document(collection_id=str(collection.uuid), document_id='123')
     assert len(docs) == 1
     assert docs[0].get('cmetadata') == {'category': 'second'}
+
+
+def test_get_index_collection():
+    """Test GET /index/{collection_id} endpoint with filter query string"""
+    collection = create_collection('test_collection', {})
+
+    doc1 = Document(page_content='Lorem Ipsum', metadata={'type': 'documents'})
+    add_document(document=doc1, collection_name='test_collection', document_id='123')
+    doc2 = Document(page_content='Dolor Sit', metadata={'type': 'questions'})
+    add_document(document=doc2, collection_name='test_collection', document_id='456')
+
+    response = client.get(f'/index/{collection.uuid}?filter[type]=documents')
+    assert response.status_code == 200
+    data = response.json()
+    assert 'data' in data
+    assert data['data'] == [{
+        'document': 'Lorem Ipsum',
+        'cmetadata': {'type': 'documents'},
+        'custom_id': '123'
+    }]
+
+
+def test_get_index_collection_failure():
+    """Test GET /index/{collection_id} endpoint with bad argument"""
+    response = client.get('/index/gustavo')
+    assert response.status_code == 404
+
+
+def test_get_index_documents_metadata():
+    """Test GET /index/{collection_id}/documents_metadata endpoint"""
+    collection = create_collection('test_collection', {})
+
+    doc1 = Document(page_content='Lorem Ipsum', metadata={'type': 'documents'})
+    add_document(document=doc1, collection_name='test_collection', document_id='123')
+    doc2 = Document(page_content='Dolor Sit', metadata={'type': 'questions'})
+    add_document(document=doc2, collection_name='test_collection', document_id='456')
+
+    response = client.get(f'/index/{collection.uuid}/documents_metadata')
+    assert response.status_code == 200
+    data = response.json()
+    assert data == [
+        {
+            'cmetadata': {'type': 'documents'},
+            'custom_id': '123'
+        },
+        {
+            'cmetadata': {'type': 'questions'},
+            'custom_id': '456'
+        },
+    ]
+
+    query = 'filter[type]=questions'
+    response = client.get(f'/index/{collection.uuid}/documents_metadata?{query}')
+    assert response.status_code == 200
+    data = response.json()
+    assert data == [{
+        'cmetadata': {'type': 'questions'},
+        'custom_id': '456'
+    }]

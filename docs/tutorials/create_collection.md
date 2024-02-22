@@ -9,7 +9,7 @@ The default RAG system in Brevia includes:
 
 ## Prerequisites
 
-Please refer to the [Setup](/setup) and [Configuration](/configuration) pages in the documentation for setup and base configuration the environment and database.
+Please refer to the [Setup](../setup.md) and [Configuration](../config.md) pages in the documentation for setup and base configuration the environment and database.
 
 ## Configurations
 
@@ -99,7 +99,7 @@ Use the `/collections` API endpoint with a **POST** request and the following pa
 Once the collection is created, it is necessary to input the set of documents that will constitute the knowledge base of our RAG system. With Brevia, it is possible to perform indexing on both free-text and files containing text or images. The textual content is vectorized using the reference model's endpoints and inserted into the collection.
 Supported file formats include *txt*, *pdf* (including images, through *OCR*).
 
-> **Note**: Through the .env file, it is possible to parameterize the chunk size and overlap, see [configuration](/config).
+> **Note**: Through the .env file, it is possible to parameterize the chunk size and overlap, see [configuration](../config.md).
 
 ### Text Content:
 

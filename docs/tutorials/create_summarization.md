@@ -5,7 +5,7 @@ It provides explanations, examples, and best practices to empower you with a dee
 
 ## Prerequisites
 
-Ensure you have followed the installation and configuration instructions outlined in the [Setup](/setup) and [Configuration](/configuration) documentation. These steps are crucial for establishing the necessary environment and configuration parameters for summarization.
+Ensure you have followed the installation and configuration instructions outlined in the [Setup](../setup.md) and [Configuration](../config.md) documentation. These steps are crucial for establishing the necessary environment and configuration parameters for summarization.
 
 Define the summarization model and parameters using the following JSON snippet as a starting point:
 
@@ -24,7 +24,7 @@ SUMM_TOKEN_OVERLAP=500
 SUMM_DEFAULT_CHAIN=stuff
 ```
 
- For a deeper understanding of the various configuration options available, refer to the dedicated [Configuration](/configuration) page. This resource provides comprehensive documentation on each parameter and its impact on the summarization process.
+ For a deeper understanding of the various configuration options available, refer to the dedicated [Configuration](../config.md) page. This resource provides comprehensive documentation on each parameter and its impact on the summarization process.
 
 ## Simple Summarization
 

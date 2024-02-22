@@ -1,4 +1,5 @@
 site_name: Brevia Docs
+dev_addr: "127.0.0.1:8001"
 theme:
   name: material
 
@@ -17,7 +18,7 @@ nav:
   - Document Index: document_index.md
   # /chat, /search, /chat_history
   - Chat and search: chat_search.md
-  # /summarize, upload, generci service, /transcribe...
+  # /summarize, upload, generic service, /transcribe...
   - Analyze services: analyze_services.md
   - Async jobs: async_jobs.md
   - Models:

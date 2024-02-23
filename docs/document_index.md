@@ -7,7 +7,6 @@ The Brevia library provides a powerful and efficient solution for indexing docum
 Additionally, Brevia seamlessly integrates with an OCR tool to extract text from image-rich PDFs, ensuring comprehensive indexing of all document types.
 
 ## Key Features:
-
 **Intelligent Chunking**: Brevia utilizes NLTK's advanced algorithms to divide lengthy documents into smaller, manageable chunks while maintaining paragraph boundaries. This approach optimizes the indexing process and enhances the accuracy of vector representations.
 
 **OCR Integration**: Brevia seamlessly integrates with an OCR tool, enabling efficient text extraction from PDFs containing images or scanned content. This expands the scope of document indexing to include a wider range of document formats.
@@ -15,35 +14,18 @@ Additionally, Brevia seamlessly integrates with an OCR tool to extract text from
 **Efficient Indexing**: Brevia's optimized indexing process ensures fast and efficient vectorization of documents, enabling rapid retrieval and analysis of relevant information.
 
 ## Configuration
+Make sure to create a `.env` file in your project directory and include the following variables. (see [configuration](/config))
 
-Make sure to create a `.env` file in your project directory and include the following variables. (see [configuration](config.md))
+`EMBEDDINGS` specifies the embedding model for converting documents to numerical vectors.
 
-### Embeddings
+Default: `openai-embeddings` (OpenAI service)
 
-This variable specifies the type of embedding model used to convert text documents into numerical vectors. In this case, it's set to `openai-embeddings`, indicating that you'll be using OpenAI's embedding service.
+`TEXT_CHUNK_SIZE` maximum size of text chunks (tokens).
 
-`EMBEDDINGS='{"_type": "openai-embeddings"}'`
-
-Other services supported are `cohere-embeddings`
-
-### Text Segmentation
-`TEXT_CHUNK_SIZE`
-This variable controls the maximum size of individual text chunks during processing. Large documents are split into smaller segments for efficient handling by the embedding model.
-
-Default Value: 2000 (token)
-
-Adjust this value based on your document sizes and hardware resources. Larger chunks typically yield more accurate embeddings, but require more memory. Experiment to find the optimal balance for your setup.
-
-`TEXT_CHUNK_OVERLAP`
-This variable specifies the amount of overlap between consecutive text chunks. Overlap ensures continuity within the document and helps capture contextual information across sections.
-
-Default Value: 100 (token)
-
-Increase the overlap for documents with important cross-sectional references, but reduce it for faster processing of independent sections.
-Consider experimenting with different values based on your document characteristics.
+`TEXT_CHUNK_OVERLAP` overlap between text chunks (tokens).
 
 example:
-```bash
+```bashPienamente d'accordo
 TEXT_CHUNK_SIZE=2000
 TEXT_CHUNK_OVERLAP=100
 ```
@@ -57,6 +39,7 @@ TEXT_CHUNK_OVERLAP=100
 Splits the text and creates new vectors index and a list of embeddings for a document.
 
 Payload:
+
 ```JSON
 {
   "content": "Your document text or PDF file path",
@@ -71,6 +54,7 @@ Payload:
 Indexes a PDF document by uploading it.
 
 Payload (JavaScript example):
+
 ```JavaScript
 const formdata = new FormData();
 formdata.append("file", fileInput.files[0], "path/to/your/file.pdf");

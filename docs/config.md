@@ -43,10 +43,43 @@ STATUS_TOKEN=abcdefgh
 
 ## Index and search
 
+This section focuses on the crucial components of indexing and searching for relevant information within your knowledge base.
+
+## Embeddings
+This variable specifies the type of embedding model used to convert text documents into numerical vectors. In this case, it's set to `openai-embeddings`, indicating that you'll be using OpenAI's embedding service.
+
+`EMBEDDINGS='{"_type": "openai-embeddings"}'`
+
+### Supported Embedding Services:
+
+`openai-embeddings`: Utilize OpenAI's embedding service for efficient conversion of text to numerical representations.
+
+`cohere-embeddings`: Leverage Cohere's embedding service for alternative embedding calculations.
+
+See [other models](models/other_models.md) for integrations with 3rd party models
+
+### Text Segmentation
+`TEXT_CHUNK_SIZE`
+This variable controls the maximum size of individual text chunks during processing. Large documents are split into smaller segments for efficient handling by the embedding model.
+
+Default Value: 2000 (token)
+
+Adjust this value based on your document sizes and hardware resources. Larger chunks typically yield more accurate embeddings, but require more memory. Experiment to find the optimal balance for your setup.
+
+`TEXT_CHUNK_OVERLAP`
+This variable specifies the amount of overlap between consecutive text chunks. Overlap ensures continuity within the document and helps capture contextual information across sections.
+
+Default Value: 100 (token)
+
+Increase the overlap for documents with important cross-sectional references, but reduce it for faster processing of independent sections.
+Consider experimenting with different values based on your document characteristics.
+
+example:
+```bash
 TEXT_CHUNK_SIZE=2000
 TEXT_CHUNK_OVERLAP=100
-EMBEDDINGS='{"_type": "openai-embeddings"}'
-SEARCH_DOCS_NUM=6
+```
+
 
 ## Q&A and Chat
 

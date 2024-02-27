@@ -181,6 +181,64 @@ def get_history(filter: ChatHistoryFilter) -> dict:
         return result
 
 
+def get_history_sessions(filter: ChatHistoryFilter) -> dict:
+    """
+    AAAA
+    """
+    max_date = datetime.now()
+    if filter.max_date is not None:
+        max_date = datetime.strptime(filter.max_date, '%Y-%m-%d')
+    max_date = datetime.combine(max_date, time.max)
+
+    min_date = datetime.fromtimestamp(0)
+    if filter.min_date is not None:
+        min_date = datetime.strptime(filter.min_date, '%Y-%m-%d')
+    min_date = datetime.combine(min_date, time.min)
+    filter_collection = CollectionStore.name == filter.collection
+    if filter.collection is None:
+        filter_collection = CollectionStore.name is not None
+
+    with Session(db_connection()) as session:
+        query = get_history_session_query(
+            session=session,
+            filter_min_date=ChatHistoryStore.created >= min_date,
+            filter_max_date=ChatHistoryStore.created <= max_date,
+            filter_collection=filter_collection,
+        )
+        result = query_data_pagination(
+            query=query,
+            page=filter.page,
+            page_size=filter.page_size
+        )
+        session.close()
+
+        return result
+
+
+def get_history_session_query(
+    session: Session,
+    filter_min_date: BinaryExpression,
+    filter_max_date: BinaryExpression,
+    filter_collection: BinaryExpression,
+) -> Query:
+    """Return get history query"""
+    return (
+        session.query(
+            ChatHistoryStore.question,
+            ChatHistoryStore.session_id,
+            ChatHistoryStore.created,
+            CollectionStore.name.label('collection')
+        )
+        .join(
+            CollectionStore,
+            CollectionStore.uuid == ChatHistoryStore.collection_id
+        )
+        .filter(filter_min_date, filter_max_date, filter_collection)
+        .order_by(ChatHistoryStore.created.asc())
+        .distinct(ChatHistoryStore.session_id)
+    )
+
+
 def get_history_query(
     session: Session,
     filter_min_date: BinaryExpression,

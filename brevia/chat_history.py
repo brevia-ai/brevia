@@ -1,10 +1,11 @@
 """Chat history table & utilities"""
-from typing import List
+from typing import List, Tuple
 import logging
 from datetime import datetime, time
 from langchain_community.vectorstores.pgembedding import BaseModel, CollectionStore
 from pydantic import BaseModel as PydanticModel
 import sqlalchemy
+from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import JSON, UUID
 from sqlalchemy.orm import Mapped, Query, Session
 from sqlalchemy.sql.expression import BinaryExpression
@@ -142,27 +143,58 @@ class ChatHistoryFilter(PydanticModel):
     page_size: int = 50
 
 
-def get_history(filter: ChatHistoryFilter) -> dict:
+def get_date_filter(date_str, type_str):
     """
-        Read chat history with optional filters
-        using pagination data in response
+    Parses a date string into a datetime object with combined time information.
     """
     max_date = datetime.now()
-    if filter.max_date is not None:
-        max_date = datetime.strptime(filter.max_date, '%Y-%m-%d')
-    max_date = datetime.combine(max_date, time.max)
-
     min_date = datetime.fromtimestamp(0)
-    if filter.min_date is not None:
-        min_date = datetime.strptime(filter.min_date, '%Y-%m-%d')
-    min_date = datetime.combine(min_date, time.min)
-    filter_collection = CollectionStore.name == filter.collection
-    if filter.collection is None:
-        filter_collection = CollectionStore.name is not None
-    filter_session_id = sqlalchemy.text('1 = 1')  # (default) always true expression
-    if filter.session_id and is_valid_uuid(filter.session_id):
-        filter_session_id = ChatHistoryStore.session_id == filter.session_id
 
+    if date_str is not None:
+        parsed_date = datetime.strptime(date_str, '%Y-%m-%d')
+        if type_str == 'max':
+            max_date = parsed_date
+            return datetime.combine(max_date, time.max)
+        else:
+            min_date = parsed_date
+            return datetime.combine(min_date, time.min)
+
+    return max_date if type_str == 'max' else min_date
+
+
+def get_collection_filter(collection_name):
+    """
+    Constructs a filter expression based on the collection name.
+    """
+    filter_collection = CollectionStore.name == collection_name
+    if collection_name is None:
+        filter_collection = CollectionStore.name is not None
+    print (filter_collection)
+    return filter_collection
+
+
+def get_session_filter(session_id):
+    """
+    Constructs a filter expression based on the session ID.
+    """
+    filter_session_id = sqlalchemy.text('1 = 1')  # (default) always true expression
+    if session_id and is_valid_uuid(session_id):
+        filter_session_id = ChatHistoryStore.session_id == session_id
+
+    return filter_session_id
+
+
+def get_history(filter: ChatHistoryFilter) -> dict:
+    """
+    Read chat history with optional filters using pagination data in response.
+    """
+
+    min_date = get_date_filter(filter.min_date, 'min')
+    max_date = get_date_filter(filter.max_date, 'max')
+    filter_collection = get_collection_filter(filter.collection)
+    filter_session_id = get_session_filter(filter.session_id)
+
+    print(filter_collection)
     with Session(db_connection()) as session:
         query = get_history_query(
             session=session,
@@ -176,30 +208,20 @@ def get_history(filter: ChatHistoryFilter) -> dict:
             page=filter.page,
             page_size=filter.page_size
         )
-        session.close()
-
         return result
 
 
 def get_history_sessions(filter: ChatHistoryFilter) -> dict:
     """
-    AAAA
+    Read chat history with optional filters using pagination data in response.
     """
-    max_date = datetime.now()
-    if filter.max_date is not None:
-        max_date = datetime.strptime(filter.max_date, '%Y-%m-%d')
-    max_date = datetime.combine(max_date, time.max)
 
-    min_date = datetime.fromtimestamp(0)
-    if filter.min_date is not None:
-        min_date = datetime.strptime(filter.min_date, '%Y-%m-%d')
-    min_date = datetime.combine(min_date, time.min)
-    filter_collection = CollectionStore.name == filter.collection
-    if filter.collection is None:
-        filter_collection = CollectionStore.name is not None
+    min_date = get_date_filter(filter.min_date, 'min')
+    max_date = get_date_filter(filter.max_date, 'max')
+    filter_collection = get_collection_filter(filter.collection)
 
     with Session(db_connection()) as session:
-        query = get_history_session_query(
+        query = get_history_sessions_queries(
             session=session,
             filter_min_date=ChatHistoryStore.created >= min_date,
             filter_max_date=ChatHistoryStore.created <= max_date,
@@ -210,33 +232,44 @@ def get_history_sessions(filter: ChatHistoryFilter) -> dict:
             page=filter.page,
             page_size=filter.page_size
         )
-        session.close()
-
         return result
 
 
-def get_history_session_query(
+def get_history_sessions_queries(
     session: Session,
     filter_min_date: BinaryExpression,
     filter_max_date: BinaryExpression,
     filter_collection: BinaryExpression,
 ) -> Query:
-    """Return get history query"""
-    return (
+    """
+    Returns a SQLAlchemy query to fetch oldest chat history sessions
+    for every session based on specified filters.
+    """
+
+    subquery = (
         session.query(
-            ChatHistoryStore.question,
-            ChatHistoryStore.session_id,
-            ChatHistoryStore.created,
-            CollectionStore.name.label('collection')
-        )
-        .join(
-            CollectionStore,
-            CollectionStore.uuid == ChatHistoryStore.collection_id
+            ChatHistoryStore.session_id.label("session_id"),
+            # pylint: disable=not-callable
+            func.min(ChatHistoryStore.created).label("min_created")
         )
         .filter(filter_min_date, filter_max_date, filter_collection)
-        .order_by(ChatHistoryStore.created.asc())
-        .distinct(ChatHistoryStore.session_id)
+        .group_by(ChatHistoryStore.session_id)
+    ).subquery()
+
+    query = (
+        session.query(
+            ChatHistoryStore.session_id,
+            ChatHistoryStore.question,
+            ChatHistoryStore.created,
+            CollectionStore.name.label("collection"),
+        )
+        .join(subquery, ChatHistoryStore.session_id == subquery.c.session_id)
+        .join(CollectionStore, CollectionStore.uuid == ChatHistoryStore.collection_id)
+        .filter(ChatHistoryStore.created == subquery.c.min_created)
+        .order_by(sqlalchemy.desc(ChatHistoryStore.created))
     )
+
+    return query
 
 
 def get_history_query(
@@ -246,8 +279,11 @@ def get_history_query(
     filter_collection: BinaryExpression,
     filter_session_id: BinaryExpression,
 ) -> Query:
-    """Return get history query"""
-    return (
+    """
+    Constructs a SQLAlchemy query to retrieve chat history based on specified filters.
+    """
+
+    query = (
         session.query(
             ChatHistoryStore.uuid,
             ChatHistoryStore.question,
@@ -255,7 +291,7 @@ def get_history_query(
             ChatHistoryStore.session_id,
             ChatHistoryStore.cmetadata,
             ChatHistoryStore.created,
-            CollectionStore.name.label('collection'),
+            CollectionStore.name.label("collection"),
             ChatHistoryStore.user_evaluation,
             ChatHistoryStore.user_feedback,
             ChatHistoryStore.chat_source,
@@ -267,6 +303,7 @@ def get_history_query(
         .filter(filter_min_date, filter_max_date, filter_collection, filter_session_id)
         .order_by(sqlalchemy.desc(ChatHistoryStore.created))
     )
+    return query
 
 
 def history_evaluation(

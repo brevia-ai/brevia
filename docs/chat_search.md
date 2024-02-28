@@ -17,30 +17,7 @@ In addition to chat functionalities, Brevia provides out of the box dedicated en
 
 `/chat_history`: This endpoint allows you to access and manage conversation history data, providing valuable insights into past interactions.
 
-## Configuration
-
-The following environment variables control the behavior of the chat system:
-
-`QA_COMPLETION_LLM`: Configuration for the main conversational model.
-
-`QA_FOLLOWUP_LLM`: Configuration for the follow-up question model.
-
-`QA_FOLLOWUP_SIM_THRESHOLD`: Similarity threshold between questions to determine if chat history should be used.
-
-`QA_NO_CHAT_HISTORY`: Disables chat history entirely.
-
-`SEARCH_DOCS_NUM`: Number of documents used to search for answers.
-
-example:
-
-```bash
-QA_COMPLETION_LLM='{"_type": "openai-chat", "model_name": "gpt-3.5-turbo-16k", "temperature": 0, "max_tokens": 1000, "verbose": true}'
-QA_FOLLOWUP_LLM='{"_type": "openai-chat", "model_name": "gpt-3.5-turbo-16k", "temperature": 0, "max_tokens": 200, "verbose": true}'
-QA_FOLLOWUP_SIM_THRESHOLD=0.735
-SEARCH_DOCS_NUM=4
-```
-
-see [configuration](config.md) for more info
+See [configuration](config.md#qa-and-chat) for more information on using environment variables to control the behavior of the chat system.
 
 ## Chat System Functionality
 
@@ -57,7 +34,6 @@ The chat system is at the core of the BrevIA library, providing a conversational
 In addition to the features mentioned above, the chat system also provides:
 
 **Similarity Threshold**: The `QA_FOLLOWUP_SIM_THRESHOLD` parameter defines a similarity threshold for determining when to use the chat history. If the similarity between the current and previous questions falls below this threshold, the chat history is not used, avoiding irrelevant or confusing responses.
-
 
 **Customizable Similarity Algorithm**: The `distance_strategy_name` parameter in the search endpoint allows you to specify the algorithm used for measuring vector similarity. The default algorithm is "`cosine`", but you can choose from a variety of other options to suit your specific needs.
 

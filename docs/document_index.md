@@ -7,6 +7,7 @@ The Brevia library provides a powerful and efficient solution for indexing docum
 Additionally, Brevia seamlessly integrates with an OCR tool to extract text from image-rich PDFs, ensuring comprehensive indexing of all document types.
 
 ## Key Features:
+
 **Intelligent Chunking**: Brevia utilizes NLTK's advanced algorithms to divide lengthy documents into smaller, manageable chunks while maintaining paragraph boundaries. This approach optimizes the indexing process and enhances the accuracy of vector representations.
 
 **OCR Integration**: Brevia seamlessly integrates with an OCR tool, enabling efficient text extraction from PDFs containing images or scanned content. This expands the scope of document indexing to include a wider range of document formats.
@@ -14,7 +15,8 @@ Additionally, Brevia seamlessly integrates with an OCR tool to extract text from
 **Efficient Indexing**: Brevia's optimized indexing process ensures fast and efficient vectorization of documents, enabling rapid retrieval and analysis of relevant information.
 
 ## Configuration
-Make sure to create a `.env` file in your project directory and include the following variables. (see [configuration](/config))
+
+Make sure to create a `.env` file in your project directory and include the following variables. (see [configuration](config.md))
 
 `EMBEDDINGS` specifies the embedding model for converting documents to numerical vectors.
 
@@ -25,7 +27,8 @@ Default: `openai-embeddings` (OpenAI service)
 `TEXT_CHUNK_OVERLAP` overlap between text chunks (tokens).
 
 example:
-```bashPienamente d'accordo
+
+```bash
 TEXT_CHUNK_SIZE=2000
 TEXT_CHUNK_OVERLAP=100
 ```

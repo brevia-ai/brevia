@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     )
 
     verbose_mode: bool = False
+
+    # Postgres+pgvector vector db
     pgvector_host: str = 'localhost'
     pgvector_driver: str = 'psycopg2'
     pgvector_port: int = 5432
@@ -20,6 +22,8 @@ class Settings(BaseSettings):
     pgvector_user: str = ''
     pgvector_password: str = ''
     pgvector_pool_size: int = 10
+    # optional DSN URI, if set other pgvector_* settings are ignored
+    pgvector_dsn_uri: str = ''
 
     # Tokens
     tokens_secret: str = ''

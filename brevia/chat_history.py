@@ -1,6 +1,5 @@
 """Chat history table & utilities"""
 from typing import List
-import uuid
 import logging
 from datetime import datetime, time
 from langchain_community.vectorstores.pgembedding import BaseModel, CollectionStore
@@ -12,6 +11,8 @@ from sqlalchemy.sql.expression import BinaryExpression
 from brevia.connection import db_connection
 from brevia.models import load_embeddings
 from brevia.settings import get_settings
+from brevia.utilities.json_api import query_data_pagination
+from brevia.utilities.uuid import is_valid_uuid
 
 
 class ChatHistoryStore(BaseModel):
@@ -131,15 +132,6 @@ def add_history(
         return chat_history_store
 
 
-def is_valid_uuid(val) -> bool:
-    """ Check UUID validity """
-    try:
-        uuid.UUID(str(val))
-        return True
-    except (ValueError, TypeError):
-        return False
-
-
 class ChatHistoryFilter(PydanticModel):
     """ Chat history filter """
     min_date: str | None = None
@@ -171,10 +163,6 @@ def get_history(filter: ChatHistoryFilter) -> dict:
     if filter.session_id and is_valid_uuid(filter.session_id):
         filter_session_id = ChatHistoryStore.session_id == filter.session_id
 
-    page = max(1, filter.page)  # min page number is 1
-    page_size = min(1000, filter.page_size)  # max page size is 1000
-    offset = (page - 1) * page_size
-
     with Session(db_connection()) as session:
         query = get_history_query(
             session=session,
@@ -183,24 +171,14 @@ def get_history(filter: ChatHistoryFilter) -> dict:
             filter_collection=filter_collection,
             filter_session_id=filter_session_id,
         )
-        count = query.count()
-        results = [u._asdict() for u in query.offset(offset).limit(page_size).all()]
-        pcount = int(count / page_size)
-        pcount += 0 if (count % page_size) == 0 else 1
+        result = query_data_pagination(
+            query=query,
+            page=filter.page,
+            page_size=filter.page_size
+        )
         session.close()
 
-        return {
-            'data': results,
-            'meta': {
-                'pagination': {
-                    'count': count,
-                    'page': page,
-                    'page_count': pcount,
-                    'page_items': len(results),
-                    'page_size': page_size,
-                },
-            }
-        }
+        return result
 
 
 def get_history_query(

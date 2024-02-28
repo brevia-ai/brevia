@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from brevia import connection, load_file
 from brevia.models import load_embeddings
 from brevia.settings import get_settings
+from brevia.utilities.json_api import query_data_pagination
 
 
 def init_index():
@@ -107,6 +108,35 @@ def read_document(
         return [row._asdict() for row in query.all()]
 
 
+def metadata_filters(filter: dict[str, str] = {}):
+    """
+        Returns a list of metadata to be use as query filter in embeddings table
+    """
+    res = []
+    for key in filter.keys():
+        res.append(EmbeddingStore.cmetadata[key].astext == str(filter[key]))
+    return res
+
+
+def collection_documents(
+    collection_id: str,
+    filter: dict[str, str] = {},
+    page: int = 1,
+    page_size: int = 50,
+):
+    """ Read document `document_id` from collection index"""
+    query_filters = [EmbeddingStore.collection_id == collection_id]
+    query_filters.extend(metadata_filters(filter=filter))
+    with Session(connection.db_connection()) as session:
+        query = session.query(
+            EmbeddingStore.document,
+            EmbeddingStore.cmetadata,
+            EmbeddingStore.custom_id
+        )
+        query = query.filter(*query_filters)
+        return query_data_pagination(query=query, page=page, page_size=page_size)
+
+
 def update_metadata(
     collection_id: str,
     document_id: str,
@@ -119,3 +149,24 @@ def update_metadata(
         query = session.query(EmbeddingStore).filter(filter_collection, filter_document)
         query.update({EmbeddingStore.cmetadata: metadata})
         session.commit()
+
+
+def documents_metadata(
+    collection_id: str,
+    filter: dict[str, str] = {},
+):
+    """ Read documents metadata of a collection"""
+    query_filters = [EmbeddingStore.collection_id == collection_id]
+    query_filters.extend(metadata_filters(filter=filter))
+    with Session(connection.db_connection()) as session:
+        query = session.query(EmbeddingStore.custom_id, EmbeddingStore.cmetadata)
+        query = query.filter(*query_filters)
+        result = []
+        docs = []
+        for row in query.all():
+            item = row._asdict()
+            if (item['custom_id'] not in docs):
+                docs.append(item['custom_id'])
+                result.append(item)
+
+        return result

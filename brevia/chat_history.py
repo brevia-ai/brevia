@@ -169,7 +169,6 @@ def get_collection_filter(collection_name):
     filter_collection = CollectionStore.name == collection_name
     if collection_name is None:
         filter_collection = CollectionStore.name is not None
-    print (filter_collection)
     return filter_collection
 
 
@@ -221,7 +220,7 @@ def get_history_sessions(filter: ChatHistoryFilter) -> dict:
     filter_collection = get_collection_filter(filter.collection)
 
     with Session(db_connection()) as session:
-        query = get_history_sessions_queries(
+        query = get_history_sessions_query(
             session=session,
             filter_min_date=ChatHistoryStore.created >= min_date,
             filter_max_date=ChatHistoryStore.created <= max_date,
@@ -235,7 +234,7 @@ def get_history_sessions(filter: ChatHistoryFilter) -> dict:
         return result
 
 
-def get_history_sessions_queries(
+def get_history_sessions_query(
     session: Session,
     filter_min_date: BinaryExpression,
     filter_max_date: BinaryExpression,
@@ -249,11 +248,18 @@ def get_history_sessions_queries(
     subquery = (
         session.query(
             ChatHistoryStore.session_id.label("session_id"),
+            CollectionStore.name.label("collection"),
             # pylint: disable=not-callable
-            func.min(ChatHistoryStore.created).label("min_created")
+            func.min(ChatHistoryStore.created).label("min_created"),
+        ).join(
+            CollectionStore,
+            CollectionStore.uuid == ChatHistoryStore.collection_id
         )
         .filter(filter_min_date, filter_max_date, filter_collection)
-        .group_by(ChatHistoryStore.session_id)
+        .group_by(
+            ChatHistoryStore.session_id,
+            CollectionStore.name
+        )
     ).subquery()
 
     query = (
@@ -261,10 +267,9 @@ def get_history_sessions_queries(
             ChatHistoryStore.session_id,
             ChatHistoryStore.question,
             ChatHistoryStore.created,
-            CollectionStore.name.label("collection"),
+            subquery.c.collection,
         )
         .join(subquery, ChatHistoryStore.session_id == subquery.c.session_id)
-        .join(CollectionStore, CollectionStore.uuid == ChatHistoryStore.collection_id)
         .filter(ChatHistoryStore.created == subquery.c.min_created)
         .order_by(sqlalchemy.desc(ChatHistoryStore.created))
     )

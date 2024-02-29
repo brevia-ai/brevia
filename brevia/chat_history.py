@@ -146,6 +146,13 @@ class ChatHistoryFilter(PydanticModel):
 def get_date_filter(date_str, type_str):
     """
     Parses a date string into a datetime object with combined time information.
+
+    Args:
+        date_str (str): A string representing a date in the format 'YYYY-MM-DD'.
+            None if no specific date is provided.
+
+        type_str (str): Indicates whether to create a maximum or minimum date filter.
+            Valid values are 'max' or 'min'.
     """
     max_date = datetime.now()
     min_date = datetime.fromtimestamp(0)
@@ -193,7 +200,6 @@ def get_history(filter: ChatHistoryFilter) -> dict:
     filter_collection = get_collection_filter(filter.collection)
     filter_session_id = get_session_filter(filter.session_id)
 
-    print(filter_collection)
     with Session(db_connection()) as session:
         query = get_history_query(
             session=session,

@@ -1,5 +1,5 @@
 """Chat history table & utilities"""
-from typing import List, Tuple
+from typing import List
 import logging
 from datetime import datetime, time
 from langchain_community.vectorstores.pgembedding import BaseModel, CollectionStore

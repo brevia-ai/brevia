@@ -41,7 +41,13 @@ class Settings(BaseSettings):
     search_docs_num: int = 4
 
     # LLM settings
-    qa_completion_llm: Json = """{"_type": "openai-chat","model_name": "gpt-3.5-turbo-16k","temperature": 0,"max_tokens": 1000,"verbose": true}"""
+    qa_completion_llm: Json = """{
+        "_type": "openai-chat",
+        "model_name": "gpt-3.5-turbo-16k",
+        "temperature": 0,
+        "max_tokens": 1000,
+        "verbose": true
+    }"""
 
     qa_followup_llm: Json = """{
         "_type": "openai-chat",

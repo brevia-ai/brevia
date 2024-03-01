@@ -100,6 +100,17 @@ def read(
     return read_txt_file(file_path=file_path)
 
 
+def read_url(
+    url: str,
+    **loader_kwargs: Any,
+) -> str:
+    """
+    Load text from a web page URL
+    """
+    loader = BSHTMLLoader(url=url, **loader_kwargs)
+    return cleanup_text(loader.load().page_content)
+
+
 def load_documents(file_path: str, **kwargs: Any) -> List[Document]:
     """Load documents from a file or folder path"""
     mtype = mimetypes.guess_type(file_path)[0]

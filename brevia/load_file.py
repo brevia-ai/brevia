@@ -2,6 +2,8 @@
 import os
 import re
 import mimetypes
+import requests
+import tempfile
 from typing import List, Any
 from langchain.docstore.document import Document
 from langchain.document_loaders import (
@@ -107,8 +109,16 @@ def read_url(
     """
     Load text from a web page URL
     """
-    loader = BSHTMLLoader(url=url, **loader_kwargs)
-    return cleanup_text(loader.load().page_content)
+    temp_file = tempfile.NamedTemporaryFile(delete=False)
+    response = requests.get(url)
+    response.raise_for_status()
+    with open(temp_file.name, 'w') as file:
+        file.write(response.text)
+    loader = BSHTMLLoader(file_path=temp_file.name, **loader_kwargs)
+    docs = loader.load()
+    os.unlink(temp_file.name)
+
+    return ' '.join([cleanup_text(item.page_content) for item in docs]).strip()
 
 
 def load_documents(file_path: str, **kwargs: Any) -> List[Document]:

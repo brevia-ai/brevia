@@ -139,7 +139,7 @@ def parse_link_and_index(item: IndexLink):
         return
     # remove same document if already indexed
     index.remove_document(
-        collection_id=collection.id,
+        collection_id=item.collection_id,
         document_id=item.document_id,
     )
     index.add_document(

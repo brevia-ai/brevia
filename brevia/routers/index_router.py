@@ -107,7 +107,7 @@ def upload_and_index(
 
 
 class IndexLink(BaseModel):
-    """ /index request body """
+    """ /index/link request body """
     link: str  # link to a webpage
     collection_id: str
     document_id: str
@@ -134,7 +134,7 @@ def parse_link_and_index(item: IndexLink):
         item.document_id
     )
 
-    text = load_file.read_url(url=item.link, **item.options)
+    text = load_file.read_html_url(url=item.link, **item.options)
     if not text:
         return
     # remove same document if already indexed

@@ -103,12 +103,12 @@ def read(
     return read_txt_file(file_path=file_path)
 
 
-def read_url(
+def read_html_url(
     url: str,
     **loader_kwargs: Any,
 ) -> str:
     """
-    Load text from a web page URL
+    Load text from HTML content of web page URL
     """
     temp_file = tempfile.NamedTemporaryFile(delete=False)
     response = requests.get(url)

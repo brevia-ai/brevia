@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "1d8389da-8d33-46ee-8b7c-f75f35ea302b",
+		"_postman_id": "b8d07c1e-d4fa-4b02-8759-d4ed41e1f7ce",
 		"name": "Brevia API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "4185449"
+		"_exporter_id": "234034"
 	},
 	"item": [
 		{
@@ -784,6 +784,46 @@
 							"path": [
 								"index",
 								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index/link - Index a webpage via link",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"link\" : \"{{link}}\",\n    \"collection_id\" : \"{{collection_id}}\",\n    \"document_id\" : \"{{document_id}}\",\n    \"metadata\" : {\"type\": \"links\"}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/index/link",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"link"
 							]
 						}
 					},

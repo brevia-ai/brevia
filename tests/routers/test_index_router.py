@@ -8,6 +8,7 @@ from langchain.docstore.document import Document
 from brevia.routers import index_router
 from brevia.collections import create_collection
 from brevia.index import add_document, read_document
+from unittest.mock import patch
 
 app = FastAPI()
 app.include_router(index_router.router)
@@ -134,6 +135,77 @@ def test_upload_analyze_fail():
         },
     )
     assert response.status_code == 400
+
+
+@patch('brevia.routers.index_router.load_file.requests.get')
+def test_index_link(mock_get):
+    """Test POST /index/link endpoint"""
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.text = 'Lorem Ipsum'
+    collection = create_collection('test_collection', {})
+    response = client.post(
+        '/index/link',
+        headers={'Content-Type': 'application/json'},
+        content=json.dumps({
+            'link': 'https://www.example.com',
+            'collection_id': str(collection.uuid),
+            'document_id': '123',
+            'metadata': {'type': 'links'},
+        })
+    )
+    assert response.status_code == 204
+    assert response.text == ''
+    docs = read_document(collection_id=str(collection.uuid), document_id='123')
+    assert len(docs) == 1
+    assert docs[0].get('cmetadata') == {'type': 'links'}
+    assert docs[0].get('document') == 'Lorem Ipsum'
+
+
+@patch('brevia.routers.index_router.load_file.requests.get')
+def test_index_link_selector(mock_get):
+    """Test POST /index/link endpoint with 'selector' option filer"""
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.text = '<h1>Lorem Ipsum</h1><p class="test">Some text</p>'
+    collection = create_collection('test_collection', {})
+    response = client.post(
+        '/index/link',
+        headers={'Content-Type': 'application/json'},
+        content=json.dumps({
+            'link': 'https://www.example.com',
+            'collection_id': str(collection.uuid),
+            'document_id': '123',
+            'metadata': {'type': 'links'},
+            'options': {'selector': 'p.test'},
+        })
+    )
+    assert response.status_code == 204
+    assert response.text == ''
+    docs = read_document(collection_id=str(collection.uuid), document_id='123')
+    assert len(docs) == 1
+    assert docs[0].get('cmetadata') == {'type': 'links'}
+    assert docs[0].get('document') == 'Some text'
+
+
+@patch('brevia.routers.index_router.load_file.requests.get')
+def test_index_link_empty(mock_get):
+    """Test POST /index/link endpoint with empty or missing response"""
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.text = ''
+    collection = create_collection('test_collection', {})
+    response = client.post(
+        '/index/link',
+        headers={'Content-Type': 'application/json'},
+        content=json.dumps({
+            'link': 'https://www.example.com',
+            'collection_id': str(collection.uuid),
+            'document_id': '123',
+            'metadata': {'type': 'links'},
+        })
+    )
+    assert response.status_code == 204
+    assert response.text == ''
+    docs = read_document(collection_id=str(collection.uuid), document_id='123')
+    assert len(docs) == 0
 
 
 def test_index_metadata_document():

@@ -106,6 +106,52 @@ def upload_and_index(
     )
 
 
+class IndexLink(BaseModel):
+    """ /index/link request body """
+    link: str  # link to a webpage
+    collection_id: str
+    document_id: str
+    metadata: dict = {}
+    options: dict = {}
+
+
+@router.post(
+    '/index/link',
+    status_code=204,
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Index'],
+)
+def parse_link_and_index(item: IndexLink):
+    """
+    Add a web page content to a collection index
+    """
+    collection = load_collection(collection_id=item.collection_id)
+    log = logging.getLogger(__name__)
+    log.info(
+        "Adding link '%s' to collection '%s' / document '%s'",
+        item.link,
+        collection.name,
+        item.document_id
+    )
+
+    text = load_file.read_html_url(url=item.link, **item.options)
+    if not text:
+        return
+    # remove same document if already indexed
+    index.remove_document(
+        collection_id=item.collection_id,
+        document_id=item.document_id,
+    )
+    index.add_document(
+        document=Document(
+            page_content=text,
+            metadata=item.metadata,
+        ),
+        collection_name=collection.name,
+        document_id=item.document_id,
+    )
+
+
 @router.delete(
     '/index/{collection_id}/{document_id}',
     status_code=204,

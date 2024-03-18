@@ -30,7 +30,7 @@ SUMM_DEFAULT_CHAIN=stuff
 
 The `/summarize` endpoint enables you to summarize any text provided in the request body.
 
-### Payload:
+### Payload
 
 The following JSON payload illustrates the structure of a request to the `/summarize` endpoint:
 
@@ -43,14 +43,16 @@ The following JSON payload illustrates the structure of a request to the `/summa
 ```
 
 `text`: The text you wish to summarize. This can be any string of text.
-`chain_type`: The summarization algorithm to use. Available options include stuff (default), map_reduce, and bart. Refer to the ? page for detailed descriptions of each algorithm.
+`chain_type`: The summarization algorithm to use. Available options include stuff (default), `map_reduce` and `refine`. Refer to the ? page for detailed descriptions of each algorithm.
 `token_data`: A boolean value indicating whether to return token-level information in the response.
 
-### Default Prompts:
+> **Note**: This endpoint allows you to define a single iteration_prompt for both the MapReduce and refine summarization algorithms to uses in internal Langchain workflow. This `iteration_prompt` will be used as the `combined_prompt` during the MapReduce and as the `refine_prompt` during Refine.
+
+### Default Prompts
 
 The system utilizes pre-defined prompts for summarization. These prompts guide the language model in generating a concise and informative summary.
 
-### Custom Prompt Example:
+### Custom Prompt Example
 
 You can also customize the prompts used for summarization.
 This example demonstrates using a different summarization algorithm (map_reduce) and a custom prompt:
@@ -78,6 +80,7 @@ This example demonstrates using a different summarization algorithm (map_reduce)
 ```
 
 Custom prompts offer several advantages:
+
 * Control over summarization style: Tailor the summary to your specific needs and preferences.
 * Improved accuracy and relevance: Guide the language model towards generating a more accurate and relevant summary.
 * Enhanced transparency: Understand how the summarization process works and the factors influencing the generated summary.
@@ -86,7 +89,7 @@ Custom prompts offer several advantages:
 
 The `/upload_summarize` endpoint enables you to summarize files, including PDFs. For image-based PDFs, the unstructured library performs Optical Character Recognition (OCR) before summarization.
 
-### Payload:
+### Payload
 
 Utilize FormData to construct the request payload as shown below:
 

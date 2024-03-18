@@ -41,7 +41,15 @@ SYSTEM_TEMPLATE = """
 
 
 def load_qa_prompt(prompts: dict | None) -> ChatPromptTemplate:
-    """ load prompts for Q/A functions """
+    """
+        load prompts for RAG-Q/A functions, following openIA system/human/ai pattern:
+        SYSTEM_TEMPLATE: is a jinja2 template with language checking from api call.
+                         For security reason, the default is loaded from here and
+                         overwritten from api call.
+        HUMAN_TEMPLATE:  is a normal template, loaded from /prompts/qa and overwritten
+                         by api call
+
+    """
 
     prompts_path = f'{path.dirname(__file__)}/prompts'
     system = PromptTemplate.from_template(SYSTEM_TEMPLATE, template_format="jinja2")
@@ -65,6 +73,8 @@ def load_condense_prompt(prompts: dict | None) -> ChatPromptTemplate:
     """
         Check if specific few-shot prompt file exists for the collection, if not,
         check for condense prompt file, otherwise, load default condense prompt file.
+        few-shot can improve condensing the chat history especially when the chat
+        history is about eterogenous topics.
     """
     if prompts:
         if prompts.get('few'):

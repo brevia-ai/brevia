@@ -5,11 +5,25 @@ from os import getcwd, path
 from logging import config
 import click
 from brevia.alembic import current, upgrade, downgrade
+from brevia.index import update_links_documents
 from brevia.utilities import files_import, run_service, collections_io
 from brevia.tokens import create_token
 from brevia.utilities.openapi import brevia_openapi
 
 
+def init_command(func):
+    """Initialization decorator for command functions"""
+    def wrapper():
+        # initialize logging from optional log.ini
+        log_ini_path = f'{getcwd()}/log.ini'
+        if path.exists(log_ini_path):
+            config.fileConfig(log_ini_path)
+        func()
+
+    return wrapper
+
+
+@init_command
 @click.command()
 @click.option("-v", "--verbose", is_flag=True, default=False, help="Verbose mode")
 def db_current_cmd(verbose):
@@ -17,6 +31,7 @@ def db_current_cmd(verbose):
     current(verbose)
 
 
+@init_command
 @click.command()
 @click.option("-r", "--revision", default="head", help="Revision target")
 def db_upgrade_cmd(revision):
@@ -24,13 +39,14 @@ def db_upgrade_cmd(revision):
     upgrade(revision)
 
 
+@init_command
 @click.command()
 @click.option("-r", "--revision", required=True, help="Revision target")
 def db_downgrade_cmd(revision):
     """Revert to a previous database revision"""
     downgrade(revision)
 
-
+@init_command
 @click.command()
 @click.option("-f", "--file-path", required=True, help="File or folder path")
 @click.option("-c", "--collection", required=True, help="Collection name")
@@ -59,7 +75,7 @@ def import_file(file_path: str, collection: str, options: str = ''):
 #   file_path: /path/to/file
 #   param1: value1
 #   param2: value2
-
+@init_command
 @click.command()
 @click.option("-n", "--num", default=1, help="Number of attempts")
 @click.option(
@@ -72,14 +88,10 @@ def run_test_service(num: int = 1, file_path: str = f'{getcwd()}/test_service.ym
     """Service test"""
     # allow module import from current working directory
     sys.path.append(getcwd())
-    # initialize logging from optional log.ini
-    log_ini_path = f'{getcwd()}/log.ini'
-    if path.exists(log_ini_path):
-        config.fileConfig(log_ini_path)
-
     run_service.run_service_from_yaml(file_path=file_path, num_attempts=num)
 
 
+@init_command
 @click.command()
 @click.option("-c", "--collection", required=True, help="Collection name")
 @click.option(
@@ -96,6 +108,7 @@ def export_collection(folder_path: str, collection: str):
     )
 
 
+@init_command
 @click.command()
 @click.option("-c", "--collection", required=True, help="Collection name")
 @click.option(
@@ -112,6 +125,7 @@ def import_collection(folder_path: str, collection: str):
     )
 
 
+@init_command
 @click.command()
 @click.option("-u", "--user", default="brevia", help="Token user name")
 @click.option("-d", "--duration", default=60, help="Token duration in minutes")
@@ -121,6 +135,7 @@ def create_access_token(user: str, duration: int):
     print(token)
 
 
+@init_command
 @click.command()
 @click.option(
     "-f",
@@ -141,3 +156,11 @@ def create_openapi(file_path: str, output: str):
     metadata = brevia_openapi(py_proj_path=file_path)
     with open(output, 'w') as f:
         json.dump(metadata, f)
+
+
+@init_command
+@click.command()
+@click.option("-c", "--collection", required=True, help="Collection name")
+def update_collection_links(collection: str):
+    """Update index documents of a collection having `"type": "links"` in metadata."""
+    update_links_documents(collection_name=collection)

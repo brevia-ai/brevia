@@ -48,6 +48,7 @@ repository = "https://github.com/brevia-ai/brevia"
   import_collection = "brevia.commands:import_collection"
   import_file = "brevia.commands:import_file"
   test_service = "brevia.commands:run_test_service"
+  update_collection_links = "brevia.commands:update_collection_links"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^6.1.0"

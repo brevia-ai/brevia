@@ -46,6 +46,7 @@ def db_downgrade_cmd(revision):
     """Revert to a previous database revision"""
     downgrade(revision)
 
+
 @init_command
 @click.command()
 @click.option("-f", "--file-path", required=True, help="File or folder path")

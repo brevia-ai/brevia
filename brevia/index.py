@@ -177,7 +177,7 @@ def documents_metadata(
         docs = []
         for row in query.all():
             item = row._asdict()
-            if (item['custom_id'] not in docs):
+            if item['custom_id'] not in docs:
                 docs.append(item['custom_id'])
                 result.append(item)
 

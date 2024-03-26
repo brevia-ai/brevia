@@ -210,6 +210,7 @@ def index_docs_metadata(collection_id: str, request: Request):
     return index.documents_metadata(
         collection_id=collection_id,
         filter=read_filter(request=request),
+        document_id=request.query_params.get('document_id'),
     )
 
 

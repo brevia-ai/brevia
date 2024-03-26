@@ -286,3 +286,12 @@ def test_get_index_documents_metadata():
         'cmetadata': {'type': 'questions'},
         'custom_id': '456'
     }]
+
+    query = 'document_id=123'
+    response = client.get(f'/index/{collection.uuid}/documents_metadata?{query}')
+    assert response.status_code == 200
+    data = response.json()
+    assert data == [{
+        'cmetadata': {'type': 'documents'},
+        'custom_id': '123'
+    }]

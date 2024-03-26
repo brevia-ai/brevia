@@ -166,9 +166,12 @@ def update_metadata(
 def documents_metadata(
     collection_id: str,
     filter: dict[str, str] = {},
+    document_id: str = None,
 ):
     """ Read documents metadata of a collection"""
     query_filters = [EmbeddingStore.collection_id == collection_id]
+    if document_id:
+        query_filters.append(EmbeddingStore.custom_id == document_id)
     query_filters.extend(metadata_filters(filter=filter))
     with Session(connection.db_connection()) as session:
         query = session.query(EmbeddingStore.custom_id, EmbeddingStore.cmetadata)

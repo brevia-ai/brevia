@@ -187,36 +187,40 @@ def documents_metadata(
         return result
 
 
-def update_links_documents(collection_name: str):
+def update_links_documents(collection_name: str) -> int:
     """ Update links document contents of a collection, if changed"""
     log = getLogger(__file__)
     log.info('Updating links contents in "%s"', collection_name)
     collection = single_collection_by_name(collection_name)
     if collection is None:
         log.error('Collection "%s" not found', collection_name)
-        return
+        return 0
     docs_meta = documents_metadata(collection_id=collection.uuid,
                                    filter={'type': 'links'})
+    count = 0
     for doc in docs_meta:
-        update_collection_link(
+        res = update_collection_link(
             collection=collection,
             document_id=doc['custom_id'],
             document_medatata=doc['cmetadata']
         )
+        count += 1 if res else 0
+
+    return count
 
 
 def update_collection_link(collection: CollectionStore, document_id: str,
-                           document_medatata: dict):
+                           document_medatata: dict) -> bool:
     """ Update a document link in a collection"""
     log = getLogger(__file__)
     url = document_medatata.get('url')
     if not url:
         log.error('Document "%s" has no URL metadata', document_id)
-        return
+        return False
 
     options = select_load_link_options(
         url=url,
-        link_load_options=collection.cmetadata.get('link_load_options', [])
+        options=collection.cmetadata.get('link_load_options', [])
     )
     text = load_file.read_html_url(url=url, **options)
     document = Document(page_content=text, metadata=document_medatata)
@@ -225,6 +229,9 @@ def update_collection_link(collection: CollectionStore, document_id: str,
         remove_document(collection_id=collection.uuid, document_id=document_id)
         add_document(document=document, collection_name=collection.name,
                      document_id=document_id)
+        return True
+
+    return False
 
 
 def document_has_changed(document: Document, collection_id: str, document_id: str):
@@ -244,13 +251,13 @@ def document_has_changed(document: Document, collection_id: str, document_id: st
     return False
 
 
-def select_load_link_options(url: str, link_load_options: list):
+def select_load_link_options(url: str, options: list):
     """ Select load link options for a given URL"""
-    item = next((x for x in link_load_options if url == x['url']), None)
+    item = next((x for x in options if url == x['url']), None)
     if item:
         return {'selector': item.get('selector', '')}
 
-    item = next((x for x in link_load_options if url.startswith(x['url'])), None)
+    item = next((x for x in options if url.startswith(x['url'])), None)
     if item:
         return {'selector': item.get('selector', '')}
 

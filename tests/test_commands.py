@@ -136,7 +136,8 @@ def test_create_openapi():
 def test_update_collection_links():
     """ Test update_collection_links function """
     collection = create_collection('test', {})
-    doc1 = Document(page_content='some', metadata={'type': 'links', 'url': 'https://example.com'})
+    doc1 = Document(page_content='some',
+                    metadata={'type': 'links', 'url': 'https://example.com'})
     add_document(document=doc1, collection_name='test')
     runner = CliRunner()
     result = runner.invoke(update_collection_links, [

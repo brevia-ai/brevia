@@ -50,7 +50,8 @@ def test_document_has_changed():
     result = document_has_changed(doc1, collection.uuid, '1')
     assert result is True
 
-    add_document(document=Document(page_content='another'), collection_name='test', document_id='1')
+    add_document(document=Document(page_content='another'),
+                 collection_name='test', document_id='1')
     result = document_has_changed(doc1, collection.uuid, '1')
     assert result is True
 

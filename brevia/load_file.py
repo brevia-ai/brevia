@@ -2,10 +2,10 @@
 import os
 import re
 import mimetypes
-import requests
 import tempfile
-from bs4 import BeautifulSoup
 from typing import List, Any
+import requests
+from bs4 import BeautifulSoup
 from langchain.docstore.document import Document
 from langchain.document_loaders import (
     BSHTMLLoader,

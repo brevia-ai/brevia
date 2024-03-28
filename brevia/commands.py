@@ -5,9 +5,17 @@ from os import getcwd, path
 from logging import config
 import click
 from brevia.alembic import current, upgrade, downgrade
+from brevia.index import update_links_documents
 from brevia.utilities import files_import, run_service, collections_io
 from brevia.tokens import create_token
 from brevia.utilities.openapi import brevia_openapi
+
+
+def init_logging():
+    # initialize logging from optional log.ini
+    log_ini_path = f'{getcwd()}/log.ini'
+    if path.exists(log_ini_path):
+        config.fileConfig(log_ini_path)
 
 
 @click.command()
@@ -59,7 +67,6 @@ def import_file(file_path: str, collection: str, options: str = ''):
 #   file_path: /path/to/file
 #   param1: value1
 #   param2: value2
-
 @click.command()
 @click.option("-n", "--num", default=1, help="Number of attempts")
 @click.option(
@@ -72,11 +79,6 @@ def run_test_service(num: int = 1, file_path: str = f'{getcwd()}/test_service.ym
     """Service test"""
     # allow module import from current working directory
     sys.path.append(getcwd())
-    # initialize logging from optional log.ini
-    log_ini_path = f'{getcwd()}/log.ini'
-    if path.exists(log_ini_path):
-        config.fileConfig(log_ini_path)
-
     run_service.run_service_from_yaml(file_path=file_path, num_attempts=num)
 
 
@@ -141,3 +143,12 @@ def create_openapi(file_path: str, output: str):
     metadata = brevia_openapi(py_proj_path=file_path)
     with open(output, 'w') as f:
         json.dump(metadata, f)
+
+
+@click.command()
+@click.option("-c", "--collection", required=True, help="Collection name")
+def update_collection_links(collection: str):
+    """Update index documents of a collection having `"type": "links"` in metadata."""
+    init_logging()
+    num = update_links_documents(collection_name=collection)
+    print(f'Updated {num} links documents. Done!')

@@ -64,7 +64,7 @@ def test_get_index_document():
     assert response.status_code == 200
     data = response.json()
     assert data is not None
-    assert data == [{'document': 'Lorem Ipsum', 'cmetadata': {}}]
+    assert data == [{'document': 'Lorem Ipsum', 'cmetadata': {'part': 1}}]
 
 
 def test_delete_document_index():
@@ -157,7 +157,7 @@ def test_index_link(mock_get):
     assert response.text == ''
     docs = read_document(collection_id=str(collection.uuid), document_id='123')
     assert len(docs) == 1
-    assert docs[0].get('cmetadata') == {'type': 'links'}
+    assert docs[0].get('cmetadata') == {'type': 'links', 'part': 1}
     assert docs[0].get('document') == 'Lorem Ipsum'
 
 
@@ -182,7 +182,7 @@ def test_index_link_selector(mock_get):
     assert response.text == ''
     docs = read_document(collection_id=str(collection.uuid), document_id='123')
     assert len(docs) == 1
-    assert docs[0].get('cmetadata') == {'type': 'links'}
+    assert docs[0].get('cmetadata') == {'type': 'links', 'part': 1}
     assert docs[0].get('document') == 'Some text'
 
 
@@ -244,7 +244,7 @@ def test_get_index_collection():
     assert 'data' in data
     assert data['data'] == [{
         'document': 'Lorem Ipsum',
-        'cmetadata': {'type': 'documents'},
+        'cmetadata': {'type': 'documents', 'part': 1},
         'custom_id': '123'
     }]
 
@@ -269,11 +269,11 @@ def test_get_index_documents_metadata():
     data = response.json()
     assert data == [
         {
-            'cmetadata': {'type': 'documents'},
+            'cmetadata': {'type': 'documents', 'part': 1},
             'custom_id': '123'
         },
         {
-            'cmetadata': {'type': 'questions'},
+            'cmetadata': {'type': 'questions', 'part': 1},
             'custom_id': '456'
         },
     ]
@@ -283,7 +283,7 @@ def test_get_index_documents_metadata():
     assert response.status_code == 200
     data = response.json()
     assert data == [{
-        'cmetadata': {'type': 'questions'},
+        'cmetadata': {'type': 'questions', 'part': 1},
         'custom_id': '456'
     }]
 
@@ -292,6 +292,6 @@ def test_get_index_documents_metadata():
     assert response.status_code == 200
     data = response.json()
     assert data == [{
-        'cmetadata': {'type': 'documents'},
+        'cmetadata': {'type': 'documents', 'part': 1},
         'custom_id': '123'
     }]

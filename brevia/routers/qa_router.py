@@ -139,7 +139,7 @@ async def run_chain(
         ),
         'lang': lang,
     }, return_only_outputs=True)
-
+    print(result)
     return chat_result(
         result=result,
         callb=token_callback,

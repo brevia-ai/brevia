@@ -33,7 +33,7 @@ class SummarizeTextService(BaseService):
             result = analysis.summarize(**payload)
 
         return {
-            'output': result,
+            'output': result['output_text'],
             'token_data': None if not token_data else callb.__dict__
         }
 
@@ -90,7 +90,7 @@ class SummarizeFileService(BaseService):
             )
 
         return {
-            'output': result,
+            'output': result['output_text'],
             'token_data': None if not token_data else callb.__dict__
         }
 

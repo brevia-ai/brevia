@@ -130,15 +130,15 @@ async def run_chain(
     x_chat_session: str,
 ):
     """Run chain usign async methods and return result"""
-    result = await chain.acall({
-            'question': chat_body.question,
-            'chat_history': retrieve_chat_history(
-                history=chat_body.chat_history,
-                question=chat_body.question,
-                session=x_chat_session,
-            ),
-            'lang': lang,
-        })
+    result = await chain.ainvoke({
+        'question': chat_body.question,
+        'chat_history': retrieve_chat_history(
+            history=chat_body.chat_history,
+            question=chat_body.question,
+            session=x_chat_session,
+        ),
+        'lang': lang,
+    }, return_only_outputs=True)
 
     return chat_result(
         result=result,

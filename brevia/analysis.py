@@ -166,4 +166,4 @@ def summarize(
     texts = text_splitter.split_text(text)
     docs = [Document(page_content=t) for t in texts]
 
-    return chain.run(**{'input_documents': docs})
+    return chain.invoke({'input_documents': docs}, return_only_outputs=True)

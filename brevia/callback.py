@@ -4,7 +4,7 @@ from uuid import UUID
 import asyncio
 import logging
 import json
-from langchain.callbacks import get_openai_callback
+from langchain_community.callbacks import get_openai_callback
 from langchain.callbacks.base import BaseCallbackHandler, AsyncCallbackHandler
 from langchain.docstore.document import Document
 from langchain.schema import BaseMessage
@@ -83,11 +83,11 @@ class ConversationCallbackHandler(AsyncCallbackHandler):
     ) -> str:
         """Save chat history and add history id and source_documents to chain result"""
         chat_hist = add_history(
-                session_id=x_chat_session,
-                collection=collection,
-                question=question,
-                answer=self.result['answer'].strip(" \n"),
-                metadata=token_usage(callb),
+            session_id=x_chat_session,
+            collection=collection,
+            question=question,
+            answer=self.result['answer'].strip(" \n"),
+            metadata=token_usage(callb),
         )
 
         docs = [{'chat_history_id': None if chat_hist is None else str(chat_hist.uuid)}]

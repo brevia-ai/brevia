@@ -7,7 +7,7 @@ from typing import List, Any
 import requests
 from bs4 import BeautifulSoup
 from langchain.docstore.document import Document
-from langchain.document_loaders import (
+from langchain_community.document_loaders import (
     BSHTMLLoader,
     CSVLoader,
     PyPDFLoader,

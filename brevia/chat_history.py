@@ -162,9 +162,8 @@ def get_date_filter(date_str, type_str):
         if type_str == 'max':
             max_date = parsed_date
             return datetime.combine(max_date, time.max)
-        else:
-            min_date = parsed_date
-            return datetime.combine(min_date, time.min)
+        min_date = parsed_date
+        return datetime.combine(min_date, time.min)
 
     return max_date if type_str == 'max' else min_date
 
@@ -190,7 +189,7 @@ def get_session_filter(session_id):
     return filter_session_id
 
 
-def get_history(filter: ChatHistoryFilter) -> dict:
+def get_history(filter: ChatHistoryFilter) -> dict:  # pylint: disable=redefined-builtin
     """
     Read chat history with optional filters using pagination data in response.
     """
@@ -217,6 +216,7 @@ def get_history(filter: ChatHistoryFilter) -> dict:
 
 
 def get_history_sessions(filter: ChatHistoryFilter) -> dict:
+    # pylint: disable=redefined-builtin
     """
     Read chat history with optional filters using pagination data in response.
     """

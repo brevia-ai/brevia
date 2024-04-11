@@ -68,7 +68,7 @@ def test_load_refine_prompts_both():
 def test_summarize():
     """Test summarize function"""
     result = summarize(text='A very long text')
-    assert result == LOREM_IPSUM
+    assert result['output_text'] == LOREM_IPSUM
 
 
 def test_summarize_fail():

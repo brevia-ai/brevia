@@ -1,9 +1,8 @@
 """Models module tests"""
 import pytest
-from langchain.llms.openai import OpenAI
-from langchain.chat_models import ChatOpenAI
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.embeddings.fake import FakeEmbeddings
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_community.embeddings.fake import FakeEmbeddings
+from langchain_community.llms.openai import OpenAI
 from brevia.settings import get_settings
 from brevia.models import (
     load_llm,

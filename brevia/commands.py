@@ -12,7 +12,7 @@ from brevia.utilities.openapi import brevia_openapi
 
 
 def init_logging():
-    # initialize logging from optional log.ini
+    """Initialize logging from optional `log.ini` file"""
     log_ini_path = f'{getcwd()}/log.ini'
     if path.exists(log_ini_path):
         config.fileConfig(log_ini_path)
@@ -141,7 +141,7 @@ def create_access_token(user: str, duration: int):
 def create_openapi(file_path: str, output: str):
     """Create an openapi metadata file"""
     metadata = brevia_openapi(py_proj_path=file_path)
-    with open(output, 'w') as f:
+    with open(output, 'w') as f:  # pylint: disable=unspecified-encoding
         json.dump(metadata, f)
 
 

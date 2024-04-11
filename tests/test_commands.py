@@ -3,6 +3,7 @@ from pathlib import Path
 from os import unlink
 from os.path import exists
 from click.testing import CliRunner
+from langchain.docstore.document import Document
 from brevia.commands import (
     db_current_cmd,
     db_upgrade_cmd,
@@ -18,7 +19,6 @@ from brevia.commands import (
 from brevia.collections import create_collection, collection_name_exists
 from brevia.settings import get_settings
 from brevia.index import add_document
-from langchain.docstore.document import Document
 
 
 def test_db_current_cmd():

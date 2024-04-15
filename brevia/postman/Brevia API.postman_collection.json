@@ -215,7 +215,7 @@
 			"name": "Chat History",
 			"item": [
 				{
-					"name": "chat history - Read chat history",
+					"name": "Chat History - Read chat history",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -249,7 +249,93 @@
 					"response": []
 				},
 				{
-					"name": "chat history - Read chat history with filters",
+					"name": "Chat History - Read chat history with filters",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat_history?max_date=2023-04-20&collection={{collection}}&page=1&page_size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat_history"
+							],
+							"query": [
+								{
+									"key": "max_date",
+									"value": "2023-04-20"
+								},
+								{
+									"key": "collection",
+									"value": "{{collection}}"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sessions - Read chat history Sessions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat_history",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat_history"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sessions - Read chat history Sessions with filters",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -698,6 +784,46 @@
 							"path": [
 								"index",
 								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index/link - Index a webpage via link",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"link\" : \"{{link}}\",\n    \"collection_id\" : \"{{collection_id}}\",\n    \"document_id\" : \"{{document_id}}\",\n    \"metadata\" : {\"type\": \"links\"}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/index/link",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"link"
 							]
 						}
 					},

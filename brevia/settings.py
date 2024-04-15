@@ -52,6 +52,7 @@ class Settings(BaseSettings):
         "max_tokens": 1000,
         "verbose": true
     }"""
+
     qa_followup_llm: Json = """{
         "_type": "openai-chat",
         "model_name": "gpt-3.5-turbo-16k",

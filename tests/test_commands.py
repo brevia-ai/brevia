@@ -3,6 +3,7 @@ from pathlib import Path
 from os import unlink
 from os.path import exists
 from click.testing import CliRunner
+from langchain.docstore.document import Document
 from brevia.commands import (
     db_current_cmd,
     db_upgrade_cmd,
@@ -13,9 +14,11 @@ from brevia.commands import (
     run_test_service,
     create_access_token,
     create_openapi,
+    update_collection_links,
 )
 from brevia.collections import create_collection, collection_name_exists
 from brevia.settings import get_settings
+from brevia.index import add_document
 
 
 def test_db_current_cmd():
@@ -128,3 +131,17 @@ def test_create_openapi():
     assert result.exit_code == 0
     assert exists(output_path)
     unlink(output_path)
+
+
+def test_update_collection_links():
+    """ Test update_collection_links function """
+    collection = create_collection('test', {})
+    doc1 = Document(page_content='some',
+                    metadata={'type': 'links', 'url': 'https://example.com'})
+    add_document(document=doc1, collection_name='test')
+    runner = CliRunner()
+    result = runner.invoke(update_collection_links, [
+        '--collection',
+        collection.name,
+    ])
+    assert result.exit_code == 0

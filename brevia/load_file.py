@@ -2,15 +2,15 @@
 import os
 import re
 import mimetypes
+import tempfile
 from typing import List, Any
+import requests
+from bs4 import BeautifulSoup
 from langchain.docstore.document import Document
-from langchain.document_loaders import (
-    BSHTMLLoader,
-    CSVLoader,
-    PyPDFLoader,
-    TextLoader,
-    UnstructuredPDFLoader,
-)
+from langchain_community.document_loaders.html_bs import BSHTMLLoader
+from langchain_community.document_loaders.csv_loader import CSVLoader
+from langchain_community.document_loaders.pdf import PyPDFLoader, UnstructuredPDFLoader
+from langchain_community.document_loaders.text import TextLoader
 
 
 def cleanup_text(text_in: str) -> str:
@@ -73,7 +73,7 @@ def read_txt_file(
     """
     Load TXT file and return its content
     """
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r') as file:  # pylint: disable=unspecified-encoding
         text = file.read()
 
     return cleanup_text(text).strip()
@@ -98,6 +98,36 @@ def read(
         return read_pdf_file(file_path=file_path, **loader_kwargs)
 
     return read_txt_file(file_path=file_path)
+
+
+def read_html_url(
+    url: str,
+    **loader_kwargs: Any,
+) -> str:
+    """
+    Load text from HTML content of web page URL
+    """
+    temp_file = tempfile.NamedTemporaryFile(delete=False)
+    response = requests.get(url)
+    response.raise_for_status()
+    selector = loader_kwargs.pop('selector', '')
+    with open(temp_file.name, 'w') as file:  # pylint: disable=missing-timeout
+        file.write(filter_html(html=response.text, selector=selector))
+    loader = BSHTMLLoader(file_path=temp_file.name, **loader_kwargs)
+    docs = loader.load()
+    os.unlink(temp_file.name)
+
+    return ' '.join([cleanup_text(item.page_content) for item in docs]).strip()
+
+
+def filter_html(html: str, selector: str = '') -> str:
+    """Filter HTML content with selector rule, using BeautifulSoup """
+    if not selector:
+        return html
+    soup = BeautifulSoup(html, features='lxml')
+    tags = soup.select(selector=selector)
+
+    return ' '.join([tag.decode_contents() for tag in tags])
 
 
 def load_documents(file_path: str, **kwargs: Any) -> List[Document]:

@@ -3,23 +3,21 @@ from abc import ABC, abstractmethod
 from typing import Any
 from langchain.llms.loading import load_llm_from_config
 from langchain.llms.base import BaseLLM
-from langchain.llms.fake import FakeListLLM
 from langchain.chat_models.base import BaseChatModel
-from langchain.chat_models import (
-    ChatOpenAI,
-    ChatAnthropic,
-    ChatCohere,
-    FakeListChatModel
-)
-from langchain.embeddings import OpenAIEmbeddings, CohereEmbeddings, FakeEmbeddings
-from langchain.embeddings.base import Embeddings
-from openai import Audio
+from langchain_core.embeddings import Embeddings
+from langchain_community.chat_models.fake import FakeListChatModel
+from langchain_community.llms.fake import FakeListLLM
+from langchain_community.embeddings.fake import FakeEmbeddings
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from openai import OpenAI
 from brevia.settings import get_settings
 
 
 class FakeBreviaLLM(FakeListLLM):
     """Fake LLM for testing purposes."""
+
     def get_token_ids(self, text: str) -> list[int]:
+        """Fake for testing purposes."""
         return [10] * 10
 
 
@@ -37,15 +35,15 @@ def load_llm(config: dict) -> BaseLLM:
 
 CHAT_MODEL_TYPES: dict[str, BaseChatModel] = {
     'openai-chat': ChatOpenAI,
-    'cohere-chat': ChatCohere,
-    'anthropic-chat': ChatAnthropic,
     'fake-list-chat-model': FakeListChatModel,
 }
 
 
 class FakeBreviaChatModel(FakeListChatModel):
     """Fake LLM for testing purposes."""
+
     def get_token_ids(self, text: str) -> list[int]:
+        """Fake for testing purposes."""
         return [10] * 10
 
 
@@ -71,6 +69,7 @@ class BaseAudio(ABC):
 
 class FakeAudio(BaseAudio):
     """Test class for Audio transcription"""
+
     def transcribe(self, file: Any, **kwargs) -> dict:
         """transcribe Audio"""
         return {'text': LOREM_IPSUM}
@@ -78,11 +77,15 @@ class FakeAudio(BaseAudio):
 
 class AudioOpenAI(BaseAudio):
     """OpenAI Audio transcription"""
+
     def transcribe(self, file: Any, **kwargs) -> dict:
         """transcribe Audio"""
-        return Audio.transcribe(
-            file=file,
-            **kwargs,
+        client = OpenAI()
+        audio_file = open(file, "rb")
+        return client.audio.transcriptions.create(
+            model="whisper-1",
+            file=audio_file,
+            **kwargs
         )
 
 
@@ -96,7 +99,6 @@ def load_audiotranscriber() -> BaseAudio:
 
 EMBEDDING_TYPES: dict[str, BaseChatModel] = {
     'openai-embeddings': OpenAIEmbeddings,
-    'cohere-embeddings': CohereEmbeddings,
     'fake-embeddings': FakeEmbeddings,
 }
 

@@ -232,4 +232,21 @@ Returns a list of documents metadata in a collection, so you will get unique ite
 
 Deletes an indexed document.
 
-## Example Usage (Python) ?
+### GET `/status`
+
+Retrieve API status, check if database is up and running.
+If everything works as expected we get a `200 OK` status code and a response like:
+
+```JSON
+{
+    "db_status": "OK",
+}
+```
+
+If, for instance, there is an issue with the database connection or performing simple queries we get a `503 Service Unavailable` status code with this response:
+
+```JSON
+{
+    "db_status": "KO",
+}
+```

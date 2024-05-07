@@ -52,6 +52,7 @@ async def chat_action(
         answer_callbacks=[stream_handler] if chat_body.streaming else [],
         conversation_callbacks=[conversation_handler]
     )
+    embeddings = collection.cmetadata.get('embedding', None)
 
     with token_usage_callback() as token_callback:
         if not chat_body.streaming or test_models_in_use():
@@ -61,6 +62,7 @@ async def chat_action(
                 lang=lang,
                 token_callback=token_callback,
                 x_chat_session=x_chat_session,
+                embeddings=embeddings,
             )
 
         asyncio.create_task(run_chain(
@@ -69,6 +71,7 @@ async def chat_action(
             lang=lang,
             token_callback=token_callback,
             x_chat_session=x_chat_session,
+            embeddings=embeddings,
         ))
 
         async def event_generator(
@@ -110,13 +113,14 @@ def chat_language(chat_body: ChatBody, cmetadata: dict) -> str:
     return Detector().detect(chat_body.question)
 
 
-def retrieve_chat_history(history: list, question: str, session: str = None) -> list:
+def retrieve_chat_history(history: list, question: str,
+        session: str = None, embeddings: dict | None = None) -> list:
     """Retrieve chat history to be used in final prompt creation"""
     chat_hist = chat_history.history(
         chat_history=history,
         session=session,
     )
-    if chat_hist and not chat_history.is_related(chat_hist, question):
+    if chat_hist and not chat_history.is_related(chat_hist, question, embeddings):
         chat_hist = []
 
     return chat_hist
@@ -128,6 +132,7 @@ async def run_chain(
     lang: str,
     token_callback: TokensCallbackHandler,
     x_chat_session: str,
+    embeddings: dict | None = None,
 ):
     """Run chain usign async methods and return result"""
     result = await chain.ainvoke({
@@ -136,6 +141,7 @@ async def run_chain(
             history=chat_body.chat_history,
             question=chat_body.question,
             session=x_chat_session,
+            embeddings=embeddings,
         ),
         'lang': lang,
     }, return_only_outputs=True)

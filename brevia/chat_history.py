@@ -57,16 +57,16 @@ def history(chat_history: list, session: str = None):
     return history_from_db(session)
 
 
-def is_related(chat_history: list, question: str):
+def is_related(chat_history: list, question: str, embeddings: dict | None = None):
     """
     Determine whether a question is related to a sequence of sentences.
     Use sentence and question embeddings to calculate the product
     scale between the vectors (in this case = similarity) and compare it
     with a threshold specified by environment variables.
     """
-    embeddings = load_embeddings()
-    q_e = embeddings.embed_query(question)
-    h_e = embeddings.embed_query(
+    embeddings_engine = load_embeddings(embeddings)
+    q_e = embeddings_engine.embed_query(question)
+    h_e = embeddings_engine.embed_query(
         ''.join([sentence for tuple in chat_history for sentence in tuple])
     )
     sim = dot_product(q_e, h_e)

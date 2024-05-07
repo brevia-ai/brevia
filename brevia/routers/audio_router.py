@@ -7,7 +7,6 @@ from brevia.dependencies import (
     get_dependencies,
     save_upload_file_tmp,
 )
-from brevia.settings import get_settings
 
 router = APIRouter()
 

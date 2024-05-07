@@ -114,7 +114,7 @@ def chat_language(chat_body: ChatBody, cmetadata: dict) -> str:
 
 
 def retrieve_chat_history(history: list, question: str,
-        session: str = None, embeddings: dict | None = None) -> list:
+                          session: str = None, embeddings: dict | None = None) -> list:
     """Retrieve chat history to be used in final prompt creation"""
     chat_hist = chat_history.history(
         chat_history=history,

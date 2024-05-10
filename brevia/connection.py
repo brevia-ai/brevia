@@ -8,6 +8,9 @@ from sqlalchemy.exc import DatabaseError
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from brevia.settings import get_settings
 
+# SQLAlchemy engine map for db connections
+engine_map = dict()
+
 
 def connection_string() -> str:
     """ Postgres+pgvector db connection string """
@@ -24,11 +27,15 @@ def connection_string() -> str:
 
 def db_connection() -> sqlalchemy.engine.Connection:
     """ SQLAlchemy db connection """
-    engine = sqlalchemy.create_engine(
-        connection_string(),
-        pool_size=get_settings().pgvector_pool_size,
-    )
-    return engine.connect()
+    global engine_map
+    conn_string = connection_string()
+    if not engine_map.get(conn_string, None):
+        engine_map[conn_string] = sqlalchemy.create_engine(
+            connection_string(),
+            pool_size=get_settings().pgvector_pool_size,
+        )
+
+    return engine_map[conn_string].connect()
 
 
 def test_connection() -> bool:

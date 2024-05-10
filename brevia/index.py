@@ -7,7 +7,8 @@ from langchain.vectorstores.pgvector import PGVector
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgembedding import EmbeddingStore
 from sqlalchemy.orm import Session
-from brevia import connection, load_file
+from brevia.connection import db_connection, connection_string
+from brevia import load_file
 from brevia.collections import single_collection_by_name
 from brevia.models import load_embeddings
 from brevia.settings import get_settings
@@ -71,7 +72,8 @@ def add_document(
         embedding=load_embeddings(),
         documents=texts,
         collection_name=collection_name,
-        connection_string=connection.connection_string(),
+        connection_string=connection_string(),
+        connection=db_connection(),
         ids=[document_id] * len(texts),
     )
 
@@ -101,7 +103,7 @@ def remove_document(
     """ Remove document `document_id` from collection index"""
     filter_document = EmbeddingStore.custom_id == document_id
     filter_collection = EmbeddingStore.collection_id == collection_id
-    with Session(connection.db_connection()) as session:
+    with Session(db_connection()) as session:
         query = session.query(EmbeddingStore).filter(filter_collection, filter_document)
         query.delete()
         session.commit()
@@ -114,7 +116,7 @@ def read_document(
     """ Read document `document_id` from collection index"""
     filter_document = EmbeddingStore.custom_id == document_id
     filter_collection = EmbeddingStore.collection_id == collection_id
-    with Session(connection.db_connection()) as session:
+    with Session(db_connection()) as session:
         query = session.query(EmbeddingStore.document, EmbeddingStore.cmetadata)
         query = query.filter(filter_collection, filter_document)
         return [row._asdict() for row in query.all()]
@@ -139,7 +141,7 @@ def collection_documents(
     """ Read document `document_id` from collection index"""
     query_filters = [EmbeddingStore.collection_id == collection_id]
     query_filters.extend(metadata_filters(filter=filter))
-    with Session(connection.db_connection()) as session:
+    with Session(db_connection()) as session:
         query = session.query(
             EmbeddingStore.document,
             EmbeddingStore.cmetadata,
@@ -157,7 +159,7 @@ def update_metadata(
     """ Update metadata of a document in a collection"""
     filter_document = EmbeddingStore.custom_id == document_id
     filter_collection = EmbeddingStore.collection_id == collection_id
-    with Session(connection.db_connection()) as session:
+    with Session(db_connection()) as session:
         query = session.query(EmbeddingStore).filter(filter_collection, filter_document)
         query.update({EmbeddingStore.cmetadata: metadata})
         session.commit()
@@ -173,7 +175,7 @@ def documents_metadata(
     if document_id:
         query_filters.append(EmbeddingStore.custom_id == document_id)
     query_filters.extend(metadata_filters(filter=filter))
-    with Session(connection.db_connection()) as session:
+    with Session(db_connection()) as session:
         query = session.query(EmbeddingStore.custom_id, EmbeddingStore.cmetadata)
         query = query.filter(*query_filters)
         result = []

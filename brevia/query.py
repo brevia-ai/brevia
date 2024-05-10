@@ -17,7 +17,7 @@ from langchain.prompts import (
 )
 from langchain.prompts.loading import load_prompt_from_config
 from pydantic import BaseModel
-from brevia.connection import connection_string
+from brevia.connection import db_connection, connection_string
 from brevia.collections import single_collection_by_name
 from brevia.callback import AsyncLoggingCallbackHandler
 from brevia.models import load_chatmodel, load_embeddings
@@ -109,6 +109,7 @@ def search_vector_qa(
         embedding_function=load_embeddings(),
         collection_name=search.collection,
         distance_strategy=strategy,
+        connection=db_connection(),
     )
 
     return docsearch.similarity_search_with_score(
@@ -172,6 +173,7 @@ def conversation_chain(
         embedding_function=load_embeddings(),
         collection_name=collection.name,
         distance_strategy=strategy,
+        connection=db_connection(),
     )
 
     prompts = collection.cmetadata.get('prompts')

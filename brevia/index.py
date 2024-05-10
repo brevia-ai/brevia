@@ -73,6 +73,7 @@ def add_document(
         collection_name=collection_name,
         connection_string=connection.connection_string(),
         ids=[document_id] * len(texts),
+        use_jsonb=True,
     )
 
     return len(texts)

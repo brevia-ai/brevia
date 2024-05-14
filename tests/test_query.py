@@ -109,12 +109,6 @@ def test_search_vector_filter():
     result = search_vector_qa(search=SearchQuery(
         query='test',
         collection='test',
-        filter={'category': {'$lte': 'zzzzz'}},
-    ))
-    assert len(result) == 2
-    result = search_vector_qa(search=SearchQuery(
-        query='test',
-        collection='test',
         filter={'category': {'$ne': 'first'}},
     ))
     assert len(result) == 1

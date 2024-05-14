@@ -4,8 +4,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from brevia.routers.app_routers import add_routers
+from brevia.utilities.openapi import metadata
 
-app = FastAPI()
+
+meta = metadata(f'{Path(__file__).parent}/pyproject.toml')
+app = FastAPI(**meta)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

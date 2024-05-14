@@ -2,7 +2,7 @@
 from os import path
 from langchain.docstore.document import Document
 from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
-from langchain.vectorstores._pgvector_data_models import CollectionStore
+from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains.base import Chain
 from langchain.chains import ConversationalRetrievalChain
@@ -16,6 +16,7 @@ from langchain.prompts import (
     HumanMessagePromptTemplate,
 )
 from langchain.prompts.loading import load_prompt_from_config
+from pydantic import BaseModel
 from brevia.connection import connection_string
 from brevia.collections import single_collection_by_name
 from brevia.callback import AsyncLoggingCallbackHandler
@@ -83,37 +84,52 @@ DISTANCE_MAP = {
 }
 
 
-def search_vector_qa(
-    query: str,
-    collection: str,
-    docs_num: int | None = None,
+class SearchQuery(BaseModel):
+    """ Search query items """
+    query: str
+    collection: str
+    docs_num: int | None = None
     distance_strategy_name: str = 'cosine',
+    filter: dict[str, str | dict] | None = None
+
+
+def search_vector_qa(
+    search: SearchQuery,
 ) -> list[tuple[Document, float]]:
     """ Perform a similarity search on vector index """
-    collection_store = single_collection_by_name(collection)
+    collection_store = single_collection_by_name(search.collection)
     if not collection_store:
-        raise ValueError(f'Collection not found: {collection}')
-    if docs_num is None:
+        raise ValueError(f'Collection not found: {search.collection}')
+    if search.docs_num is None:
         default_num = get_settings().search_docs_num
-        docs_num = int(collection_store.cmetadata.get('docs_num', default_num))
-    strategy = DISTANCE_MAP.get(distance_strategy_name, DistanceStrategy.COSINE)
+        search.docs_num = int(collection_store.cmetadata.get('docs_num', default_num))
+    strategy = DISTANCE_MAP.get(search.distance_strategy_name, DistanceStrategy.COSINE)
     docsearch = PGVector(
         connection_string=connection_string(),
         embedding_function=load_embeddings(),
-        collection_name=collection,
+        collection_name=search.collection,
         distance_strategy=strategy,
     )
 
-    return docsearch.similarity_search_with_score(query, k=docs_num)
+    return docsearch.similarity_search_with_score(
+        query=search.query,
+        k=search.docs_num,
+        filter=search.filter,
+    )
+
+
+class ChatParams(BaseModel):
+    """ Q&A basic conversation chain params"""
+    docs_num: int | None = None
+    streaming: bool = False
+    distance_strategy_name: str | None = None
+    filter: dict[str, str | dict] | None = None
+    source_docs: bool = False
 
 
 def conversation_chain(
-    # pylint: disable=too-many-arguments
     collection: CollectionStore,
-    docs_num: int | None = None,
-    source_docs: bool = True,
-    distance_strategy_name: str = 'cosine',
-    streaming: bool = False,
+    chat_params: ChatParams,
     answer_callbacks: list[BaseCallbackHandler] | None = None,
     conversation_callbacks: list[BaseCallbackHandler] | None = None,
 ) -> Chain:
@@ -121,11 +137,13 @@ def conversation_chain(
         Return conversation chain for Q/A with embdedded dataset knowledge
 
         collection: collection store item
-        docs_num: number of docs to retrieve to create context
-            (default 'SEARCH_DOCS_NUM' env var or '4')
-        source_docs: flag to retrieve source docs in response (default True)
-        distance_strategy_name: distance strategy to use (default 'cosine')
-        streaming: activate streaming (default False),
+        chat_params: basic conversation chain parameters, including:
+            docs_num: number of docs to retrieve to create context
+                (default 'SEARCH_DOCS_NUM' env var or '4')
+            streaming: activate streaming (default False),
+            distance_strategy_name: distance strategy to use (default 'cosine')
+            filter: optional dictionary of metadata to use as filter (defailt None)
+            source_docs: flag to retrieve source docs in response (default True)
         answer_callbacks: callbacks to use in the final LLM answer to enable streaming
             (default empty list)
         conversation_callbacks: callback to handle conversation results
@@ -137,15 +155,18 @@ def conversation_chain(
             }
     """
     settings = get_settings()
-    if docs_num is None:
+    if chat_params.docs_num is None:
         default_num = settings.search_docs_num
-        docs_num = int(collection.cmetadata.get('docs_num', default_num))
+        chat_params.docs_num = int(collection.cmetadata.get('docs_num', default_num))
     if answer_callbacks is None:
         answer_callbacks = []
     if conversation_callbacks is None:
         conversation_callbacks = []
 
-    strategy = DISTANCE_MAP.get(distance_strategy_name, DistanceStrategy.COSINE)
+    strategy = DISTANCE_MAP.get(
+        chat_params.distance_strategy_name,
+        DistanceStrategy.COSINE
+    )
     docsearch = PGVector(
         connection_string=connection_string(),
         embedding_function=load_embeddings(),
@@ -180,7 +201,7 @@ def conversation_chain(
     # Model to use in final prompt
     answer_callbacks.append(logging_handler)
     qa_llm_conf['callbacks'] = answer_callbacks
-    qa_llm_conf['streaming'] = streaming
+    qa_llm_conf['streaming'] = chat_params.streaming
     chatllm = load_chatmodel(qa_llm_conf)
 
     # this chain use "stuff" to elaborate context
@@ -193,13 +214,13 @@ def conversation_chain(
     )
 
     # main chain, do all the jobs
-    search_kwargs = {'k': docs_num}
+    search_kwargs = {'k': chat_params.docs_num, 'filter': chat_params.filter}
 
     conversation_callbacks.append(logging_handler)
     return ConversationalRetrievalChain(
         retriever=docsearch.as_retriever(search_kwargs=search_kwargs),
         combine_docs_chain=doc_chain,
-        return_source_documents=source_docs,
+        return_source_documents=chat_params.source_docs,
         question_generator=question_generator,
         callbacks=conversation_callbacks,
         verbose=verbose,

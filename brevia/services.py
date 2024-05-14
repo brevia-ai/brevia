@@ -1,12 +1,13 @@
 """Base service and some basic implementations"""
 from abc import ABC, abstractmethod
 from os import unlink
-from langchain.callbacks import get_openai_callback
+from langchain_community.callbacks import get_openai_callback
 from brevia import load_file, analysis
 
 
 class BaseService(ABC):
     """Base class for services"""
+
     def run(self, payload: dict) -> dict:
         """Run a service using a payload"""
         if not self.validate(payload):
@@ -32,7 +33,7 @@ class SummarizeTextService(BaseService):
             result = analysis.summarize(**payload)
 
         return {
-            'output': result,
+            'output': result['output_text'],
             'token_data': None if not token_data else callb.__dict__
         }
 
@@ -89,13 +90,14 @@ class SummarizeFileService(BaseService):
             )
 
         return {
-            'output': result,
+            'output': result['output_text'],
             'token_data': None if not token_data else callb.__dict__
         }
 
 
 class FakeService(BaseService):
     """Fake class for services testing"""
+
     def execute(self, payload: dict) -> dict:
         return {'output': 'ok'}
 

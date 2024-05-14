@@ -46,10 +46,9 @@ To perform a manual setup instead follow these steps:
 * activate the virtualenv by running the `poetry shell` command
 * copy the file `.env.sample` to `.env` and value the environment variables, especially `OPENAI_API_KEY` with the secret key of OpenAI and `PGVECTOR_*` see the [Database](#database) section
 
-
 ## Custom Model
 
-In addition to using the default Openai models, you have the option to integrate other Large Language Models, such as the Cohere model or any other model of your choice. Follow the steps below to set up and use a custom model in your Brevia project.
+In addition to using the default OpenAI models, you have the option to integrate other Large Language Models, such as the Cohere model or any other model of your choice. Follow the steps below to set up and use a custom model in your Brevia project.
 
 ### Cohere Model Integration
 
@@ -266,3 +265,23 @@ pytest --cov-report html --cov=brevia tests/
 ```
 
 Covreage report is created using `pytest-cov`
+
+### Update documentation
+
+Install `mkdocs-material` using `pip` without altering `pyproject.toml`
+
+```bash
+pip install mkdocs-material
+```
+
+When working on documentation files you can use a live preview server with:
+
+```bash
+mkdocs serve
+```
+
+Or you can build the documentation in `site/` folder using
+
+```bash
+mkdocs build --clean
+```

@@ -4,10 +4,30 @@ from uuid import UUID
 import asyncio
 import logging
 import json
+from langchain_community.callbacks import get_openai_callback
 from langchain.callbacks.base import BaseCallbackHandler, AsyncCallbackHandler
 from langchain.docstore.document import Document
 from langchain.schema import BaseMessage
 from langchain.schema.output import LLMResult
+from langchain.callbacks.openai_info import OpenAICallbackHandler
+from brevia.chat_history import add_history
+
+
+# Only OpenAI token usage callback handler is supported for now
+# other LLMs will always return 0 as tokens usage (for now)
+token_usage_callback = get_openai_callback
+TokensCallbackHandler = OpenAICallbackHandler
+
+
+def token_usage(callb: TokensCallbackHandler) -> dict[str, int | float]:
+    """Tokens usage and costs details (only OpenAI for now)"""
+    return {
+        'completion_tokens': callb.completion_tokens,
+        'prompt_tokens': callb.prompt_tokens,
+        'total_tokens': callb.total_tokens,
+        'successful_requests': callb.successful_requests,
+        'total_cost': callb.total_cost,
+    }
 
 
 class ConversationCallbackHandler(AsyncCallbackHandler):
@@ -54,14 +74,30 @@ class ConversationCallbackHandler(AsyncCallbackHandler):
         """Wait for conversation end"""
         await self.chain_ended.wait()  # await until event would be .set()
 
-    def chain_result(self) -> str:
-        """Return chain result"""
-        if 'source_documents' not in self.result:
-            return ''
+    def chain_result(
+        self,
+        callb: TokensCallbackHandler,
+        question: str,
+        collection: str,
+        x_chat_session: str | None = None,
+    ) -> str:
+        """Save chat history and add history id and source_documents to chain result"""
+        chat_hist = add_history(
+            session_id=x_chat_session,
+            collection=collection,
+            question=question,
+            answer=self.result['answer'].strip(" \n"),
+            metadata=token_usage(callb),
+        )
 
-        docs = []
-        for doc in self.result['source_documents']:
-            docs.append({'page_content': doc.page_content, 'metadata': doc.metadata})
+        docs = [{'chat_history_id': None if chat_hist is None else str(chat_hist.uuid)}]
+
+        if 'source_documents' in self.result:
+            for doc in self.result['source_documents']:
+                docs.append({
+                    'page_content': doc.page_content,
+                    'metadata': doc.metadata
+                })
 
         return json.dumps(docs)
 

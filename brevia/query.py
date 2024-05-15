@@ -90,7 +90,7 @@ class SearchQuery(BaseModel):
     collection: str
     docs_num: int | None = None
     distance_strategy_name: str = 'cosine',
-    filter: dict[str, str | dict] | None = None
+    filter: dict[str, str | dict | list] | None = None
 
 
 def search_vector_qa(
@@ -110,6 +110,7 @@ def search_vector_qa(
         embedding_function=load_embeddings(embeddings_conf),
         collection_name=search.collection,
         distance_strategy=strategy,
+        use_jsonb=True,
     )
 
     return docsearch.similarity_search_with_score(
@@ -173,6 +174,7 @@ def conversation_chain(
         embedding_function=load_embeddings(collection.cmetadata.get('embedding', None)),
         collection_name=collection.name,
         distance_strategy=strategy,
+        use_jsonb=True,
     )
 
     prompts = collection.cmetadata.get('prompts')

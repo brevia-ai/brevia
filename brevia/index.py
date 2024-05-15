@@ -68,6 +68,7 @@ def add_document(
 ) -> int:
     """ Add document to index and return number of splitted text chunks"""
     texts = split_document(document)
+    connection = db_connection()
     PGVector.from_documents(
         embedding=load_embeddings(),
         documents=texts,
@@ -76,6 +77,7 @@ def add_document(
         connection=db_connection(),
         ids=[document_id] * len(texts),
     )
+    connection.close()
 
     return len(texts)
 

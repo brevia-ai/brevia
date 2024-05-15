@@ -4,13 +4,36 @@ from brevia.settings import Settings
 
 
 def test_setup_environment():
-    """Test _setup_environment method"""
-    del environ['OPENAI_API_KEY']
+    """Test setup_environment method"""
+    environ.pop('OPENAI_API_KEY', None)
+    environ.pop('COHERE_API_KEY', None)
     settings = Settings()
+    settings.openai_api_key = 'fakefakefake'
+    settings.cohere_api_key = 'fakefakefake'
+    settings.brevia_env_secrets = {}
     settings.setup_environment()
     assert environ.get('OPENAI_API_KEY') is not None
+    assert environ.get('COHERE_API_KEY') is not None
 
-    del environ['OPENAI_API_KEY']
+    environ.pop('OPENAI_API_KEY', None)
+    environ.pop('COHERE_API_KEY', None)
     settings.openai_api_key = None
+    settings.cohere_api_key = None
+    settings.brevia_env_secrets = {}
     settings.setup_environment()
     assert environ.get('OPENAI_API_KEY') is None
+    assert environ.get('COHERE_API_KEY') is None
+
+
+def test_brevia_env_secrets():
+    """Test setup_environment with brevia_env_secrets var"""
+    environ.pop('TEST_TOKEN', None)
+    settings = Settings()
+    settings.setup_environment()
+    assert environ.get('TEST_TOKEN') is None
+
+    environ.pop('TEST_TOKEN', None)
+    settings = Settings()
+    settings.brevia_env_secrets = {'TEST_TOKEN': 'abcd'}
+    settings.setup_environment()
+    assert environ.get('TEST_TOKEN') is not None

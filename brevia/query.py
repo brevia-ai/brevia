@@ -104,9 +104,10 @@ def search_vector_qa(
         default_num = get_settings().search_docs_num
         search.docs_num = int(collection_store.cmetadata.get('docs_num', default_num))
     strategy = DISTANCE_MAP.get(search.distance_strategy_name, DistanceStrategy.COSINE)
+    embeddings_conf = collection_store.cmetadata.get('embedding', None)
     docsearch = PGVector(
         connection_string=connection_string(),
-        embedding_function=load_embeddings(),
+        embedding_function=load_embeddings(embeddings_conf),
         collection_name=search.collection,
         distance_strategy=strategy,
     )
@@ -169,7 +170,7 @@ def conversation_chain(
     )
     docsearch = PGVector(
         connection_string=connection_string(),
-        embedding_function=load_embeddings(),
+        embedding_function=load_embeddings(collection.cmetadata.get('embedding', None)),
         collection_name=collection.name,
         distance_strategy=strategy,
     )

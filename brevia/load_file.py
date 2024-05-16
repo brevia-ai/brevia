@@ -1,6 +1,7 @@
 """Read text from a file with different formats"""
 import os
 import re
+from importlib import import_module
 import mimetypes
 import tempfile
 from typing import List, Any
@@ -111,8 +112,9 @@ def read_html_url(
     response = requests.get(url)
     response.raise_for_status()
     selector = loader_kwargs.pop('selector', '')
+    callback = loader_kwargs.pop('callback', '')
     with open(temp_file.name, 'w') as file:  # pylint: disable=missing-timeout
-        file.write(filter_html(html=response.text, selector=selector))
+        file.write(filter_html(html=response.text, selector=selector, callback=callback))
     loader = BSHTMLLoader(file_path=temp_file.name, **loader_kwargs)
     docs = loader.load()
     os.unlink(temp_file.name)
@@ -120,8 +122,15 @@ def read_html_url(
     return ' '.join([cleanup_text(item.page_content) for item in docs]).strip()
 
 
-def filter_html(html: str, selector: str = '') -> str:
-    """Filter HTML content with selector rule, using BeautifulSoup """
+def filter_html(html: str, selector: str = '', callback: str = '') -> str:
+    """Filter HTML content using callbacks and selector rule, using BeautifulSoup """
+    if callback:
+        module_name, func_name = callback.rsplit('.', 1)
+        try:
+            module = import_module(module_name)
+            html = getattr(module, func_name)(html)  # pylint: disable=not-callable
+        except (ImportError, AttributeError):
+            raise ValueError(f'Callback "{callback}" not found')
     if not selector:
         return html
     soup = BeautifulSoup(html, features='lxml')

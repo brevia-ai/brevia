@@ -111,10 +111,10 @@ def read_html_url(
     temp_file = tempfile.NamedTemporaryFile(delete=False)
     response = requests.get(url)
     response.raise_for_status()
-    selector = loader_kwargs.pop('selector', '')
-    callback = loader_kwargs.pop('callback', '')
     with open(temp_file.name, 'w') as file:  # pylint: disable=missing-timeout
-        file.write(filter_html(html=response.text, selector=selector, callback=callback))
+        file.write(filter_html(html=response.text,
+                               selector=loader_kwargs.pop('selector', ''),
+                               callback=loader_kwargs.pop('callback', '')))
     loader = BSHTMLLoader(file_path=temp_file.name, **loader_kwargs)
     docs = loader.load()
     os.unlink(temp_file.name)

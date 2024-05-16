@@ -166,7 +166,7 @@ To import/export collections via CLI we take advantage of the [PostgreSQL COPY c
 
 A `psql` client is required for these scripts, connection parameters will be read from environment variables (via `.env` file).
 
-Two PostgresSQL CSV files will be created during export and imported in the import operation.
+Two PostgreSQL CSV files will be created during export and imported in the import operation.
 One file, named `{collection-name}-collection.csv`, contains collection data and the other, named `{collection-name}-embedding.csv`, contains documents data and embeddings.
 
 To export a collection use:

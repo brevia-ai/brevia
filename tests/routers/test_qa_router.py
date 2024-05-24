@@ -40,7 +40,7 @@ def test_chat_filter():
     body = {
         'question': 'How?',
         'collection': 'test_collection',
-        'filter': {'category': {'in': ['first', 'third']}},
+        'filter': {'category': {'$in': ['first', 'third']}},
     }
     response = client.post(
         '/chat',

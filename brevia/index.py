@@ -68,14 +68,24 @@ def add_document(
     """ Add document to index and return number of splitted text chunks"""
     texts = split_document(document)
     PGVector.from_documents(
-        embedding=load_embeddings(),
+        embedding=load_embeddings(collection_embeddings(collection_name)),
         documents=texts,
         collection_name=collection_name,
         connection_string=connection.connection_string(),
         ids=[document_id] * len(texts),
+        use_jsonb=True,
     )
 
     return len(texts)
+
+
+def collection_embeddings(collection_name: str) -> dict | None:
+    """ Return custom embeddings of a collection"""
+    collection = single_collection_by_name(collection_name)
+    if collection is None:
+        return None
+
+    return collection.cmetadata.get('embeddings', None)
 
 
 def split_document(document: Document):

@@ -82,32 +82,34 @@ def test_search_vector_filter():
     result = search_vector_qa(search=SearchQuery(
         query='test',
         collection='test',
-        filter={'category': {'in': ['first', 'second']}},
+        filter={'category': {'$in': ['first', 'second']}},
     ))
     assert len(result) == 2
     result = search_vector_qa(search=SearchQuery(
         query='test',
         collection='test',
-        filter={'category': {'gt': 'first'}},
+        filter={'category': {'$gt': 'first'}},
     ))
     assert len(result) == 1
     result = search_vector_qa(search=SearchQuery(
         query='test',
         collection='test',
-        filter={'category': {'lt': 'first'}},
+        filter={'category': {'$lt': 'first'}},
     ))
     assert len(result) == 0
-    # 'GE' and 'LE' operators not yet supported
-    # result = search_vector_qa(search=SearchQuery(
-    #     query='test',
-    #     collection='test',
-    #     filter={'category': {'ge': 'aaaaa', 'le': 'zzzzz'}},
-    # ))
-    # assert len(result) == 2
     result = search_vector_qa(search=SearchQuery(
         query='test',
         collection='test',
-        filter={'category': {'ne': 'first'}},
+        filter={'$and': [
+            {'category': {'$gte': 'aaaaa'}},
+            {'category': {'$lte': 'zzzzz'}},
+        ]},
+    ))
+    assert len(result) == 2
+    result = search_vector_qa(search=SearchQuery(
+        query='test',
+        collection='test',
+        filter={'category': {'$ne': 'first'}},
     ))
     assert len(result) == 1
 

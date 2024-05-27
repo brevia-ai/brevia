@@ -232,6 +232,67 @@ Returns a list of documents metadata in a collection, so you will get unique ite
 
 Deletes an indexed document.
 
+### POST `/summarize`
+
+Performs summarization of a text passed as input
+
+Example payload:
+
+```JSON
+{
+  "text": "Lorem ipsum.......",
+}
+```
+
+Additional optional payload attributes:
+
+* `chain_type`: can be `map_reduce
+* `initial_prompt`: object describing the initial prompt used on the first text chunk
+* `iteration_prompt`: object describing the iteration prompt used after first text chunk
+* `token_data`: flag to return token usage data
+
+### POST `/upload_summarize`
+
+Performs summarization of a file.
+
+It works only with `form-data` input that must include a `file` parameter with the uploaded file and as optional parameters `chain_type` (as string, see above), `initial_prompt` and `iteration_prompt` (as JSON strings, see above), `token_data` (see above, as string with 'true' or 'false' as values)
+
+### POST `/upload_analyze`
+
+Performs a generic custom document analysis of a file
+
+It works only with `form-data` input that must include a `file` parameter with the uploaded file and as optional parameters:
+
+* `service`: string with service class name to use to perform the analysys in dot notation format
+* `payload`: additional input parameters as JSON string
+
+### GET `/jobs/{uuid}`
+
+Retrieve aync job data using its `uuid`
+
+**Example response:**
+
+```JSON
+{
+    "service": "brevia.services.SummarizeFileService",
+    "created": "2024-02-29T16:31:25.546740",
+    "locked_until": "2024-02-29T19:31:25",
+    "result": {
+        "output": "Lorem ipsum....",
+    },
+    "expires": "2024-02-29T21:31:25",
+    "payload": {
+        "file_path": "/tmp/tmpgns0ci85.pdf",
+        "chain_type": "",
+        "iteration_prompt": null,
+        "token_data": false
+    },
+    "completed": "2024-02-29T17:31:27.700342",
+    "max_attempts": 1,
+    "uuid": "00b9118c-6bb5-4b87-968c-3b2c1b6fe3fb"
+}
+```
+
 ### GET `/status`
 
 Retrieve API status, check if database is up and running.

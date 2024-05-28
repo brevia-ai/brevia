@@ -17,6 +17,8 @@ In addition to chat functionalities, Brevia provides out of the box dedicated en
 
 `/chat_history`: This endpoint allows you to access and manage conversation history data, providing valuable insights into past interactions.
 
+`/chat_history/sessions`: This endpoint allows you to access conversation history data. It provides a list of the first messages from all individual conversation sessions you've had.
+
 See [configuration](config.md#qa-and-chat) for more information on using environment variables to control the behavior of the chat system.
 
 ## Chat System Functionality

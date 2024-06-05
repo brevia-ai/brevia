@@ -25,6 +25,17 @@ def test_chat_history():
     assert data['data'] == []
 
 
+def test_chat_history_sessions():
+    """Test /chat_history/sessions success"""
+    response = client.get('/chat_history/sessions', headers={})
+    assert response.status_code == 200
+    data = response.json()
+    assert data is not None
+    assert 'data' in data
+    assert 'meta' in data
+    assert data['data'] == []
+
+
 def test_evaluate():
     """Test /evaluate endpoint"""
     create_collection('test_collection', {})

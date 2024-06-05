@@ -2,9 +2,10 @@
 from typing import Annotated
 from os import path
 import json
+import re
 import logging
 from pydantic import BaseModel
-from fastapi import APIRouter, HTTPException, status, UploadFile, Form
+from fastapi import APIRouter, HTTPException, Request, status, UploadFile, Form
 from langchain.docstore.document import Document
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from brevia.dependencies import (
@@ -68,6 +69,7 @@ def upload_and_index(
     collection_id: Annotated[str, Form()],
     document_id: Annotated[str, Form()],
     metadata: Annotated[str | None, Form()] = None,
+    options: Annotated[str | None, Form()] = None,
 ):
     """
     Upload a PDF file and perform index on a collection
@@ -92,8 +94,8 @@ def upload_and_index(
         collection_id=collection_id,
         document_id=document_id,
     )
-
-    text = load_file.read(file_path=tmp_path)
+    read_options = {} if options is None else json.loads(options)
+    text = load_file.read(file_path=tmp_path, **read_options)
     index.add_document(
         document=Document(
             page_content=text,
@@ -101,6 +103,52 @@ def upload_and_index(
         ),
         collection_name=collection.name,
         document_id=document_id,
+    )
+
+
+class IndexLink(BaseModel):
+    """ /index/link request body """
+    link: str  # link to a webpage
+    collection_id: str
+    document_id: str
+    metadata: dict = {}
+    options: dict = {}
+
+
+@router.post(
+    '/index/link',
+    status_code=204,
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Index'],
+)
+def parse_link_and_index(item: IndexLink):
+    """
+    Add a web page content to a collection index
+    """
+    collection = load_collection(collection_id=item.collection_id)
+    log = logging.getLogger(__name__)
+    log.info(
+        "Adding link '%s' to collection '%s' / document '%s'",
+        item.link,
+        collection.name,
+        item.document_id
+    )
+
+    text = load_file.read_html_url(url=item.link, **item.options)
+    if not text:
+        return
+    # remove same document if already indexed
+    index.remove_document(
+        collection_id=item.collection_id,
+        document_id=item.document_id,
+    )
+    index.add_document(
+        document=Document(
+            page_content=text,
+            metadata=item.metadata,
+        ),
+        collection_name=collection.name,
+        document_id=item.document_id,
     )
 
 
@@ -118,13 +166,61 @@ def remove_document(collection_id: str, document_id: str):
     )
 
 
+def read_filter(request: Request) -> dict:
+    """Read metadata filter dict from query string"""
+    result = {}
+    regexp = r'filter\[(.*?)\]'
+    for key in request.query_params.keys():
+        if re.match(regexp, key):
+            f_key = re.search(regexp, key).group(1)
+            result[f_key] = request.query_params.get(key)
+
+    return result
+
+
+@router.get(
+    '/index/{collection_id}',
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Index'],
+)
+def index_docs(
+    collection_id: str,
+    request: Request,
+    page: int = 1,
+    page_size: int = 50
+):
+    """ Read collection documents with metadata filter """
+    load_collection(collection_id=collection_id)
+    return index.collection_documents(
+        collection_id=collection_id,
+        filter=read_filter(request=request),
+        page=page,
+        page_size=page_size,
+    )
+
+
+@router.get(
+    '/index/{collection_id}/documents_metadata',
+    dependencies=get_dependencies(json_content_type=False),
+    tags=['Index'],
+)
+def index_docs_metadata(collection_id: str, request: Request):
+    """ Read collection documents metadata"""
+    load_collection(collection_id=collection_id)
+    return index.documents_metadata(
+        collection_id=collection_id,
+        filter=read_filter(request=request),
+        document_id=request.query_params.get('document_id'),
+    )
+
+
 @router.get(
     '/index/{collection_id}/{document_id}',
     dependencies=get_dependencies(json_content_type=False),
     tags=['Index'],
 )
 def read_document(collection_id: str, document_id: str):
-    """ Read document from collection index """
+    """ Read single document from collection index """
     return index.read_document(
         collection_id=collection_id,
         document_id=document_id,

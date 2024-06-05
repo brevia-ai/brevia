@@ -215,7 +215,7 @@
 			"name": "Chat History",
 			"item": [
 				{
-					"name": "chat history - Read chat history",
+					"name": "Chat History - Read chat history",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -249,7 +249,93 @@
 					"response": []
 				},
 				{
-					"name": "chat history - Read chat history with filters",
+					"name": "Chat History - Read chat history with filters",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat_history?max_date=2023-04-20&collection={{collection}}&page=1&page_size=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat_history"
+							],
+							"query": [
+								{
+									"key": "max_date",
+									"value": "2023-04-20"
+								},
+								{
+									"key": "collection",
+									"value": "{{collection}}"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "page_size",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sessions - Read chat history Sessions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/chat_history",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"chat_history"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sessions - Read chat history Sessions with filters",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -473,7 +559,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"{{collection}}\",\n    \"cmetadata\": {\n        \"note\": \"some notes\",\n        \"description\": \"a description\"\n    }\n}",
+							"raw": "{\n    \"name\": \"{{collection}}\",\n    \"cmetadata\": {\n        \"title\": \"collection title\",\n        \"description\": \"a description\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -550,7 +636,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"nuovo-nome-nuovo\",\n    \"cmetadata\": {\n        \"note\": \"note di prova prova\",\n        \"description\": \"descrizione di prova prova\"\n    }\n}",
+							"raw": "{\n    \"name\": \"{{collection}}\",\n    \"cmetadata\": {\n        \"title\": \"brand new title\",\n        \"description\": \"brand new description\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -633,7 +719,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"content\" : \"Lorem ipsum dolor sit amet, consectetur adipisci elit, sed do eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrum exercitationem ullamco laboriosam, nisi ut aliquid ex ea commodi consequatur. Duis aute irure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\",\r\n    \"collection_id\" : \"{{collection_id}}\",\r\n    \"document_id\" : \"{{document_id}}\",\r\n    \"metadata\" : {\"category\": \"cat1\"}\r\n}"
+							"raw": "{\r\n    \"content\" : \"Lorem ipsum dolor sit amet, consectetur adipisci elit, sed do eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrum exercitationem ullamco laboriosam, nisi ut aliquid ex ea commodi consequatur. Duis aute irure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\",\r\n    \"collection_id\" : \"{{collection_id}}\",\r\n    \"document_id\" : \"{{document_id}}\",\r\n    \"metadata\" : {\"type\": \"questions\"}\r\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/index",
@@ -704,6 +790,84 @@
 					"response": []
 				},
 				{
+					"name": "index/link - Index a webpage via link",
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"link\" : \"{{link}}\",\n    \"collection_id\" : \"{{collection_id}}\",\n    \"document_id\" : \"{{document_id}}\",\n    \"metadata\" : {\"type\": \"links\"}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/index/link",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"link"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index/metadata - Add document metadata to index",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"collection_id\" : \"{{collection_id}}\",\r\n    \"document_id\" : \"{{document_id}}\",\r\n    \"metadata\" : {\"category\": \"cat2\"}\r\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/index/metadata",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"metadata"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "index - Read document from index",
 					"request": {
 						"auth": {
@@ -734,6 +898,165 @@
 								"index",
 								"{{collection_id}}",
 								"{{document_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index - Read documents metadata in a collection",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/index/{{collection_id}}/documents_metadata",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"{{collection_id}}",
+								"documents_metadata"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index - Read documents metadata in a collection with filter",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/index/{{collection_id}}/documents_metadata?filter[type]=questions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"{{collection_id}}",
+								"documents_metadata"
+							],
+							"query": [
+								{
+									"key": "filter[type]",
+									"value": "questions"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index - Read documents in a collection",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/index/{{collection_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"{{collection_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "index - Read documents in a collection with filter and pagination",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/index/{{collection_id}}/?filter[type]=questions&page_size=15",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"index",
+								"{{collection_id}}",
+								""
+							],
+							"query": [
+								{
+									"key": "filter[type]",
+									"value": "questions"
+								},
+								{
+									"key": "page_size",
+									"value": "15"
+								}
 							]
 						}
 					},

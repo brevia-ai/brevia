@@ -2,6 +2,7 @@
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from sqlalchemy.orm import Session
 from brevia import connection
+from brevia.utilities.uuid import is_valid_uuid
 
 
 def collections_info(collection: str | None = None):
@@ -43,6 +44,8 @@ def collection_exists(uuid: str) -> bool:
 
 def single_collection(uuid: str) -> (CollectionStore | None):
     """ Get single collection by UUID """
+    if not is_valid_uuid(uuid):
+        return None
     with Session(connection.db_connection()) as session:
         return session.get(CollectionStore, uuid)
 

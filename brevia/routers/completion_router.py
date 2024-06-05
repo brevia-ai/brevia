@@ -39,9 +39,9 @@ async def run_chain(
 ):
     """Run chain usign async methods and return result"""
     with token_usage_callback() as callb:
-        result = await chain.acall({
+        result = await chain.ainvoke({
             'text': completion_body.text
-        })
+        }, return_only_outputs=True)
     return completion_result(
         result=result,
         callb=callb,

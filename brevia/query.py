@@ -90,7 +90,7 @@ class SearchQuery(BaseModel):
     collection: str
     docs_num: int | None = None
     distance_strategy_name: str = 'cosine',
-    filter: dict[str, str | dict] | None = None
+    filter: dict[str, str | dict | list] | None = None
 
 
 def search_vector_qa(
@@ -104,11 +104,13 @@ def search_vector_qa(
         default_num = get_settings().search_docs_num
         search.docs_num = int(collection_store.cmetadata.get('docs_num', default_num))
     strategy = DISTANCE_MAP.get(search.distance_strategy_name, DistanceStrategy.COSINE)
+    embeddings_conf = collection_store.cmetadata.get('embedding', None)
     docsearch = PGVector(
         connection_string=connection_string(),
-        embedding_function=load_embeddings(),
+        embedding_function=load_embeddings(embeddings_conf),
         collection_name=search.collection,
         distance_strategy=strategy,
+        use_jsonb=True,
     )
 
     return docsearch.similarity_search_with_score(
@@ -169,9 +171,10 @@ def conversation_chain(
     )
     docsearch = PGVector(
         connection_string=connection_string(),
-        embedding_function=load_embeddings(),
+        embedding_function=load_embeddings(collection.cmetadata.get('embedding', None)),
         collection_name=collection.name,
         distance_strategy=strategy,
+        use_jsonb=True,
     )
 
     prompts = collection.cmetadata.get('prompts')

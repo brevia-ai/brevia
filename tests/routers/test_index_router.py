@@ -8,6 +8,7 @@ from langchain.docstore.document import Document
 from brevia.routers import index_router
 from brevia.collections import create_collection
 from brevia.index import add_document, read_document
+from unittest.mock import patch
 
 app = FastAPI()
 app.include_router(index_router.router)
@@ -63,7 +64,7 @@ def test_get_index_document():
     assert response.status_code == 200
     data = response.json()
     assert data is not None
-    assert data == [{'document': 'Lorem Ipsum', 'cmetadata': {}}]
+    assert data == [{'document': 'Lorem Ipsum', 'cmetadata': {'part': 1}}]
 
 
 def test_delete_document_index():
@@ -136,6 +137,77 @@ def test_upload_analyze_fail():
     assert response.status_code == 400
 
 
+@patch('brevia.routers.index_router.load_file.requests.get')
+def test_index_link(mock_get):
+    """Test POST /index/link endpoint"""
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.text = 'Lorem Ipsum'
+    collection = create_collection('test_collection', {})
+    response = client.post(
+        '/index/link',
+        headers={'Content-Type': 'application/json'},
+        content=json.dumps({
+            'link': 'https://www.example.com',
+            'collection_id': str(collection.uuid),
+            'document_id': '123',
+            'metadata': {'type': 'links'},
+        })
+    )
+    assert response.status_code == 204
+    assert response.text == ''
+    docs = read_document(collection_id=str(collection.uuid), document_id='123')
+    assert len(docs) == 1
+    assert docs[0].get('cmetadata') == {'type': 'links', 'part': 1}
+    assert docs[0].get('document') == 'Lorem Ipsum'
+
+
+@patch('brevia.routers.index_router.load_file.requests.get')
+def test_index_link_selector(mock_get):
+    """Test POST /index/link endpoint with 'selector' option filer"""
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.text = '<h1>Lorem Ipsum</h1><p class="test">Some text</p>'
+    collection = create_collection('test_collection', {})
+    response = client.post(
+        '/index/link',
+        headers={'Content-Type': 'application/json'},
+        content=json.dumps({
+            'link': 'https://www.example.com',
+            'collection_id': str(collection.uuid),
+            'document_id': '123',
+            'metadata': {'type': 'links'},
+            'options': {'selector': 'p.test'},
+        })
+    )
+    assert response.status_code == 204
+    assert response.text == ''
+    docs = read_document(collection_id=str(collection.uuid), document_id='123')
+    assert len(docs) == 1
+    assert docs[0].get('cmetadata') == {'type': 'links', 'part': 1}
+    assert docs[0].get('document') == 'Some text'
+
+
+@patch('brevia.routers.index_router.load_file.requests.get')
+def test_index_link_empty(mock_get):
+    """Test POST /index/link endpoint with empty or missing response"""
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.text = ''
+    collection = create_collection('test_collection', {})
+    response = client.post(
+        '/index/link',
+        headers={'Content-Type': 'application/json'},
+        content=json.dumps({
+            'link': 'https://www.example.com',
+            'collection_id': str(collection.uuid),
+            'document_id': '123',
+            'metadata': {'type': 'links'},
+        })
+    )
+    assert response.status_code == 204
+    assert response.text == ''
+    docs = read_document(collection_id=str(collection.uuid), document_id='123')
+    assert len(docs) == 0
+
+
 def test_index_metadata_document():
     """Test POST /index/metadata endpoint"""
     collection = create_collection('test_collection', {})
@@ -155,3 +227,71 @@ def test_index_metadata_document():
     docs = read_document(collection_id=str(collection.uuid), document_id='123')
     assert len(docs) == 1
     assert docs[0].get('cmetadata') == {'category': 'second'}
+
+
+def test_get_index_collection():
+    """Test GET /index/{collection_id} endpoint with filter query string"""
+    collection = create_collection('test_collection', {})
+
+    doc1 = Document(page_content='Lorem Ipsum', metadata={'type': 'documents'})
+    add_document(document=doc1, collection_name='test_collection', document_id='123')
+    doc2 = Document(page_content='Dolor Sit', metadata={'type': 'questions'})
+    add_document(document=doc2, collection_name='test_collection', document_id='456')
+
+    response = client.get(f'/index/{collection.uuid}?filter[type]=documents')
+    assert response.status_code == 200
+    data = response.json()
+    assert 'data' in data
+    assert data['data'] == [{
+        'document': 'Lorem Ipsum',
+        'cmetadata': {'type': 'documents', 'part': 1},
+        'custom_id': '123'
+    }]
+
+
+def test_get_index_collection_failure():
+    """Test GET /index/{collection_id} endpoint with bad argument"""
+    response = client.get('/index/gustavo')
+    assert response.status_code == 404
+
+
+def test_get_index_documents_metadata():
+    """Test GET /index/{collection_id}/documents_metadata endpoint"""
+    collection = create_collection('test_collection', {})
+
+    doc1 = Document(page_content='Lorem Ipsum', metadata={'type': 'documents'})
+    add_document(document=doc1, collection_name='test_collection', document_id='123')
+    doc2 = Document(page_content='Dolor Sit', metadata={'type': 'questions'})
+    add_document(document=doc2, collection_name='test_collection', document_id='456')
+
+    response = client.get(f'/index/{collection.uuid}/documents_metadata')
+    assert response.status_code == 200
+    data = response.json()
+    assert data == [
+        {
+            'cmetadata': {'type': 'documents', 'part': 1},
+            'custom_id': '123'
+        },
+        {
+            'cmetadata': {'type': 'questions', 'part': 1},
+            'custom_id': '456'
+        },
+    ]
+
+    query = 'filter[type]=questions'
+    response = client.get(f'/index/{collection.uuid}/documents_metadata?{query}')
+    assert response.status_code == 200
+    data = response.json()
+    assert data == [{
+        'cmetadata': {'type': 'questions', 'part': 1},
+        'custom_id': '456'
+    }]
+
+    query = 'document_id=123'
+    response = client.get(f'/index/{collection.uuid}/documents_metadata?{query}')
+    assert response.status_code == 200
+    data = response.json()
+    assert data == [{
+        'cmetadata': {'type': 'documents', 'part': 1},
+        'custom_id': '123'
+    }]

@@ -24,7 +24,7 @@ if __name__ == '__main__':
         'reload_excludes': ['*.log', './history/*'],
         'reload_dirs': ['brevia/'],
     }
-    ROOT_PATH = str(Path(__file__).parents[1])
+    ROOT_PATH = str(Path(__file__).parents[0])
     log_config = f'{ROOT_PATH}/log.ini'
     if Path(log_config).exists():
         run_opts['log_config'] = log_config

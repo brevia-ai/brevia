@@ -166,7 +166,7 @@ To import/export collections via CLI we take advantage of the [PostgreSQL COPY c
 
 A `psql` client is required for these scripts, connection parameters will be read from environment variables (via `.env` file).
 
-Two PostgresSQL CSV files will be created during export and imported in the import operation.
+Two PostgreSQL CSV files will be created during export and imported in the import operation.
 One file, named `{collection-name}-collection.csv`, contains collection data and the other, named `{collection-name}-embedding.csv`, contains documents data and embeddings.
 
 To export a collection use:
@@ -189,7 +189,7 @@ Where
 ## LangSmith support
 
 [LangSmith](https://www.langchain.com/langsmith) is a platform to monitor, test and debug LLM apps built with LangChain.
-To use it in Brevia, if you have an account, uncomment the following lines in your `.env` file.
+To use it in Brevia, if you have an account, you should export these environment variables when runnnin Brevia:
 
 ```bash
 LANGCHAIN_TRACING_V2=True
@@ -197,6 +197,20 @@ LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
 LANGCHAIN_API_KEY="########"
 LANGCHAIN_PROJECT="My Project"
 ```
+
+If you are using a `.env` file you should use `BREVIA_ENV_SECRETS` var like this:
+
+```bash
+
+BREVIA_ENV_SECRETS='{
+  "LANGCHAIN_TRACING_V2": "True"
+  "LANGCHAIN_ENDPOINT": "https://api.smith.langchain.com",
+  "LANGCHAIN_API_KEY": "########",
+  "LANGCHAIN_PROJECT": "My Project"
+}'
+```
+
+This way Brevia will make sure that this variables will be available as environment variables.
 
 Edit `LANGCHAIN_API_KEY` with your LangSmith API Key and set your project name in `LANGCHAIN_PROJECT` var.
 

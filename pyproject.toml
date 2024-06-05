@@ -38,6 +38,7 @@ pydantic-settings = "^2.1.0"
 tomli = "^2.0.1"
 langchain-community = "^0.0.32"
 langchain-openai = "^0.1.2"
+fasttext = {git = "https://github.com/cfculhane/fastText"}
 
 [tool.poetry.dependencies.uvicorn]
 extras = ["standard"]

@@ -44,6 +44,9 @@ def test_evaluate():
         'uuid': str(chat_hist.uuid),
         'user_evaluation': False,
         'user_feedback': 'Lot of hallucinations!',
+        'metadata': {
+            'user': 'user_test',
+        },
     }
     response = client.post(
         '/evaluate',
@@ -64,6 +67,9 @@ def test_evaluate_failure():
         'uuid': str(uuid.uuid4()),
         'user_evaluation': False,
         'user_feedback': 'Lot of hallucinations!',
+        'metadata': {
+            'user': 'user_test',
+        },
     }
     response = client.post(
         '/evaluate',

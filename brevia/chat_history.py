@@ -321,6 +321,7 @@ def history_evaluation(
     history_id: str,
     user_evaluation: bool,
     user_feedback: str | None = None,
+    metadata: dict | None = None,
 ) -> bool:
     """
         Update evaluation of single history item.
@@ -332,6 +333,11 @@ def history_evaluation(
             return False
         chat_history.user_evaluation = user_evaluation
         chat_history.user_feedback = user_feedback
+        if metadata:
+            if chat_history.cmetadata is None:
+                chat_history.cmetadata = {}
+            chat_history.cmetadata.update(metadata)
+
         session.add(chat_history)
         session.commit()
 

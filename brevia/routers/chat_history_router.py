@@ -37,7 +37,8 @@ class EvaluateBody(BaseModel):
     """ Evaluation creation model """
     uuid: str
     user_evaluation: bool
-    user_feedback: str
+    user_feedback: str | None = None
+    metadata: dict | None = None
 
 
 @router.post(
@@ -52,6 +53,7 @@ def evluate_chat_history(body: EvaluateBody):
         history_id=body.uuid,
         user_evaluation=body.user_evaluation,
         user_feedback=body.user_feedback,
+        metadata=body.metadata,
     )
     if not result:
         raise HTTPException(

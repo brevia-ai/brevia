@@ -26,12 +26,12 @@ To perform a manual setup instead you can follow these steps using poetry, pip o
 * install brevia and its dependencies by running `poetry add brevia`, a virtualenv will automatically be created
 * create a new `main.py` starting with a [copy](https://raw.githubusercontent.com/brevia-ai/brevia-cookiecutter/main/%7B%7Bcookiecutter.project_slug%7D%7D/main.py)
 * activate the virtualenv by running the `poetry shell` command
-* copy the file `.env.sample` to `.env` and value the environment variables, especially `OPENAI_API_KEY` with the secret key of OpenAI and `PGVECTOR_*` see the [Database](#database) section
+* copy the file `.env.sample` to `.env` and value the environment variables, especially `OPENAI_API_KEY` with the secret key of OpenAI and `PGVECTOR_*` - see the [Configuration](#config) and [Database](#database) sections or more details
 
 ### Using pip
 
 * install brevia and its dependencies by running `pip install brevia`
 * create a virtualenv with your preferred tool
 * create a new `main.py` starting with a [copy](https://raw.githubusercontent.com/brevia-ai/brevia-cookiecutter/main/%7B%7Bcookiecutter.project_slug%7D%7D/main.py)
-* copy the file `.env.sample` to `.env` and value the environment variables, especially `OPENAI_API_KEY` with the secret key of OpenAI and `PGVECTOR_*` see the [Database](#database) section
+* copy the file `.env.sample` to `.env` and value the environment variables, especially `OPENAI_API_KEY` with the secret key of OpenAI and `PGVECTOR_*` - see the [Configuration](#config) and [Database](#database) sections or more details
 * activate your virtualenv

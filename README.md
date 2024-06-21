@@ -114,7 +114,7 @@ With relatives embeddings:
 If you have a PostgreSQL instance with `pg_vector` extension available you are ready to go, otherwise you can use the provided docker compose file.
 
 In this case you can simply run `docker compose` to run a PostgreSQL database with pg_vector.
-You can also run the embedded [`pgAdmin`](https://www.pgadmin.org) admin tool running `docler compose --profile admin up` to run postgres+pgvector and pgadmin docker images at the same time.
+You can also run the embedded [`pgAdmin`](https://www.pgadmin.org) admin tool running `docker compose --profile admin up` to run postgres+pgvector and pgadmin docker images at the same time.
 With your browser, open `pgadmin` at http://localhost:4000
 
 The `4000` port is configurable with the `PGADMIN_PORT` environment var in the `.env` file.

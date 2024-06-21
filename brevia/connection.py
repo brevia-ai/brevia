@@ -12,6 +12,9 @@ from brevia.settings import get_settings
 def connection_string() -> str:
     """ Postgres+pgvector db connection string """
     conf = get_settings()
+    if conf.pgvector_dsn_uri:
+        return conf.pgvector_dsn_uri
+
     driver = conf.pgvector_driver
     host = conf.pgvector_host
     port = conf.pgvector_port

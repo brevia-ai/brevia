@@ -16,7 +16,6 @@ from brevia.callback import (
     token_usage,
     TokensCallbackHandler,
 )
-from brevia.language import Detector
 from brevia.query import SearchQuery, ChatParams, conversation_chain, search_vector_qa
 from brevia.models import test_models_in_use
 
@@ -107,10 +106,8 @@ async def chat_action(
 def chat_language(chat_body: ChatBody, cmetadata: dict) -> str:
     """Retrieve the language to be used in Q/A response"""
     chat_lang = chat_body.chat_lang or cmetadata.get('chat_lang')
-    if chat_lang:
-        return chat_lang
 
-    return Detector().detect(chat_body.question)
+    return chat_lang if chat_lang else ''
 
 
 def retrieve_chat_history(history: list, question: str,

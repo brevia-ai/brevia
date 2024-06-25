@@ -336,7 +336,7 @@ def history_evaluation(
         if metadata:
             if chat_history.cmetadata is None:
                 chat_history.cmetadata = {}
-            chat_history.cmetadata.update(metadata)
+            chat_history.cmetadata = chat_history.cmetadata | metadata
 
         session.add(chat_history)
         session.commit()

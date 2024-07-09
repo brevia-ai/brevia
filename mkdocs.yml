@@ -1,4 +1,5 @@
 site_name: Brevia Docs
+dev_addr: "127.0.0.1:8001"
 theme:
   name: material
 
@@ -6,19 +7,24 @@ nav:
   - Brevia: index.md
   - Setup: setup.md
   - Configuration: config.md
-  - Database: database.md
-  - Document Index: document_index.md
-  - Chat and search: chat_search.md
-  - Analyze services: services.md
-  - Models:
-    - OpenAI: models/openai.md
-    - Cohere: models/cohere.md
-    - Other Models: models/other_models.md
-  - Endpoints:
-    - Collections: endpoints/collections.md
-    - Index & Search: endpoints/documents_index.md
-    - Chat & History: endpoints/chat_and_history.md
-    - Summarize & Analyze: endpoints/summarize_analyze.md
-    - Transcribe:  endpoints/transcribe.md
-    - Status: endpoints/status.md
   - Security: security.md
+  - Tutorials:
+    - Create Simple RAG: tutorials/create_collection.md
+    - Create Summarization Analysis: tutorials/create_summarization.md
+    - Create Custom Services: tutorials/create_custom_services.md
+  - Database: database.md
+  - Collections: collections.md
+  # /index/... endpoints
+  - Document Index: document_index.md
+  # /chat, /search, /chat_history
+  - Chat and search: chat_search.md
+  # /summarize, upload, generic service, /transcribe...
+  - Analyze services: analyze_services.md
+  - Async jobs: async_jobs.md
+  # - Models:
+  #   - OpenAI: models/openai.md
+  #   - Cohere: models/cohere.md
+  #   - Other Models: models/other_models.md
+  - Endpoints Overview: endpoints_overview.md
+  - Reference:
+    - REST API Reference:  redoc/

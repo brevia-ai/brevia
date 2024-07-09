@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Brevia"
-version = "0.0.30"
+version = "0.0.32"
 description = "Extensible API and framework to build your Retrieval Augmented Generation (RAG) and Information Extraction (IE) applications with LLMs"
 authors = [
   "Niki Corradetti <niki.corradetti@atlasconsulting.it>",
@@ -24,7 +24,6 @@ repository = "https://github.com/brevia-ai/brevia"
   python-dotenv = "^1.0.0"
   python-multipart = "^0.0.6"
   tiktoken = "^0.6.0"
-  spacy-fastlang = "^1.0.1"
   langcodes = "^3.3.0"
   language-data = "^1.1"
   pycryptodome = "^3.18.0"
@@ -38,9 +37,7 @@ repository = "https://github.com/brevia-ai/brevia"
   tomli = "^2.0.1"
   langchain-community = "^0.0.32"
   langchain-openai = "^0.1.2"
-
-    [tool.poetry.dependencies.fasttext]
-    git = "https://github.com/cfculhane/fastText"
+  jinja2 = "^3.1.4"
 
     [tool.poetry.dependencies.uvicorn]
     extras = [ "standard" ]

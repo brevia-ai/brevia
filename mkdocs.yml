@@ -21,10 +21,10 @@ nav:
   # /summarize, upload, generic service, /transcribe...
   - Analyze services: analyze_services.md
   - Async jobs: async_jobs.md
-  - Models:
-    - OpenAI: models/openai.md
-    - Cohere: models/cohere.md
-    - Other Models: models/other_models.md
+  # - Models:
+  #   - OpenAI: models/openai.md
+  #   - Cohere: models/cohere.md
+  #   - Other Models: models/other_models.md
   - Endpoints Overview: endpoints_overview.md
   - Reference:
     - REST API Reference:  redoc/

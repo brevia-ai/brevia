@@ -68,7 +68,9 @@ def _raise_http_err():
 def test_update_links_documents_http_error(mock_get):
     """Test update_links_documents method with HTTP error"""
     collection = create_collection('test', {})
-    doc1 = Document(page_content='some', metadata={'type': 'links', 'url': 'http://example.com'})
+    doc1 = Document(
+        page_content='some', metadata={'type': 'links', 'url': 'http://example.com'}
+    )
     add_document(document=doc1, collection_name='test', document_id='1')
 
     mock_get.return_value.status_code = 404

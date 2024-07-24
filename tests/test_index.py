@@ -1,12 +1,16 @@
 """Index module tests"""
 from pathlib import Path
+from h11 import Response
 import pytest
+from requests import HTTPError
 from brevia.index import (
     load_pdf_file, update_links_documents,
-    add_document, document_has_changed, select_load_link_options
+    add_document, document_has_changed, select_load_link_options,
+    documents_metadata,
 )
 from brevia.collections import create_collection
 from langchain.docstore.document import Document
+from unittest.mock import patch
 
 
 def test_load_pdf_file():
@@ -54,6 +58,41 @@ def test_document_has_changed():
                  collection_name='test', document_id='1')
     result = document_has_changed(doc1, collection.uuid, '1')
     assert result is True
+
+
+def _raise_http_err():
+    raise HTTPError('404 Client Error', response=Response(headers=[], status_code=404))
+
+
+@patch('brevia.index.load_file.requests.get')
+def test_update_links_documents_http_error(mock_get):
+    """Test update_links_documents method with HTTP error"""
+    collection = create_collection('test', {})
+    doc1 = Document(
+        page_content='some', metadata={'type': 'links', 'url': 'http://example.com'}
+    )
+    add_document(document=doc1, collection_name='test', document_id='1')
+
+    mock_get.return_value.status_code = 404
+    mock_get.return_value.text = '404 Client Error'
+    mock_get.return_value.raise_for_status = _raise_http_err
+
+    result = update_links_documents('test')
+    assert result == 0
+    meta = documents_metadata(collection_id=collection.uuid, document_id='1')
+    assert meta[0]['cmetadata']['http_error'] == '404'
+
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.text = 'changed'
+
+    def donothing():
+        pass
+    mock_get.return_value.raise_for_status = donothing
+
+    result = update_links_documents('test')
+    assert result == 1
+    meta = documents_metadata(collection_id=collection.uuid, document_id='1')
+    assert meta[0]['cmetadata'].get('http_error') is None
 
 
 def test_select_load_link_options():

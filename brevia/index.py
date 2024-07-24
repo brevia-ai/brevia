@@ -6,6 +6,7 @@ from langchain.text_splitter import NLTKTextSplitter
 from langchain.vectorstores.pgvector import PGVector
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgembedding import EmbeddingStore
+from requests import HTTPError
 from sqlalchemy.orm import Session
 from brevia import connection, load_file
 from brevia.collections import single_collection_by_name
@@ -209,11 +210,19 @@ def update_links_documents(collection_name: str) -> int:
                                    filter={'type': 'links'})
     count = 0
     for doc in docs_meta:
-        res = update_collection_link(
-            collection=collection,
-            document_id=doc['custom_id'],
-            document_medatata=doc['cmetadata']
-        )
+        try:
+            res = update_collection_link(
+                collection=collection,
+                document_id=doc['custom_id'],
+                document_medatata=doc['cmetadata']
+            )
+        except HTTPError as exc:
+            log.error('HTTP Error updating document "%s" - %s', doc['custom_id'], exc)
+            doc['cmetadata'] |= {'http_error': str(exc.response.status_code)}
+            update_metadata(collection_id=collection.uuid,
+                            document_id=doc['custom_id'],
+                            metadata=doc['cmetadata'])
+            res = False
         count += 1 if res else 0
 
     return count
@@ -237,6 +246,7 @@ def update_collection_link(collection: CollectionStore, document_id: str,
     if document_has_changed(document=document, collection_id=collection.uuid,
                             document_id=document_id):
         remove_document(collection_id=collection.uuid, document_id=document_id)
+        document.metadata.pop('http_error', None)
         add_document(document=document, collection_name=collection.name,
                      document_id=document_id)
         return True

@@ -1,9 +1,9 @@
 """Functions to perform summarization & document analysis"""
-from langchain.docstore.document import Document
 from langchain.chains.summarize import load_summarize_chain
-from langchain.text_splitter import TokenTextSplitter
-from langchain.chat_models.base import BaseChatModel
-from langchain.prompts.loading import load_prompt_from_config
+from langchain_core.documents import Document
+from langchain_core.language_models import BaseChatModel
+from langchain_core.prompts.loading import load_prompt_from_config
+from langchain_text_splitters import TokenTextSplitter
 from brevia.callback import LoggingCallbackHandler
 from brevia.models import load_chatmodel
 from brevia.settings import get_settings

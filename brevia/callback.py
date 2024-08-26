@@ -4,12 +4,11 @@ from uuid import UUID
 import asyncio
 import logging
 import json
-from langchain_community.callbacks import get_openai_callback
-from langchain.callbacks.base import BaseCallbackHandler, AsyncCallbackHandler
-from langchain.docstore.document import Document
-from langchain.schema import BaseMessage
-from langchain.schema.output import LLMResult
-from langchain.callbacks.openai_info import OpenAICallbackHandler
+from langchain_community.callbacks import OpenAICallbackHandler, get_openai_callback
+from langchain_core.callbacks import AsyncCallbackHandler, BaseCallbackHandler
+from langchain_core.documents import Document
+from langchain_core.messages import BaseMessage
+from langchain_core.outputs import LLMResult
 from brevia.chat_history import add_history
 
 

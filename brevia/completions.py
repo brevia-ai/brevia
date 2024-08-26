@@ -1,7 +1,7 @@
 """Simple completion functions"""
 from langchain.chains.base import Chain
 from langchain.chains.llm import LLMChain
-from langchain.prompts.loading import load_prompt_from_config
+from langchain_core.prompts.loading import load_prompt_from_config
 from pydantic import BaseModel
 from brevia.models import load_chatmodel
 from brevia.settings import get_settings

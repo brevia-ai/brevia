@@ -79,7 +79,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"question\" : \"{{query}}\",\n    \"collection\" : \"{{collection}}\",\n    \"source_docs\": true,\n    \"docs_num\": 6,\n    \"token_data\": true\n}"
+							"raw": "{\n    \"question\" : \"{{query}}\",\n    \"collection\" : \"{{collection}}\",\n    \"source_docs\": true,\n    \"docs_num\": 6,\n    \"token_data\": true,\n    \"multiquery\": true\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/chat",

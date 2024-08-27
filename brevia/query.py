@@ -1,5 +1,6 @@
 """Question-answering and search functions against a vector database."""
 from os import path
+from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.chains.base import Chain
 from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
 from langchain.chains.question_answering import load_qa_chain
@@ -137,6 +138,7 @@ class ChatParams(BaseModel):
     distance_strategy_name: str | None = None
     filter: dict[str, str | dict] | None = None
     source_docs: bool = False
+    multiquery: bool = False
 
 
 def conversation_chain(
@@ -160,6 +162,7 @@ def conversation_chain(
             (default empty list)
         conversation_callbacks: callback to handle conversation results
             (default empty list)
+        multiquery: flag for activate langchain's multiquery retriver
 
         can implement "vectordbkwargs" into quest_dict:
             {
@@ -229,9 +232,16 @@ def conversation_chain(
     # main chain, do all the jobs
     search_kwargs = {'k': chat_params.docs_num, 'filter': chat_params.filter}
 
+    retriever = docsearch.as_retriever(search_kwargs=search_kwargs)
+
+    final_retriever = MultiQueryRetriever.from_llm(
+        retriever=retriever,
+        llm=chatllm
+    ) if chat_params.multiquery else retriever
+
     conversation_callbacks.append(logging_handler)
     return ConversationalRetrievalChain(
-        retriever=docsearch.as_retriever(search_kwargs=search_kwargs),
+        retriever=final_retriever,
         combine_docs_chain=doc_chain,
         return_source_documents=chat_params.source_docs,
         question_generator=question_generator,

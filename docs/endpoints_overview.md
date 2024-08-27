@@ -16,7 +16,8 @@ Initiates a natural conversation with the model.
 }
 ```
 
-Same as the simple body, plus:
+**Optional Parameters**:
+
 `chat_history`: An array of previous questions and answers to provide context for the current query.
 
 ```JSON
@@ -35,6 +36,11 @@ Same as the simple body, plus:
     ]
 }
 ```
+
+`source_docs`: Set to true to return source documents.
+`docs_num`: Specify the number of documents to return.
+`token_data`: Set to true to return token-level data like part-of-speech tags.
+`multiquery`: Set to true to use MultiQueryRetriever from langchain.
 
 ### POST `/completion`
 
@@ -166,7 +172,6 @@ Updates an existing collection.
   }
 }
 ```
-
 
 In this example, we update the collection metadata to include additional information about the documents, such as their validity period, integration status, and category.
 

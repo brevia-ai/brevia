@@ -7,6 +7,7 @@ from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains.base import Chain
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chains.question_answering import load_qa_chain
+from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
 from langchain.chains.llm import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain.prompts import load_prompt
@@ -22,6 +23,7 @@ from brevia.collections import single_collection_by_name
 from brevia.callback import AsyncLoggingCallbackHandler
 from brevia.models import load_chatmodel, load_embeddings
 from brevia.settings import get_settings
+from brevia.utilities.types import load_type
 
 # system = load_prompt(f'{prompts_path}/qa/default.system.yaml')
 # jinja2 template from file was disabled by langchain so, for now
@@ -139,6 +141,29 @@ class ChatParams(BaseModel):
     source_docs: bool = False
 
 
+def create_retriever(
+        store: VectorStore,
+        search_kwargs: dict,
+        retriever_conf: dict | None = None,
+) -> VectorStoreRetriever:
+    """
+        Create a vector store retriever from a configuration.
+        If no retriever configuration is passed
+        a default retriever from vector store is created.
+    """
+    if not retriever_conf:
+        return store.as_retriever(search_kwargs=search_kwargs)
+
+    retriever_name = retriever_conf.pop('retriever', '')
+    retriever_class = load_type(retriever_name, VectorStoreRetriever)
+
+    return retriever_class(
+        vectorstore=store,
+        search_kwargs=search_kwargs,
+        **retriever_conf,
+    )
+
+
 def conversation_chain(
     collection: CollectionStore,
     chat_params: ChatParams,
@@ -228,10 +253,10 @@ def conversation_chain(
 
     # main chain, do all the jobs
     search_kwargs = {'k': chat_params.docs_num, 'filter': chat_params.filter}
-
+    retriever_conf = collection.cmetadata.get('qa_retriever')
     conversation_callbacks.append(logging_handler)
     return ConversationalRetrievalChain(
-        retriever=docsearch.as_retriever(search_kwargs=search_kwargs),
+        retriever=create_retriever(docsearch, search_kwargs, retriever_conf),
         combine_docs_chain=doc_chain,
         return_source_documents=chat_params.source_docs,
         question_generator=question_generator,

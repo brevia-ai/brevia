@@ -3,6 +3,8 @@ import pytest
 from langchain.prompts import BasePromptTemplate
 from langchain.chains import ConversationalRetrievalChain
 from langchain.docstore.document import Document
+from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
+from langchain.vectorstores.pgvector import PGVector
 from brevia.query import (
     conversation_chain,
     load_qa_prompt,
@@ -10,9 +12,12 @@ from brevia.query import (
     search_vector_qa,
     ChatParams,
     SearchQuery,
+    create_retriever,
 )
 from brevia.collections import create_collection
+from brevia.connection import connection_string
 from brevia.index import add_document
+from brevia.models import load_embeddings
 
 FAKE_PROMPT = {
     '_type': 'prompt',
@@ -121,3 +126,17 @@ def test_conversation_chain():
 
     assert chain is not None
     assert isinstance(chain, ConversationalRetrievalChain)
+
+
+def test_create_retriever():
+    """Test create_retriever function"""
+    conf = {'retriever': 'langchain_core.vectorstores.VectorStoreRetriever'}
+    store = PGVector(
+        connection_string=connection_string(),
+        embedding_function=load_embeddings(),
+        use_jsonb=True,
+    )
+    retriever = create_retriever(store, {}, conf)
+
+    assert retriever is not None
+    assert isinstance(retriever, VectorStoreRetriever)

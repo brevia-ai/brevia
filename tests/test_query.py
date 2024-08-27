@@ -3,7 +3,7 @@ import pytest
 from langchain.prompts import BasePromptTemplate
 from langchain.chains import ConversationalRetrievalChain
 from langchain.docstore.document import Document
-from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
+from langchain_core.vectorstores import VectorStoreRetriever
 from langchain.vectorstores.pgvector import PGVector
 from brevia.query import (
     conversation_chain,
@@ -12,7 +12,7 @@ from brevia.query import (
     search_vector_qa,
     ChatParams,
     SearchQuery,
-    create_retriever,
+    create_custom_retriever,
 )
 from brevia.collections import create_collection
 from brevia.connection import connection_string
@@ -128,15 +128,15 @@ def test_conversation_chain():
     assert isinstance(chain, ConversationalRetrievalChain)
 
 
-def test_create_retriever():
-    """Test create_retriever function"""
+def test_create_custom_retriever():
+    """Test create_custom_retriever function"""
     conf = {'retriever': 'langchain_core.vectorstores.VectorStoreRetriever'}
     store = PGVector(
         connection_string=connection_string(),
         embedding_function=load_embeddings(),
         use_jsonb=True,
     )
-    retriever = create_retriever(store, {}, conf)
+    retriever = create_custom_retriever(store, {}, conf)
 
     assert retriever is not None
     assert isinstance(retriever, VectorStoreRetriever)

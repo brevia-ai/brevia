@@ -1,12 +1,15 @@
 """Question-answering and search functions against a vector database."""
 from os import path
 from langchain.docstore.document import Document
+from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains.base import Chain
 from langchain.chains import ConversationalRetrievalChain
 from langchain.chains.question_answering import load_qa_chain
+from langchain_core.language_models import BaseLanguageModel
+from langchain_core.retrievers import BaseRetriever
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
 from langchain.chains.llm import LLMChain
 from langchain.prompts import PromptTemplate
@@ -139,21 +142,17 @@ class ChatParams(BaseModel):
     distance_strategy_name: str | None = None
     filter: dict[str, str | dict] | None = None
     source_docs: bool = False
+    multiquery: bool = False
 
 
-def create_retriever(
+def create_custom_retriever(
         store: VectorStore,
         search_kwargs: dict,
-        retriever_conf: dict | None = None,
+        retriever_conf: dict,
 ) -> VectorStoreRetriever:
     """
         Create a vector store retriever from a configuration.
-        If no retriever configuration is passed
-        a default retriever from vector store is created.
     """
-    if not retriever_conf:
-        return store.as_retriever(search_kwargs=search_kwargs)
-
     retriever_name = retriever_conf.pop('retriever', '')
     retriever_class = load_type(retriever_name, VectorStoreRetriever)
 
@@ -162,6 +161,24 @@ def create_retriever(
         search_kwargs=search_kwargs,
         **retriever_conf,
     )
+
+
+def create_default_retriever(
+        store: VectorStore,
+        search_kwargs: dict,
+        llm: BaseLanguageModel,
+        multiquery: bool = False,
+
+) -> BaseRetriever:
+    """
+        Create a default retriever.
+        Can be a vector store retriever or a multiquery retriever.
+    """
+    retriever = store.as_retriever(search_kwargs=search_kwargs)
+    if multiquery:
+        return MultiQueryRetriever.from_llm(retriever=retriever, llm=llm)
+
+    return retriever
 
 
 def conversation_chain(
@@ -185,6 +202,7 @@ def conversation_chain(
             (default empty list)
         conversation_callbacks: callback to handle conversation results
             (default empty list)
+        multiquery: flag for activate langchain's multiquery retriver
 
         can implement "vectordbkwargs" into quest_dict:
             {
@@ -254,9 +272,20 @@ def conversation_chain(
     # main chain, do all the jobs
     search_kwargs = {'k': chat_params.docs_num, 'filter': chat_params.filter}
     retriever_conf = collection.cmetadata.get('qa_retriever')
+    if not retriever_conf:
+        retriever = create_default_retriever(
+            store=docsearch,
+            search_kwargs=search_kwargs,
+            llm=chatllm,
+            multiquery=chat_params.multiquery,
+        )
+    else:   # custom retriever
+        retriever = create_custom_retriever(docsearch, search_kwargs, retriever_conf)
+
     conversation_callbacks.append(logging_handler)
+
     return ConversationalRetrievalChain(
-        retriever=create_retriever(docsearch, search_kwargs, retriever_conf),
+        retriever=retriever,
         combine_docs_chain=doc_chain,
         return_source_documents=chat_params.source_docs,
         question_generator=question_generator,

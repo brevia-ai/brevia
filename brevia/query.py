@@ -10,7 +10,7 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain.chains.question_answering import load_qa_chain
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.retrievers import BaseRetriever
-from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
+from langchain_core.vectorstores import VectorStore
 from langchain.chains.llm import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain.prompts import load_prompt
@@ -149,12 +149,12 @@ def create_custom_retriever(
         store: VectorStore,
         search_kwargs: dict,
         retriever_conf: dict,
-) -> VectorStoreRetriever:
+) -> BaseRetriever:
     """
-        Create a vector store retriever from a configuration.
+        Create a custom retriever from a configuration.
     """
     retriever_name = retriever_conf.pop('retriever', '')
-    retriever_class = load_type(retriever_name, VectorStoreRetriever)
+    retriever_class = load_type(retriever_name, BaseRetriever)
 
     return retriever_class(
         vectorstore=store,

@@ -7,11 +7,11 @@ import tempfile
 from typing import List, Any
 import requests
 from bs4 import BeautifulSoup
-from langchain.docstore.document import Document
 from langchain_community.document_loaders.html_bs import BSHTMLLoader
 from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_community.document_loaders.pdf import PyPDFLoader, UnstructuredPDFLoader
 from langchain_community.document_loaders.text import TextLoader
+from langchain_core.documents import Document
 
 
 def cleanup_text(text_in: str) -> str:

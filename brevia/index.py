@@ -1,11 +1,11 @@
 """Index document with embeddings in vector database."""
 from os import path
 from logging import getLogger
-from langchain.docstore.document import Document
-from langchain.text_splitter import NLTKTextSplitter
-from langchain.vectorstores.pgvector import PGVector
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgembedding import EmbeddingStore
+from langchain_community.vectorstores.pgvector import PGVector
+from langchain_core.documents import Document
+from langchain_text_splitters import NLTKTextSplitter
 from langchain_text_splitters.base import TextSplitter
 from requests import HTTPError
 from sqlalchemy.orm import Session

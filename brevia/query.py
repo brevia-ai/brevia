@@ -4,6 +4,9 @@ from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.chains.base import Chain
 from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
 from langchain.chains.question_answering import load_qa_chain
+from langchain_core.language_models import BaseLanguageModel
+from langchain_core.retrievers import BaseRetriever
+from langchain_core.vectorstores import VectorStore
 from langchain.chains.llm import LLMChain
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgvector import DistanceStrategy, PGVector
@@ -23,6 +26,7 @@ from brevia.collections import single_collection_by_name
 from brevia.callback import AsyncLoggingCallbackHandler
 from brevia.models import load_chatmodel, load_embeddings
 from brevia.settings import get_settings
+from brevia.utilities.types import load_type
 
 # system = load_prompt(f'{prompts_path}/qa/default.system.yaml')
 # jinja2 template from file was disabled by langchain so, for now
@@ -141,6 +145,42 @@ class ChatParams(BaseModel):
     multiquery: bool = False
 
 
+def create_custom_retriever(
+        store: VectorStore,
+        search_kwargs: dict,
+        retriever_conf: dict,
+) -> BaseRetriever:
+    """
+        Create a custom retriever from a configuration.
+    """
+    retriever_name = retriever_conf.pop('retriever', '')
+    retriever_class = load_type(retriever_name, BaseRetriever)
+
+    return retriever_class(
+        vectorstore=store,
+        search_kwargs=search_kwargs,
+        **retriever_conf,
+    )
+
+
+def create_default_retriever(
+        store: VectorStore,
+        search_kwargs: dict,
+        llm: BaseLanguageModel,
+        multiquery: bool = False,
+
+) -> BaseRetriever:
+    """
+        Create a default retriever.
+        Can be a vector store retriever or a multiquery retriever.
+    """
+    retriever = store.as_retriever(search_kwargs=search_kwargs)
+    if multiquery:
+        return MultiQueryRetriever.from_llm(retriever=retriever, llm=llm)
+
+    return retriever
+
+
 def conversation_chain(
     collection: CollectionStore,
     chat_params: ChatParams,
@@ -231,17 +271,21 @@ def conversation_chain(
 
     # main chain, do all the jobs
     search_kwargs = {'k': chat_params.docs_num, 'filter': chat_params.filter}
-
-    retriever = docsearch.as_retriever(search_kwargs=search_kwargs)
-
-    final_retriever = MultiQueryRetriever.from_llm(
-        retriever=retriever,
-        llm=chatllm
-    ) if chat_params.multiquery else retriever
+    retriever_conf = collection.cmetadata.get('qa_retriever')
+    if not retriever_conf:
+        retriever = create_default_retriever(
+            store=docsearch,
+            search_kwargs=search_kwargs,
+            llm=chatllm,
+            multiquery=chat_params.multiquery,
+        )
+    else:   # custom retriever
+        retriever = create_custom_retriever(docsearch, search_kwargs, retriever_conf)
 
     conversation_callbacks.append(logging_handler)
+
     return ConversationalRetrievalChain(
-        retriever=final_retriever,
+        retriever=retriever,
         combine_docs_chain=doc_chain,
         return_source_documents=chat_params.source_docs,
         question_generator=question_generator,

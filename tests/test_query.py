@@ -1,7 +1,7 @@
 """Query module tests"""
 import pytest
 from langchain.prompts import BasePromptTemplate
-from langchain.chains import ConversationalRetrievalChain
+from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
 from langchain.docstore.document import Document
 from langchain_core.vectorstores import VectorStoreRetriever
 from langchain.vectorstores.pgvector import PGVector

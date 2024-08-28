@@ -1,7 +1,7 @@
 """Utility functions to import files or folders."""
 import os
 from typing import List, Any
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 from brevia.index import add_document
 from brevia.load_file import load_documents
 

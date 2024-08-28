@@ -1,6 +1,6 @@
 """Services module tests"""
-import pytest
 from pathlib import Path
+import pytest
 from brevia.services import SummarizeFileService, SummarizeTextService
 
 

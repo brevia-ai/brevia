@@ -1,7 +1,7 @@
 """Query module tests"""
 import pytest
 from langchain.prompts import BasePromptTemplate
-from langchain.chains import ConversationalRetrievalChain
+from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
 from langchain.docstore.document import Document
 from brevia.query import (
     conversation_chain,

@@ -1,8 +1,8 @@
 """Tokens module tests"""
 import pytest
+from jose import jwt, JWTError
 from brevia.tokens import create_token, verify_token, ALGORITHM
 from brevia.settings import get_settings
-from jose import jwt, JWTError
 
 
 def test_verify_token():

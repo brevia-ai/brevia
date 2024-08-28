@@ -1,16 +1,16 @@
 """Index module tests"""
 from pathlib import Path
+from unittest.mock import patch
 from h11 import Response
 import pytest
 from requests import HTTPError
+from langchain.docstore.document import Document
 from brevia.index import (
     load_pdf_file, update_links_documents,
     add_document, document_has_changed, select_load_link_options,
     documents_metadata,
 )
 from brevia.collections import create_collection
-from langchain.docstore.document import Document
-from unittest.mock import patch
 
 
 def test_load_pdf_file():

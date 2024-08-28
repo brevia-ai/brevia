@@ -1,22 +1,22 @@
 """Question-answering and search functions against a vector database."""
 from os import path
-from langchain.docstore.document import Document
 from langchain.retrievers.multi_query import MultiQueryRetriever
-from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
-from langchain_community.vectorstores.pgembedding import CollectionStore
-from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains.base import Chain
-from langchain.chains import ConversationalRetrievalChain
+from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains.llm import LLMChain
-from langchain.prompts import PromptTemplate
-from langchain.prompts import load_prompt
-from langchain.prompts import (
+from langchain_community.vectorstores.pgembedding import CollectionStore
+from langchain_community.vectorstores.pgvector import DistanceStrategy, PGVector
+from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.documents import Document
+from langchain_core.prompts import (
     ChatPromptTemplate,
-    SystemMessagePromptTemplate,
     HumanMessagePromptTemplate,
+    PromptTemplate,
+    SystemMessagePromptTemplate,
+    load_prompt,
 )
-from langchain.prompts.loading import load_prompt_from_config
+from langchain_core.prompts.loading import load_prompt_from_config
 from pydantic import BaseModel
 from brevia.connection import connection_string
 from brevia.collections import single_collection_by_name
@@ -100,7 +100,7 @@ class SearchQuery(BaseModel):
     query: str
     collection: str
     docs_num: int | None = None
-    distance_strategy_name: str = 'cosine',
+    distance_strategy_name: str = 'cosine'
     filter: dict[str, str | dict | list] | None = None
 
 

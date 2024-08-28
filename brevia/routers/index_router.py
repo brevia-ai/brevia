@@ -6,8 +6,8 @@ import re
 import logging
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, Request, status, UploadFile, Form
-from langchain.docstore.document import Document
 from langchain_community.vectorstores.pgembedding import CollectionStore
+from langchain_core.documents import Document
 from brevia.dependencies import (
     get_dependencies,
     save_upload_file_tmp,

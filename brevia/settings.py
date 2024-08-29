@@ -40,9 +40,10 @@ class Settings(BaseSettings):
     # Test models - only in unit tests
     use_test_models: bool = False
 
-    # Index - textsplitter settings
+    # Index - text splitter settings
     text_chunk_size: int = 2000
     text_chunk_overlap: int = 200
+    text_splitter: Json[dict[str, Any]] = '{}'  # custom splitter settings
 
     # Search
     search_docs_num: int = 4
@@ -83,6 +84,7 @@ class Settings(BaseSettings):
     # QA
     qa_no_chat_history: bool = False  # don't load chat history
     qa_followup_sim_threshold: float = 0.735  # similitude threshold in followup
+    qa_retriever: Json[dict[str, Any]] = '{}'  # custom retriever settings
     feature_qa_lang_detect: bool = False
 
     # Summarization

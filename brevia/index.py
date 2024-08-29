@@ -70,8 +70,12 @@ def add_document(
 ) -> int:
     """ Add document to index and return number of splitted text chunks"""
     collection = single_collection_by_name(collection_name)
+    settings = get_settings()
     embed_conf = collection.cmetadata.get('embeddings', None) if collection else None
-    split_conf = collection.cmetadata.get('text_splitter', None) if collection else None
+    split_conf = collection.cmetadata.get(
+        'text_splitter',
+        settings.text_splitter.copy()
+    ) if collection else None
 
     texts = split_document(document, split_conf)
     PGVector.from_documents(
@@ -86,7 +90,9 @@ def add_document(
     return len(texts)
 
 
-def split_document(document: Document, split_conf: dict | None = None):
+def split_document(
+    document: Document, split_conf: dict | None = None
+) -> list[Document]:
     """ Split document into text chunks and return a list of documents"""
     if not split_conf:
         text_splitter = create_default_splitter()

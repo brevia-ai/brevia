@@ -271,7 +271,10 @@ def conversation_chain(
 
     # main chain, do all the jobs
     search_kwargs = {'k': chat_params.docs_num, 'filter': chat_params.filter}
-    retriever_conf = collection.cmetadata.get('qa_retriever')
+    retriever_conf = collection.cmetadata.get(
+        'qa_retriever',
+        settings.qa_retriever.copy()
+    )
     if not retriever_conf:
         retriever = create_default_retriever(
             store=docsearch,

@@ -100,6 +100,20 @@ TEXT_CHUNK_SIZE=2000
 TEXT_CHUNK_OVERLAP=100
 ```
 
+`TEXT_SPLITTER`
+This variable is an optional JSON string configuration, used to override the default text splitter
+
+Can be something like:
+
+`'{"splitter": "my_project.CustomSplitter", "some_var": "some_value"}'`
+
+Where:
+
+* `splitter` key must be present and point to a module path of a valid
+   retriever class extending langchain `TextSplitter`
+* other splitter constructor attributes can be specified in the configuration,
+    like `some_var` in the above example
+
 ## Q&A and Chat
 
 Under the hood of Q&A and Chat actions (see [Chat and Search](chat_search.md) section) you can configure models and behaviors via these variables:
@@ -109,6 +123,7 @@ Under the hood of Q&A and Chat actions (see [Chat and Search](chat_search.md) se
 * `QA_FOLLOWUP_SIM_THRESHOLD`: a numeric value between 0 and 1 indicating similarity threshold between questions to determine if chat history should be used, defaults to `0.735`
 * `QA_NO_CHAT_HISTORY`: disables chat history entirely if set to `True` or any other value
 * `SEARCH_DOCS_NUM`: default number of documents used to search for answers, defaults to `4`
+* `QA_RETRIEVER`: optional configuration for a custom retriever class, used by `/chat`  endpoint, it's a JSON string defining a custom class and optional attributes; an example configuration can be `'{"retriever": "my_project.CustomRetriever", "some_var": "some_value"}'` where `retriever` key must be present with a module path pointing to a valid retriever class extending langchain `BaseRetriever` whereas other constructor attributes can be specified in the configuration, like `some_var` in the above example
 
 ## Summarization
 

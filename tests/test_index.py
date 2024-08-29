@@ -11,6 +11,7 @@ from brevia.index import (
     documents_metadata,
 )
 from brevia.collections import create_collection
+from brevia.settings import get_settings
 
 
 def test_load_pdf_file():
@@ -109,9 +110,23 @@ def test_select_load_link_options():
 
 
 def test_custom_split():
-    """Test split_documents method with cuseom splitter class"""
+    """Test split_documents method with custom splitter class"""
     doc1 = Document(page_content='some content? no', metadata={'type': 'questions'})
     cls = 'langchain_text_splitters.character.RecursiveCharacterTextSplitter'
     texts = split_document(doc1, {'splitter': cls})
 
     assert len(texts) == 1
+
+
+def test_add_document_custom_split():
+    """Test add_document method with custom splitter in settings"""
+    settings = get_settings()
+    current_splitter = settings.text_splitter
+    settings.text_splitter = {
+        'splitter': 'langchain_text_splitters.character.RecursiveCharacterTextSplitter'
+    }
+    doc1 = Document(page_content='some content? no', metadata={'type': 'questions'})
+    num = add_document(document=doc1, collection_name='test')
+    assert num == 1
+
+    settings.text_splitter = current_splitter

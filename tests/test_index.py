@@ -6,7 +6,7 @@ import pytest
 from requests import HTTPError
 from langchain.docstore.document import Document
 from brevia.index import (
-    load_pdf_file, update_links_documents,
+    load_pdf_file, split_document, update_links_documents,
     add_document, document_has_changed, select_load_link_options,
     documents_metadata,
 )
@@ -106,3 +106,12 @@ def test_select_load_link_options():
 
     result = select_load_link_options(url='someurl.org', options=options)
     assert result == {}
+
+
+def test_custom_split():
+    """Test split_documents method with cuseom splitter class"""
+    doc1 = Document(page_content='some content? no', metadata={'type': 'questions'})
+    cls = 'langchain_text_splitters.character.RecursiveCharacterTextSplitter'
+    texts = split_document(doc1, {'splitter': cls})
+
+    assert len(texts) == 1

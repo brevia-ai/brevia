@@ -6,6 +6,7 @@ from langchain_community.vectorstores.pgembedding import EmbeddingStore
 from langchain_community.vectorstores.pgvector import PGVector
 from langchain_core.documents import Document
 from langchain_text_splitters import NLTKTextSplitter
+from langchain_text_splitters.base import TextSplitter
 from requests import HTTPError
 from sqlalchemy.orm import Session
 from brevia import connection, load_file
@@ -13,6 +14,7 @@ from brevia.collections import single_collection_by_name
 from brevia.models import load_embeddings
 from brevia.settings import get_settings
 from brevia.utilities.json_api import query_data_pagination
+from brevia.utilities.types import load_type
 
 
 def init_index():
@@ -67,9 +69,13 @@ def add_document(
     document_id: str = None,
 ) -> int:
     """ Add document to index and return number of splitted text chunks"""
-    texts = split_document(document)
+    collection = single_collection_by_name(collection_name)
+    embed_conf = collection.cmetadata.get('embeddings', None) if collection else None
+    split_conf = collection.cmetadata.get('text_splitter', None) if collection else None
+
+    texts = split_document(document, split_conf)
     PGVector.from_documents(
-        embedding=load_embeddings(collection_embeddings(collection_name)),
+        embedding=load_embeddings(embed_conf),
         documents=texts,
         collection_name=collection_name,
         connection_string=connection.connection_string(),
@@ -80,29 +86,38 @@ def add_document(
     return len(texts)
 
 
-def collection_embeddings(collection_name: str) -> dict | None:
-    """ Return custom embeddings of a collection"""
-    collection = single_collection_by_name(collection_name)
-    if collection is None:
-        return None
-
-    return collection.cmetadata.get('embeddings', None)
-
-
-def split_document(document: Document):
+def split_document(document: Document, split_conf: dict | None = None):
     """ Split document into text chunks and return a list of documents"""
-    settings = get_settings()
-    text_splitter = NLTKTextSplitter(
-        separator="\n",
-        chunk_size=settings.text_chunk_size,
-        chunk_overlap=settings.text_chunk_overlap
-    )
+    if not split_conf:
+        text_splitter = create_default_splitter()
+    else:
+        text_splitter = create_custom_splitter(split_conf)
+
     texts = text_splitter.split_documents([document])
     counter = 1
     for text in texts:
         text.metadata['part'] = counter
         counter += 1
     return texts
+
+
+def create_default_splitter() -> TextSplitter:
+    """ Create default text splitter"""
+    settings = get_settings()
+
+    return NLTKTextSplitter(
+        separator="\n",
+        chunk_size=settings.text_chunk_size,
+        chunk_overlap=settings.text_chunk_overlap
+    )
+
+
+def create_custom_splitter(split_conf: dict) -> TextSplitter:
+    """ Create custom text splitter"""
+    splitter_name = split_conf.pop('splitter', '')
+    splitter_class = load_type(splitter_name, TextSplitter)
+
+    return splitter_class(**split_conf)
 
 
 def remove_document(

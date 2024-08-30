@@ -2,13 +2,15 @@
 from pathlib import Path
 from unittest.mock import patch
 from h11 import Response
+from langchain_text_splitters import NLTKTextSplitter
+from langchain_text_splitters.character import RecursiveCharacterTextSplitter
 import pytest
 from requests import HTTPError
 from langchain.docstore.document import Document
 from brevia.index import (
     load_pdf_file, split_document, update_links_documents,
     add_document, document_has_changed, select_load_link_options,
-    documents_metadata,
+    documents_metadata, create_splitter,
 )
 from brevia.collections import create_collection
 from brevia.settings import get_settings
@@ -130,3 +132,33 @@ def test_add_document_custom_split():
     assert num == 1
 
     settings.text_splitter = current_splitter
+
+
+def test_create_splitter_chunk_params():
+    """Test create_splitter method"""
+    splitter = create_splitter({'chunk_size': 2222, 'chunk_overlap': 333})
+
+    assert isinstance(splitter, NLTKTextSplitter)
+    assert splitter._chunk_size == 2222
+    assert splitter._chunk_overlap == 333
+
+    splitter = create_splitter({})
+
+    assert isinstance(splitter, NLTKTextSplitter)
+    assert splitter._chunk_size == get_settings().text_chunk_size
+    assert splitter._chunk_overlap == get_settings().text_chunk_overlap
+
+    custom_splitter = {
+        'splitter': 'langchain_text_splitters.character.RecursiveCharacterTextSplitter',
+        'chunk_size': 1111,
+        'chunk_overlap': 555,
+    }
+    splitter = create_splitter({
+        'chunk_size': 3333,
+        'chunk_overlap': 444,
+        'text_splitter': custom_splitter,
+    })
+
+    assert isinstance(splitter, RecursiveCharacterTextSplitter)
+    assert splitter._chunk_size == 1111
+    assert splitter._chunk_overlap == 555

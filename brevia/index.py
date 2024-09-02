@@ -71,9 +71,10 @@ def add_document(
     """ Add document to index and return number of splitted text chunks"""
     collection = single_collection_by_name(collection_name)
     embed_conf = collection.cmetadata.get('embeddings', None) if collection else None
-    split_conf = collection.cmetadata.get('text_splitter', None) if collection else None
-
-    texts = split_document(document, split_conf)
+    texts = split_document(
+        document=document,
+        collection_meta=collection.cmetadata if collection else {},
+    )
     PGVector.from_documents(
         embedding=load_embeddings(embed_conf),
         documents=texts,
@@ -86,13 +87,11 @@ def add_document(
     return len(texts)
 
 
-def split_document(document: Document, split_conf: dict | None = None):
+def split_document(
+    document: Document, collection_meta: dict = {}
+) -> list[Document]:
     """ Split document into text chunks and return a list of documents"""
-    if not split_conf:
-        text_splitter = create_default_splitter()
-    else:
-        text_splitter = create_custom_splitter(split_conf)
-
+    text_splitter = create_splitter(collection_meta)
     texts = text_splitter.split_documents([document])
     counter = 1
     for text in texts:
@@ -101,15 +100,26 @@ def split_document(document: Document, split_conf: dict | None = None):
     return texts
 
 
-def create_default_splitter() -> TextSplitter:
-    """ Create default text splitter"""
+def create_splitter(collection_meta: dict) -> TextSplitter:
+    """ Create text splitter"""
     settings = get_settings()
-
-    return NLTKTextSplitter(
-        separator="\n",
-        chunk_size=settings.text_chunk_size,
-        chunk_overlap=settings.text_chunk_overlap
+    custom_splitter = collection_meta.get(
+        'text_splitter',
+        settings.text_splitter.copy()
     )
+    chunk_size = collection_meta.get('chunk_size', settings.text_chunk_size)
+    chunk_overlap = collection_meta.get('chunk_overlap', settings.text_chunk_overlap)
+
+    if not custom_splitter:
+        return NLTKTextSplitter(
+            separator="\n",
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
+        )
+
+    chunk_conf = {'chunk_size': chunk_size, 'chunk_overlap': chunk_overlap}
+
+    return create_custom_splitter({**chunk_conf, **custom_splitter})
 
 
 def create_custom_splitter(split_conf: dict) -> TextSplitter:

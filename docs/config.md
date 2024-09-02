@@ -100,21 +100,36 @@ TEXT_CHUNK_SIZE=2000
 TEXT_CHUNK_OVERLAP=100
 ```
 
+`TEXT_SPLITTER`
+This variable is an optional JSON string configuration, used to override the default text splitter
+
+Can be something like:
+
+`'{"splitter": "my_project.CustomSplitter", "some_var": "some_value"}'`
+
+Where:
+
+* `splitter` key must be present and point to a module path of a valid
+   retriever class extending langchain `TextSplitter`
+* other splitter constructor attributes can be specified in the configuration,
+    like `some_var` in the above example
+
 ## Q&A and Chat
 
 Under the hood of Q&A and Chat actions (see [Chat and Search](chat_search.md) section) you can configure models and behaviors via these variables:
 
-* `QA_COMPLETION_LLM`: configuration for the main conversational model, used by `/chat` and `/completion` endpoints; a JSON string is used to configure the corresponding LangChain chat model class; an OpenAI instance is used as default: `'{"_type": "openai-chat", "model_name": "gpt-3.5-turbo-16k", "temperature": 0, "max_tokens": 1000, "verbose": true}'` where for instance `model_name` and other attributes can be adjusted to meet your needs
-* `QA_FOLLOWUP_LLM`: configuration for the follow-up question model, used by `/chat` endpoint defining a follow up question for a conversation usgin chat history; a JSON string; an OpenAI instance used as default `'{"_type": "openai-chat", "model_name": "gpt-3.5-turbo-16k", "temperature": 0, "max_tokens": 200, "verbose": true}'`
+* `QA_COMPLETION_LLM`: configuration for the main conversational model, used by `/chat` and `/completion` endpoints; a JSON string is used to configure the corresponding LangChain chat model class; an OpenAI instance is used as default: `'{"_type": "openai-chat", "model_name": "gpt-4o-mini", "temperature": 0, "max_tokens": 1000, "verbose": true}'` where for instance `model_name` and other attributes can be adjusted to meet your needs
+* `QA_FOLLOWUP_LLM`: configuration for the follow-up question model, used by `/chat` endpoint defining a follow up question for a conversation usgin chat history; a JSON string; an OpenAI instance used as default `'{"_type": "openai-chat", "model_name": "gpt-4o-mini", "temperature": 0, "max_tokens": 200, "verbose": true}'`
 * `QA_FOLLOWUP_SIM_THRESHOLD`: a numeric value between 0 and 1 indicating similarity threshold between questions to determine if chat history should be used, defaults to `0.735`
 * `QA_NO_CHAT_HISTORY`: disables chat history entirely if set to `True` or any other value
 * `SEARCH_DOCS_NUM`: default number of documents used to search for answers, defaults to `4`
+* `QA_RETRIEVER`: optional configuration for a custom retriever class, used by `/chat`  endpoint, it's a JSON string defining a custom class and optional attributes; an example configuration can be `'{"retriever": "my_project.CustomRetriever", "some_var": "some_value"}'` where `retriever` key must be present with a module path pointing to a valid retriever class extending langchain `BaseRetriever` whereas other constructor attributes can be specified in the configuration, like `some_var` in the above example
 
 ## Summarization
 
 To configure summarize related actions in `/summarize` or `/upload_summarize` endpoints the related environment variables are:
 
-* `SUMMARIZE_LLM`: the LLM to be used, a JSON string using the same format of `QA_COMPLETION_LLM` in the above paragraph; defatults to an OpenAI instance `'{"_type": "openai-chat", "model_name": "gpt-3.5-turbo-16k", "temperature": 0, "max_tokens": 2000}'`
+* `SUMMARIZE_LLM`: the LLM to be used, a JSON string using the same format of `QA_COMPLETION_LLM` in the above paragraph; defatults to an OpenAI instance `'{"_type": "openai-chat", "model_name": "gpt-4o", "temperature": 0, "max_tokens": 2000}'`
 * `SUMM_TOKEN_SPLITTER`: the maximum size of individual text chunks processed during summarization, defaults to `4000` - see `TEXT_CHUNK_SIZE` in [Text Segmentation](#text-segmentation) paragraph
 * `SUMM_TOKEN_OVERLAP`: the amount of overlap between consecutive text chunks, defaults to `500` - see `TEXT_CHUNK_OVERLAP` in [Text Segmentation](#text-segmentation) paragraph
 * `SUMM_DEFAULT_CHAIN`: chain type to be used if not specified, defaults to `stuff`

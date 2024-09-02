@@ -40,9 +40,10 @@ class Settings(BaseSettings):
     # Test models - only in unit tests
     use_test_models: bool = False
 
-    # Index - textsplitter settings
+    # Index - text splitter settings
     text_chunk_size: int = 2000
     text_chunk_overlap: int = 200
+    text_splitter: Json[dict[str, Any]] = '{}'  # custom splitter settings
 
     # Search
     search_docs_num: int = 4
@@ -50,21 +51,21 @@ class Settings(BaseSettings):
     # LLM settings
     qa_completion_llm: Json[dict[str, Any]] = """{
         "_type": "openai-chat",
-        "model_name": "gpt-3.5-turbo-16k",
+        "model_name": "gpt-4o-mini",
         "temperature": 0,
         "max_tokens": 1000,
         "verbose": true
     }"""
     qa_followup_llm: Json[dict[str, Any]] = """{
         "_type": "openai-chat",
-        "model_name": "gpt-3.5-turbo-16k",
+        "model_name": "gpt-4o-mini",
         "temperature": 0,
         "max_tokens": 200,
         "verbose": true
     }"""
     summarize_llm: Json[dict[str, Any]] = """{
         "_type": "openai-chat",
-        "model_name": "gpt-3.5-turbo-16k",
+        "model_name": "gpt-4o",
         "temperature": 0,
         "max_tokens": 2000
     }"""
@@ -83,6 +84,7 @@ class Settings(BaseSettings):
     # QA
     qa_no_chat_history: bool = False  # don't load chat history
     qa_followup_sim_threshold: float = 0.735  # similitude threshold in followup
+    qa_retriever: Json[dict[str, Any]] = '{}'  # custom retriever settings
     feature_qa_lang_detect: bool = False
 
     # Summarization

@@ -40,7 +40,7 @@ QA_FOLLOWUP_LLM='{
 }'
 ```
 
-Replace `your_llm_type` and `your_llm_model` with your chosen LLM provider and specific model (e.g., "openai-chat", "gpt-3.5-turbo-16k").
+Replace `your_llm_type` and `your_llm_model` with your chosen LLM provider and specific model (e.g., "openai-chat", "gpt-4o-mini").
 Adjust `temperature` and `max_tokens` parameters as needed.
 
 ## Database

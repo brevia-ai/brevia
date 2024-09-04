@@ -70,11 +70,11 @@ def add_document(
 ) -> int:
     """ Add document to index and return number of splitted text chunks"""
     collection = single_collection_by_name(collection_name)
-    collection_meta = collection.cmetadata if collection and collection.cmetadata else {}
-    embed_conf = collection_meta.get('embeddings', None)
+    coll_meta = collection.cmetadata if collection and collection.cmetadata else {}
+    embed_conf = coll_meta.get('embeddings', None)
     texts = split_document(
         document=document,
-        collection_meta=collection_meta,
+        collection_meta=coll_meta,
     )
     PGVector.from_documents(
         embedding=load_embeddings(embed_conf),
@@ -108,8 +108,10 @@ def create_splitter(collection_meta: dict) -> TextSplitter:
         'text_splitter',
         settings.text_splitter.copy()
     )
-    chunk_size = collection_meta.get('chunk_size', settings.text_chunk_size)
-    chunk_overlap = collection_meta.get('chunk_overlap', settings.text_chunk_overlap)
+    chunk_size = int(collection_meta.get('chunk_size', settings.text_chunk_size))
+    chunk_overlap = int(
+        collection_meta.get('chunk_overlap', settings.text_chunk_overlap)
+    )
 
     if not custom_splitter:
         return NLTKTextSplitter(

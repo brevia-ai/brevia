@@ -31,10 +31,10 @@ def load_file_folder_documents(file_path: str, **kwargs: Any) -> List[Document]:
     if os.path.isdir(file_path):
         docs = []
         for file in os.listdir(file_path):
-            docs += Document(
+            docs.append(Document(
                 page_content=read(file_path=f'{file_path}/{file}', **kwargs),
                 metadata={'type': 'files', 'path': file_path},
-            )
+            ))
         return docs
 
     doc = Document(

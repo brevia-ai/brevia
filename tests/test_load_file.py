@@ -61,9 +61,17 @@ def test_load_documents():
     assert len(docs) == 1
 
 
+def test_read_fail():
+    """Test read failure"""
+    file_path = f'{Path(__file__).parent}/files/silence.mp3'
+    with pytest.raises(ValueError) as exc:
+        read(file_path=file_path)
+    assert str(exc.value) == 'Unsupported file content type "audio/mpeg"'
+
+
 def test_load_documents_fail():
     """Test load_documents failure"""
     file_path = f'{Path(__file__).parent}/files/silence.mp3'
     with pytest.raises(ValueError) as exc:
-        read(file_path=file_path)
+        load_documents(file_path=file_path)
     assert str(exc.value) == 'Unsupported file content type "audio/mpeg"'

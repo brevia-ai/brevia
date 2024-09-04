@@ -3,7 +3,7 @@ import os
 from typing import List, Any
 from langchain_core.documents import Document
 from brevia.index import add_document
-from brevia.load_file import load_documents
+from brevia.load_file import read
 
 
 def index_file_folder(
@@ -31,7 +31,15 @@ def load_file_folder_documents(file_path: str, **kwargs: Any) -> List[Document]:
     if os.path.isdir(file_path):
         docs = []
         for file in os.listdir(file_path):
-            docs += load_documents(file_path=f'{file_path}/{file}', **kwargs)
+            docs.append(Document(
+                page_content=read(file_path=f'{file_path}/{file}', **kwargs),
+                metadata={'type': 'files', 'path': file_path},
+            ))
         return docs
 
-    return load_documents(file_path=file_path, **kwargs)
+    doc = Document(
+        page_content=read(file_path=file_path, **kwargs),
+        metadata={'type': 'files', 'path': file_path},
+    )
+
+    return [doc]

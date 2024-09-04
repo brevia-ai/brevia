@@ -5,6 +5,8 @@ from importlib import import_module
 import mimetypes
 import tempfile
 from typing import List, Any
+from urllib.parse import urlparse
+from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 from langchain_community.document_loaders.html_bs import BSHTMLLoader
@@ -80,25 +82,35 @@ def read_txt_file(
     return cleanup_text(text).strip()
 
 
+def read_csv_file(
+    file_path: str,
+) -> str:
+    """
+    Load CSV file and return its content
+    """
+    docs = load_documents_csv(file_path=file_path)
+
+    return ' '.join([cleanup_text(item.page_content) for item in docs]).strip()
+
+
 def read(
     file_path: str,
     **loader_kwargs: Any,
 ) -> str:
     """
-    Load text from a txt o pdf file (for now, more formats to come)
+    Load text from a file, see `MIME_TYPES_READERS` for supported content types
     """
 
     if not os.path.isfile(file_path):
         raise FileNotFoundError(file_path)
 
     mtype = mimetypes.guess_type(file_path)[0]
-    if mtype not in ['application/pdf', 'text/plain']:
+    if mtype not in MIME_TYPES_LOADERS:
         raise ValueError(f'Unsupported file content type "{mtype}"')
 
-    if mtype == 'application/pdf':
-        return read_pdf_file(file_path=file_path, **loader_kwargs)
+    read_function = MIME_TYPES_READERS[mtype]
 
-    return read_txt_file(file_path=file_path)
+    return read_function(file_path, **loader_kwargs)
 
 
 def read_html_url(
@@ -108,13 +120,21 @@ def read_html_url(
     """
     Load text from HTML content of web page URL
     """
+    parsed_url = urlparse(url)
+    remote = True if parsed_url.scheme not in ['file', ''] else False
     temp_file = tempfile.NamedTemporaryFile(delete=False)
-    response = requests.get(url)
-    response.raise_for_status()
+    if remote:
+        response = requests.get(url)
+        response.raise_for_status()
+        text = response.text
+    else:
+        text = Path(url).read_text()
+
     with open(temp_file.name, 'w') as file:  # pylint: disable=missing-timeout
-        file.write(filter_html(html=response.text,
-                               selector=loader_kwargs.pop('selector', ''),
-                               callback=loader_kwargs.pop('callback', '')))
+        content = filter_html(
+            html=text, selector=loader_kwargs.pop('selector', ''),
+            callback=loader_kwargs.pop('callback', ''))
+        file.write(content)
     loader = BSHTMLLoader(file_path=temp_file.name, **loader_kwargs)
     docs = loader.load()
     os.unlink(temp_file.name)
@@ -180,4 +200,11 @@ MIME_TYPES_LOADERS = {
     'text/plain': load_documents_txt,
     'text/csv': load_documents_csv,
     'text/html': load_documents_html,
+}
+
+MIME_TYPES_READERS = {
+    'application/pdf': read_pdf_file,
+    'text/plain': read_txt_file,
+    'text/csv': read_csv_file,
+    'text/html': read_html_url,
 }

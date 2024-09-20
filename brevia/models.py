@@ -1,12 +1,11 @@
 """Utilities to create langchain LLM and Chat Model instances."""
 from abc import ABC, abstractmethod
 from typing import Any
-from langchain.llms.loading import load_llm_from_config
-from langchain.llms.base import BaseLLM
-from langchain.chat_models.base import BaseChatModel
 from langchain_core.embeddings import Embeddings
+from langchain_core.language_models import BaseChatModel, BaseLLM
 from langchain_community.chat_models.fake import FakeListChatModel
 from langchain_community.llms.fake import FakeListLLM
+from langchain_community.llms.loading import load_llm_from_config
 from langchain_community.embeddings.fake import FakeEmbeddings
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from openai import OpenAI
@@ -103,13 +102,13 @@ EMBEDDING_TYPES: dict[str, BaseChatModel] = {
 }
 
 
-def load_embeddings() -> Embeddings:
+def load_embeddings(custom_conf: dict | None = None) -> Embeddings:
     """ Load Embeddings engine """
     settings = get_settings()
     if test_models_in_use():
         return FakeEmbeddings(size=settings.embeddings_size)
 
-    config = settings.embeddings.copy()
+    config = settings.embeddings.copy() if not custom_conf else custom_conf
     config_type = config.pop('_type', None)
     if config_type not in EMBEDDING_TYPES:
         raise ValueError(f'Loading "{config_type}" Embeddings not supported')

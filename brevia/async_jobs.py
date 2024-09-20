@@ -1,5 +1,4 @@
 """Async Jobs table & utilities"""
-import importlib
 import logging
 import time
 from datetime import datetime
@@ -9,6 +8,7 @@ from sqlalchemy.orm import Session
 from langchain_community.vectorstores.pgembedding import BaseModel
 from brevia.connection import db_connection
 from brevia.services import BaseService
+from brevia.utilities.types import load_type
 
 MAX_DURATION = 120  # default max duration is 120 min / 2hr
 MAX_ATTEMPTS = 1  # default max number of attempts
@@ -109,13 +109,7 @@ def save_job_result(job_store: AsyncJobsStore, result: dict, error: bool = False
 
 def create_service(service: str) -> BaseService:
     """ Create job service from string """
-    module_name, class_name = service.rsplit('.', 1)
-    module = importlib.import_module(module_name)
-    if not hasattr(module, class_name):
-        raise ValueError(f'Class "{class_name}" not found in "{module}"')
-    service_class = getattr(module, class_name)
-    if not issubclass(service_class, BaseService):
-        raise ValueError(f'Class "{class_name}" must extend "BaseService"')
+    service_class = load_type(service, BaseService)
 
     return service_class()
 

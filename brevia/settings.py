@@ -1,4 +1,5 @@
 """Settings module"""
+import logging
 from functools import lru_cache
 from typing import Any
 from os import environ
@@ -13,6 +14,8 @@ class Settings(BaseSettings):
     )
 
     verbose_mode: bool = False
+
+    # Postgres+pgvector vector db
     pgvector_host: str = 'localhost'
     pgvector_driver: str = 'psycopg2'
     pgvector_port: int = 5432
@@ -20,6 +23,8 @@ class Settings(BaseSettings):
     pgvector_user: str = ''
     pgvector_password: str = ''
     pgvector_pool_size: int = 10
+    # optional DSN URI, if set other pgvector_* settings are ignored
+    pgvector_dsn_uri: str = ''
 
     # Tokens
     tokens_secret: str = ''
@@ -27,41 +32,48 @@ class Settings(BaseSettings):
     status_token: str = ''
 
     # API keys, tokens...
+    # You should use `brevia_env_secrets` to store secrets that
+    # must be available as environment variables
     openai_api_key: str = ''
     cohere_api_key: str = ''
 
     # Test models - only in unit tests
     use_test_models: bool = False
 
-    # Index - textsplitter settings
+    # Index - text splitter settings
     text_chunk_size: int = 2000
     text_chunk_overlap: int = 200
+    text_splitter: Json[dict[str, Any]] = '{}'  # custom splitter settings
 
     # Search
     search_docs_num: int = 4
 
     # LLM settings
-    qa_completion_llm: Json = """{
+    qa_completion_llm: Json[dict[str, Any]] = """{
         "_type": "openai-chat",
-        "model_name": "gpt-3.5-turbo-16k",
+        "model_name": "gpt-4o-mini",
         "temperature": 0,
         "max_tokens": 1000,
         "verbose": true
     }"""
-
-    qa_followup_llm: Json = """{
+    qa_followup_llm: Json[dict[str, Any]] = """{
         "_type": "openai-chat",
-        "model_name": "gpt-3.5-turbo-16k",
+        "model_name": "gpt-4o-mini",
         "temperature": 0,
         "max_tokens": 200,
         "verbose": true
     }"""
-    summarize_llm: Json = """{
+    summarize_llm: Json[dict[str, Any]] = """{
         "_type": "openai-chat",
-        "model_name": "gpt-3.5-turbo-16k",
+        "model_name": "gpt-4o",
         "temperature": 0,
         "max_tokens": 2000
     }"""
+
+    # Environment secrets, dictionary of variables that must be present as environment
+    # variables
+    # (Pydantic throws an error using SecretStr as dict value type)
+    brevia_env_secrets: Json[dict[str, str]] = '{}'
 
     # Embeddings
     embeddings: Json = '{"_type": "openai-embeddings"}'
@@ -72,18 +84,13 @@ class Settings(BaseSettings):
     # QA
     qa_no_chat_history: bool = False  # don't load chat history
     qa_followup_sim_threshold: float = 0.735  # similitude threshold in followup
+    qa_retriever: Json[dict[str, Any]] = '{}'  # custom retriever settings
     feature_qa_lang_detect: bool = False
 
     # Summarization
     summ_default_chain: str = 'stuff'
     summ_token_splitter: int = 4000
     summ_token_overlap: int = 500
-
-    # langsmith
-    langchain_tracing_v2: bool = False
-    langchain_endpoint: str = ''
-    langchain_api_key: str = ''
-    langchain_project: str = ''
 
     # App metadata
     block_openapi_urls: bool = False
@@ -100,15 +107,16 @@ class Settings(BaseSettings):
 
     def setup_environment(self):
         """Setup some useful environment variables"""
+        log = logging.getLogger(__name__)
+        for key in self.brevia_env_secrets.keys():
+            environ[key] = self.brevia_env_secrets.get(key)
+            log.info('"%s" env var set', key)
         if self.openai_api_key:
             environ['OPENAI_API_KEY'] = self.openai_api_key
+            log.info('"OPENAI_API_KEY" env var set')
         if self.cohere_api_key:
             environ['COHERE_API_KEY'] = self.cohere_api_key
-        if self.langchain_tracing_v2:
-            environ['LANGCHAIN_TRACING_V2'] = "true"
-            environ['LANGCHAIN_ENDPOINT'] = self.langchain_endpoint
-            environ['LANGCHAIN_API_KEY'] = self.langchain_api_key
-            environ['LANGCHAIN_PROJECT'] = self.langchain_project
+            log.info('"COHERE_API_KEY" env var set')
 
 
 @lru_cache

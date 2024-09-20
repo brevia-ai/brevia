@@ -1,11 +1,13 @@
 """Index document with embeddings in vector database."""
 from os import path
 from logging import getLogger
-from langchain.docstore.document import Document
-from langchain.text_splitter import NLTKTextSplitter
-from langchain.vectorstores.pgvector import PGVector
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgembedding import EmbeddingStore
+from langchain_community.vectorstores.pgvector import PGVector
+from langchain_core.documents import Document
+from langchain_text_splitters import NLTKTextSplitter
+from langchain_text_splitters.base import TextSplitter
+from requests import HTTPError
 from sqlalchemy.orm import Session
 from brevia.connection import db_connection, connection_string
 from brevia import load_file
@@ -13,6 +15,7 @@ from brevia.collections import single_collection_by_name
 from brevia.models import load_embeddings
 from brevia.settings import get_settings
 from brevia.utilities.json_api import query_data_pagination
+from brevia.utilities.types import load_type
 
 
 def init_index():
@@ -67,35 +70,71 @@ def add_document(
     document_id: str = None,
 ) -> int:
     """ Add document to index and return number of splitted text chunks"""
-    texts = split_document(document)
+    collection = single_collection_by_name(collection_name)
+    coll_meta = collection.cmetadata if collection and collection.cmetadata else {}
+    embed_conf = coll_meta.get('embeddings', None)
+    texts = split_document(
+        document=document,
+        collection_meta=coll_meta,
+    )
     connection = db_connection()
     PGVector.from_documents(
-        embedding=load_embeddings(),
+        embedding=load_embeddings(embed_conf),
         documents=texts,
         collection_name=collection_name,
         connection_string=connection_string(),
-        connection=db_connection(),
+        connection=connection,
         ids=[document_id] * len(texts),
+        use_jsonb=True,
     )
     connection.close()
 
     return len(texts)
 
 
-def split_document(document: Document):
+def split_document(
+    document: Document, collection_meta: dict = {}
+) -> list[Document]:
     """ Split document into text chunks and return a list of documents"""
-    settings = get_settings()
-    text_splitter = NLTKTextSplitter(
-        separator="\n",
-        chunk_size=settings.text_chunk_size,
-        chunk_overlap=settings.text_chunk_overlap
-    )
+    text_splitter = create_splitter(collection_meta)
     texts = text_splitter.split_documents([document])
     counter = 1
     for text in texts:
         text.metadata['part'] = counter
         counter += 1
     return texts
+
+
+def create_splitter(collection_meta: dict) -> TextSplitter:
+    """ Create text splitter"""
+    settings = get_settings()
+    custom_splitter = collection_meta.get(
+        'text_splitter',
+        settings.text_splitter.copy()
+    )
+    chunk_size = int(collection_meta.get('chunk_size', settings.text_chunk_size))
+    chunk_overlap = int(
+        collection_meta.get('chunk_overlap', settings.text_chunk_overlap)
+    )
+
+    if not custom_splitter:
+        return NLTKTextSplitter(
+            separator="\n",
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
+        )
+
+    chunk_conf = {'chunk_size': chunk_size, 'chunk_overlap': chunk_overlap}
+
+    return create_custom_splitter({**chunk_conf, **custom_splitter})
+
+
+def create_custom_splitter(split_conf: dict) -> TextSplitter:
+    """ Create custom text splitter"""
+    splitter_name = split_conf.pop('splitter', '')
+    splitter_class = load_type(splitter_name, TextSplitter)
+
+    return splitter_class(**split_conf)
 
 
 def remove_document(
@@ -203,11 +242,19 @@ def update_links_documents(collection_name: str) -> int:
                                    filter={'type': 'links'})
     count = 0
     for doc in docs_meta:
-        res = update_collection_link(
-            collection=collection,
-            document_id=doc['custom_id'],
-            document_medatata=doc['cmetadata']
-        )
+        try:
+            res = update_collection_link(
+                collection=collection,
+                document_id=doc['custom_id'],
+                document_medatata=doc['cmetadata']
+            )
+        except HTTPError as exc:
+            log.error('HTTP Error updating document "%s" - %s', doc['custom_id'], exc)
+            doc['cmetadata'] |= {'http_error': str(exc.response.status_code)}
+            update_metadata(collection_id=collection.uuid,
+                            document_id=doc['custom_id'],
+                            metadata=doc['cmetadata'])
+            res = False
         count += 1 if res else 0
 
     return count
@@ -231,6 +278,7 @@ def update_collection_link(collection: CollectionStore, document_id: str,
     if document_has_changed(document=document, collection_id=collection.uuid,
                             document_id=document_id):
         remove_document(collection_id=collection.uuid, document_id=document_id)
+        document.metadata.pop('http_error', None)
         add_document(document=document, collection_name=collection.name,
                      document_id=document_id)
         return True

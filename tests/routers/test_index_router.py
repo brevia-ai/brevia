@@ -2,6 +2,7 @@
 import json
 from uuid import uuid4
 from pathlib import Path
+import pytest
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from langchain.docstore.document import Document
@@ -162,8 +163,53 @@ def test_index_link(mock_get):
 
 
 @patch('brevia.routers.index_router.load_file.requests.get')
+def test_index_link_callback(mock_get):
+    """Test POST /index/link endpoint with 'callback' option filter"""
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.text = '<h1> lorem ipsum</h1>'
+    collection = create_collection('test_collection', {})
+    response = client.post(
+        '/index/link',
+        headers={'Content-Type': 'application/json'},
+        content=json.dumps({
+            'link': 'https://www.example.com',
+            'collection_id': str(collection.uuid),
+            'document_id': '123',
+            'metadata': {'type': 'links'},
+            'options': {'callback': 'string.capwords'},
+        })
+    )
+    assert response.status_code == 204
+    assert response.text == ''
+    docs = read_document(collection_id=str(collection.uuid), document_id='123')
+    assert len(docs) == 1
+    assert docs[0].get('cmetadata') == {'type': 'links', 'part': 1}
+    assert docs[0].get('document') == 'Lorem Ipsum'
+
+
+@patch('brevia.routers.index_router.load_file.requests.get')
+def test_index_link_callback_fail(mock_get):
+    """Test POST /index/link endpoint with 'callback' option failure"""
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.text = '<h1>Lorem ipsum</h1>'
+    collection = create_collection('test_collection', {})
+    with pytest.raises(ValueError) as exc:
+        client.post(
+            '/index/link',
+            headers={'Content-Type': 'application/json'},
+            content=json.dumps({
+                'link': 'https://www.example.com',
+                'collection_id': str(collection.uuid),
+                'document_id': '123',
+                'options': {'callback': 'brevia.index.zzzzzz'},
+            })
+        )
+        assert str(exc.value) == 'Callback "brevia.index.zzzzzz" not found'
+
+
+@patch('brevia.routers.index_router.load_file.requests.get')
 def test_index_link_selector(mock_get):
-    """Test POST /index/link endpoint with 'selector' option filer"""
+    """Test POST /index/link endpoint with 'selector' option filter"""
     mock_get.return_value.status_code = 200
     mock_get.return_value.text = '<h1>Lorem Ipsum</h1><p class="test">Some text</p>'
     collection = create_collection('test_collection', {})

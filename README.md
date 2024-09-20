@@ -114,7 +114,7 @@ With relatives embeddings:
 If you have a PostgreSQL instance with `pg_vector` extension available you are ready to go, otherwise you can use the provided docker compose file.
 
 In this case you can simply run `docker compose` to run a PostgreSQL database with pg_vector.
-You can also run the embedded [`pgAdmin`](https://www.pgadmin.org) admin tool running `docler compose --profile admin up` to run postgres+pgvector and pgadmin docker images at the same time.
+You can also run the embedded [`pgAdmin`](https://www.pgadmin.org) admin tool running `docker compose --profile admin up` to run postgres+pgvector and pgadmin docker images at the same time.
 With your browser, open `pgadmin` at http://localhost:4000
 
 The `4000` port is configurable with the `PGADMIN_PORT` environment var in the `.env` file.
@@ -166,7 +166,7 @@ To import/export collections via CLI we take advantage of the [PostgreSQL COPY c
 
 A `psql` client is required for these scripts, connection parameters will be read from environment variables (via `.env` file).
 
-Two PostgresSQL CSV files will be created during export and imported in the import operation.
+Two PostgreSQL CSV files will be created during export and imported in the import operation.
 One file, named `{collection-name}-collection.csv`, contains collection data and the other, named `{collection-name}-embedding.csv`, contains documents data and embeddings.
 
 To export a collection use:
@@ -189,7 +189,7 @@ Where
 ## LangSmith support
 
 [LangSmith](https://www.langchain.com/langsmith) is a platform to monitor, test and debug LLM apps built with LangChain.
-To use it in Brevia, if you have an account, uncomment the following lines in your `.env` file.
+To use it in Brevia, if you have an account, you should export these environment variables when runnnin Brevia:
 
 ```bash
 LANGCHAIN_TRACING_V2=True
@@ -197,6 +197,20 @@ LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
 LANGCHAIN_API_KEY="########"
 LANGCHAIN_PROJECT="My Project"
 ```
+
+If you are using a `.env` file you should use `BREVIA_ENV_SECRETS` var like this:
+
+```bash
+
+BREVIA_ENV_SECRETS='{
+  "LANGCHAIN_TRACING_V2": "True"
+  "LANGCHAIN_ENDPOINT": "https://api.smith.langchain.com",
+  "LANGCHAIN_API_KEY": "########",
+  "LANGCHAIN_PROJECT": "My Project"
+}'
+```
+
+This way Brevia will make sure that this variables will be available as environment variables.
 
 Edit `LANGCHAIN_API_KEY` with your LangSmith API Key and set your project name in `LANGCHAIN_PROJECT` var.
 

@@ -1,27 +1,32 @@
 """Question-answering and search functions against a vector database."""
 from os import path
-from langchain.docstore.document import Document
-from langchain.vectorstores.pgvector import PGVector, DistanceStrategy
-from langchain_community.vectorstores.pgembedding import CollectionStore
-from langchain.callbacks.base import BaseCallbackHandler
+from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.chains.base import Chain
-from langchain.chains import ConversationalRetrievalChain
+from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
 from langchain.chains.question_answering import load_qa_chain
+from langchain_core.language_models import BaseLanguageModel
+from langchain_core.retrievers import BaseRetriever
+from langchain_core.vectorstores import VectorStore
 from langchain.chains.llm import LLMChain
-from langchain.prompts import PromptTemplate
-from langchain.prompts import load_prompt
-from langchain.prompts import (
+from langchain_community.vectorstores.pgembedding import CollectionStore
+from langchain_community.vectorstores.pgvector import DistanceStrategy, PGVector
+from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.documents import Document
+from langchain_core.prompts import (
     ChatPromptTemplate,
-    SystemMessagePromptTemplate,
     HumanMessagePromptTemplate,
+    PromptTemplate,
+    SystemMessagePromptTemplate,
+    load_prompt,
 )
-from langchain.prompts.loading import load_prompt_from_config
+from langchain_core.prompts.loading import load_prompt_from_config
 from pydantic import BaseModel
 from brevia.connection import db_connection, connection_string
 from brevia.collections import single_collection_by_name
 from brevia.callback import AsyncLoggingCallbackHandler
 from brevia.models import load_chatmodel, load_embeddings
 from brevia.settings import get_settings
+from brevia.utilities.types import load_type
 
 # system = load_prompt(f'{prompts_path}/qa/default.system.yaml')
 # jinja2 template from file was disabled by langchain so, for now
@@ -41,7 +46,15 @@ SYSTEM_TEMPLATE = """
 
 
 def load_qa_prompt(prompts: dict | None) -> ChatPromptTemplate:
-    """ load prompts for Q/A functions """
+    """
+        load prompts for RAG-Q/A functions, following openIA system/human/ai pattern:
+        SYSTEM_TEMPLATE: is a jinja2 template with language checking from api call.
+                         For security reason, the default is loaded from here and
+                         overwritten from api call.
+        HUMAN_TEMPLATE:  is a normal template, loaded from /prompts/qa and overwritten
+                         by api call
+
+    """
 
     prompts_path = f'{path.dirname(__file__)}/prompts'
     system = PromptTemplate.from_template(SYSTEM_TEMPLATE, template_format="jinja2")
@@ -65,6 +78,8 @@ def load_condense_prompt(prompts: dict | None) -> ChatPromptTemplate:
     """
         Check if specific few-shot prompt file exists for the collection, if not,
         check for condense prompt file, otherwise, load default condense prompt file.
+        few-shot can improve condensing the chat history especially when the chat
+        history is about eterogenous topics.
     """
     if prompts:
         if prompts.get('few'):
@@ -89,8 +104,8 @@ class SearchQuery(BaseModel):
     query: str
     collection: str
     docs_num: int | None = None
-    distance_strategy_name: str = 'cosine',
-    filter: dict[str, str | dict] | None = None
+    distance_strategy_name: str = 'cosine'
+    filter: dict[str, str | dict | list] | None = None
 
 
 def search_vector_qa(
@@ -104,12 +119,14 @@ def search_vector_qa(
         default_num = get_settings().search_docs_num
         search.docs_num = int(collection_store.cmetadata.get('docs_num', default_num))
     strategy = DISTANCE_MAP.get(search.distance_strategy_name, DistanceStrategy.COSINE)
+    embeddings_conf = collection_store.cmetadata.get('embedding', None)
     docsearch = PGVector(
         connection_string=connection_string(),
-        embedding_function=load_embeddings(),
+        embedding_function=load_embeddings(embeddings_conf),
         collection_name=search.collection,
         distance_strategy=strategy,
         connection=db_connection(),
+        use_jsonb=True,
     )
 
     return docsearch.similarity_search_with_score(
@@ -126,6 +143,43 @@ class ChatParams(BaseModel):
     distance_strategy_name: str | None = None
     filter: dict[str, str | dict] | None = None
     source_docs: bool = False
+    multiquery: bool = False
+
+
+def create_custom_retriever(
+        store: VectorStore,
+        search_kwargs: dict,
+        retriever_conf: dict,
+) -> BaseRetriever:
+    """
+        Create a custom retriever from a configuration.
+    """
+    retriever_name = retriever_conf.pop('retriever', '')
+    retriever_class = load_type(retriever_name, BaseRetriever)
+
+    return retriever_class(
+        vectorstore=store,
+        search_kwargs=search_kwargs,
+        **retriever_conf,
+    )
+
+
+def create_default_retriever(
+        store: VectorStore,
+        search_kwargs: dict,
+        llm: BaseLanguageModel,
+        multiquery: bool = False,
+
+) -> BaseRetriever:
+    """
+        Create a default retriever.
+        Can be a vector store retriever or a multiquery retriever.
+    """
+    retriever = store.as_retriever(search_kwargs=search_kwargs)
+    if multiquery:
+        return MultiQueryRetriever.from_llm(retriever=retriever, llm=llm)
+
+    return retriever
 
 
 def conversation_chain(
@@ -149,6 +203,7 @@ def conversation_chain(
             (default empty list)
         conversation_callbacks: callback to handle conversation results
             (default empty list)
+        multiquery: flag for activate langchain's multiquery retriver
 
         can implement "vectordbkwargs" into quest_dict:
             {
@@ -170,10 +225,11 @@ def conversation_chain(
     )
     docsearch = PGVector(
         connection_string=connection_string(),
-        embedding_function=load_embeddings(),
+        embedding_function=load_embeddings(collection.cmetadata.get('embedding', None)),
         collection_name=collection.name,
         distance_strategy=strategy,
         connection=db_connection(),
+        use_jsonb=True,
     )
 
     prompts = collection.cmetadata.get('prompts')
@@ -217,10 +273,24 @@ def conversation_chain(
 
     # main chain, do all the jobs
     search_kwargs = {'k': chat_params.docs_num, 'filter': chat_params.filter}
+    retriever_conf = collection.cmetadata.get(
+        'qa_retriever',
+        settings.qa_retriever.copy()
+    )
+    if not retriever_conf:
+        retriever = create_default_retriever(
+            store=docsearch,
+            search_kwargs=search_kwargs,
+            llm=chatllm,
+            multiquery=chat_params.multiquery,
+        )
+    else:   # custom retriever
+        retriever = create_custom_retriever(docsearch, search_kwargs, retriever_conf)
 
     conversation_callbacks.append(logging_handler)
+
     return ConversationalRetrievalChain(
-        retriever=docsearch.as_retriever(search_kwargs=search_kwargs),
+        retriever=retriever,
         combine_docs_chain=doc_chain,
         return_source_documents=chat_params.source_docs,
         question_generator=question_generator,

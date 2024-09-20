@@ -1,8 +1,10 @@
 """Query module tests"""
 import pytest
 from langchain.prompts import BasePromptTemplate
-from langchain.chains import ConversationalRetrievalChain
+from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
 from langchain.docstore.document import Document
+from langchain_core.vectorstores import VectorStoreRetriever
+from langchain.retrievers.multi_query import MultiQueryRetriever
 from brevia.query import (
     conversation_chain,
     load_qa_prompt,
@@ -13,6 +15,7 @@ from brevia.query import (
 )
 from brevia.collections import create_collection
 from brevia.index import add_document
+from brevia.settings import get_settings
 
 FAKE_PROMPT = {
     '_type': 'prompt',
@@ -82,32 +85,34 @@ def test_search_vector_filter():
     result = search_vector_qa(search=SearchQuery(
         query='test',
         collection='test',
-        filter={'category': {'in': ['first', 'second']}},
+        filter={'category': {'$in': ['first', 'second']}},
     ))
     assert len(result) == 2
     result = search_vector_qa(search=SearchQuery(
         query='test',
         collection='test',
-        filter={'category': {'gt': 'first'}},
+        filter={'category': {'$gt': 'first'}},
     ))
     assert len(result) == 1
     result = search_vector_qa(search=SearchQuery(
         query='test',
         collection='test',
-        filter={'category': {'lt': 'first'}},
+        filter={'category': {'$lt': 'first'}},
     ))
     assert len(result) == 0
-    # 'GE' and 'LE' operators not yet supported
-    # result = search_vector_qa(search=SearchQuery(
-    #     query='test',
-    #     collection='test',
-    #     filter={'category': {'ge': 'aaaaa', 'le': 'zzzzz'}},
-    # ))
-    # assert len(result) == 2
     result = search_vector_qa(search=SearchQuery(
         query='test',
         collection='test',
-        filter={'category': {'ne': 'first'}},
+        filter={'$and': [
+            {'category': {'$gte': 'aaaaa'}},
+            {'category': {'$lte': 'zzzzz'}},
+        ]},
+    ))
+    assert len(result) == 2
+    result = search_vector_qa(search=SearchQuery(
+        query='test',
+        collection='test',
+        filter={'category': {'$ne': 'first'}},
     ))
     assert len(result) == 1
 
@@ -119,3 +124,36 @@ def test_conversation_chain():
 
     assert chain is not None
     assert isinstance(chain, ConversationalRetrievalChain)
+
+
+def test_conversation_chain_multiquery():
+    """Test conversation_chain function with multiquery"""
+    collection = create_collection('test', {})
+    chain = conversation_chain(
+        collection=collection,
+        chat_params=ChatParams(multiquery=True)
+    )
+
+    assert chain is not None
+    assert isinstance(chain, ConversationalRetrievalChain)
+    assert isinstance(chain.retriever, MultiQueryRetriever)
+
+
+def test_conversation_chain_custom_retriever():
+    """Test conversation_chain with custom retriever"""
+    collection = create_collection('test', {})
+    settings = get_settings()
+    current_retriever = settings.qa_retriever
+    conf = {'retriever': 'langchain_core.vectorstores.VectorStoreRetriever'}
+    settings.qa_retriever = conf
+    chain = conversation_chain(collection=collection, chat_params=ChatParams())
+
+    assert chain is not None
+    assert isinstance(chain.retriever, VectorStoreRetriever)
+    settings.qa_retriever = current_retriever
+
+    collection = create_collection('test', {'qa_retriever': conf})
+    chain = conversation_chain(collection=collection, chat_params=ChatParams())
+
+    assert chain is not None
+    assert isinstance(chain.retriever, VectorStoreRetriever)

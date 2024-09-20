@@ -26,10 +26,10 @@ def test_add_history():
     """Test add_history function"""
     assert add_history('123', 'test', 'who?', 'me') is None
     create_collection('test_collection', {})
-    history = add_history(uuid.uuid4(), 'test_collection', 'who?', 'me')
-    assert history is not None
-    assert history.question == 'who?'
-    assert history.answer == 'me'
+    history_item = add_history(uuid.uuid4(), 'test_collection', 'who?', 'me')
+    assert history_item is not None
+    assert history_item.question == 'who?'
+    assert history_item.answer == 'me'
 
 
 def test_add_history_failure():

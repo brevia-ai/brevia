@@ -57,16 +57,16 @@ def history(chat_history: list, session: str = None):
     return history_from_db(session)
 
 
-def is_related(chat_history: list, question: str):
+def is_related(chat_history: list, question: str, embeddings: dict | None = None):
     """
     Determine whether a question is related to a sequence of sentences.
     Use sentence and question embeddings to calculate the product
     scale between the vectors (in this case = similarity) and compare it
     with a threshold specified by environment variables.
     """
-    embeddings = load_embeddings()
-    q_e = embeddings.embed_query(question)
-    h_e = embeddings.embed_query(
+    embeddings_engine = load_embeddings(embeddings)
+    q_e = embeddings_engine.embed_query(question)
+    h_e = embeddings_engine.embed_query(
         ''.join([sentence for tuple in chat_history for sentence in tuple])
     )
     sim = dot_product(q_e, h_e)
@@ -321,6 +321,7 @@ def history_evaluation(
     history_id: str,
     user_evaluation: bool,
     user_feedback: str | None = None,
+    metadata: dict | None = None,
 ) -> bool:
     """
         Update evaluation of single history item.
@@ -332,6 +333,11 @@ def history_evaluation(
             return False
         chat_history.user_evaluation = user_evaluation
         chat_history.user_feedback = user_feedback
+        if metadata:
+            if chat_history.cmetadata is None:
+                chat_history.cmetadata = {}
+            chat_history.cmetadata = chat_history.cmetadata | metadata
+
         session.add(chat_history)
         session.commit()
 

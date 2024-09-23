@@ -9,8 +9,7 @@ from langchain_text_splitters import NLTKTextSplitter
 from langchain_text_splitters.base import TextSplitter
 from requests import HTTPError
 from sqlalchemy.orm import Session
-from brevia.connection import db_connection, connection_string
-from brevia import load_file
+from brevia import connection, load_file
 from brevia.collections import single_collection_by_name
 from brevia.models import load_embeddings
 from brevia.settings import get_settings
@@ -77,17 +76,14 @@ def add_document(
         document=document,
         collection_meta=coll_meta,
     )
-    connection = db_connection()
     PGVector.from_documents(
         embedding=load_embeddings(embed_conf),
         documents=texts,
         collection_name=collection_name,
-        connection_string=connection_string(),
-        connection=connection,
+        connection_string=connection.connection_string(),
         ids=[document_id] * len(texts),
         use_jsonb=True,
     )
-    connection.close()
 
     return len(texts)
 
@@ -144,7 +140,7 @@ def remove_document(
     """ Remove document `document_id` from collection index"""
     filter_document = EmbeddingStore.custom_id == document_id
     filter_collection = EmbeddingStore.collection_id == collection_id
-    with Session(db_connection()) as session:
+    with Session(connection.db_connection()) as session:
         query = session.query(EmbeddingStore).filter(filter_collection, filter_document)
         query.delete()
         session.commit()
@@ -157,7 +153,7 @@ def read_document(
     """ Read document `document_id` from collection index"""
     filter_document = EmbeddingStore.custom_id == document_id
     filter_collection = EmbeddingStore.collection_id == collection_id
-    with Session(db_connection()) as session:
+    with Session(connection.db_connection()) as session:
         query = session.query(EmbeddingStore.document, EmbeddingStore.cmetadata)
         query = query.filter(filter_collection, filter_document)
         return [row._asdict() for row in query.all()]
@@ -182,7 +178,7 @@ def collection_documents(
     """ Read document `document_id` from collection index"""
     query_filters = [EmbeddingStore.collection_id == collection_id]
     query_filters.extend(metadata_filters(filter=filter))
-    with Session(db_connection()) as session:
+    with Session(connection.db_connection()) as session:
         query = session.query(
             EmbeddingStore.document,
             EmbeddingStore.cmetadata,
@@ -200,7 +196,7 @@ def update_metadata(
     """ Update metadata of a document in a collection"""
     filter_document = EmbeddingStore.custom_id == document_id
     filter_collection = EmbeddingStore.collection_id == collection_id
-    with Session(db_connection()) as session:
+    with Session(connection.db_connection()) as session:
         query = session.query(EmbeddingStore).filter(filter_collection, filter_document)
         query.update({EmbeddingStore.cmetadata: metadata})
         session.commit()
@@ -216,7 +212,7 @@ def documents_metadata(
     if document_id:
         query_filters.append(EmbeddingStore.custom_id == document_id)
     query_filters.extend(metadata_filters(filter=filter))
-    with Session(db_connection()) as session:
+    with Session(connection.db_connection()) as session:
         query = session.query(EmbeddingStore.custom_id, EmbeddingStore.cmetadata)
         query = query.filter(*query_filters)
         result = []

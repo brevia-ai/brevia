@@ -1,6 +1,7 @@
 """Status router tests"""
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
+from brevia.connection import get_engine
 from brevia.routers import status_router
 from brevia.settings import get_settings
 from brevia.tokens import create_token
@@ -24,10 +25,12 @@ def test_status_fail():
     settings = get_settings()
     database = settings.pgvector_database
     settings.pgvector_database = 'non_exixsting_db'
+    get_engine.cache_clear()
 
     response = client.get('/status', headers={})
 
     settings.pgvector_database = database
+    get_engine.cache_clear()
 
     assert response.status_code == 503
 

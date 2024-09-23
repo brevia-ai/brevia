@@ -1,8 +1,10 @@
 """ DB connection utility functions """
 import subprocess
+from functools import lru_cache
 import sys
 from urllib import parse
-import sqlalchemy
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import DatabaseError
 from langchain_community.vectorstores.pgembedding import CollectionStore
@@ -25,13 +27,18 @@ def connection_string() -> str:
     return f"postgresql+{driver}://{user}:{password}@{host}:{port}/{database}"
 
 
-def db_connection() -> sqlalchemy.engine.Connection:
+@lru_cache
+def get_engine():
+    """Return db engine (using lru_cache)"""
+    return create_engine(
+            connection_string(),
+            pool_size=get_settings().pgvector_pool_size,
+        )
+
+
+def db_connection() -> Connection:
     """ SQLAlchemy db connection """
-    engine = sqlalchemy.create_engine(
-        connection_string(),
-        pool_size=get_settings().pgvector_pool_size,
-    )
-    return engine.connect()
+    return get_engine().connect()
 
 
 def test_connection() -> bool:

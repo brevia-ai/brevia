@@ -1,7 +1,7 @@
 version: '3.9'
 services:
     pgdatabase:
-        image: ankane/pgvector
+        image: pgvector/pgvector:0.7.4-pg16
         environment:
             - POSTGRES_USER=${PGVECTOR_USER}
             - POSTGRES_PASSWORD=${PGVECTOR_PASSWORD}

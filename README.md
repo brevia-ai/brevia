@@ -20,6 +20,21 @@ Brevia uses:
 * the [FastAPI](https://github.com/tiangolo/fastapi) framework to easily extend your application with new endpoints
 * [PostgreSQL](https://www.postgresql.org) with [`pg_vector`](https://github.com/pgvector/pgvector) extension as vector database
 
+## Documentation
+
+Brevia documentation is available at [docs.brevia.app](https://docs.brevia.app).
+
+## Admin UI
+
+An official UI is now available via [Brevia App](https://github.com/brevia-ai/brevia-app).
+It is a webapp with which you can:
+
+* create and configure new RAG collections
+* add files, questions or links to each collection
+* test the collection with a chat UI
+* analyze the chat history for each collection
+* perform some Information Extraction actions like summarization, audio transcription or custom analysis
+
 ## Requirements
 
 A version of Python 3.10 or higher and [Poetry](https://python-poetry.org/docs/#installation) is required.

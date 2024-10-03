@@ -85,7 +85,6 @@ class Settings(BaseSettings):
     qa_no_chat_history: bool = False  # don't load chat history
     qa_followup_sim_threshold: float = 0.735  # similitude threshold in followup
     qa_retriever: Json[dict[str, Any]] = '{}'  # custom retriever settings
-    feature_qa_lang_detect: bool = False
 
     # Summarization
     summ_default_chain: str = 'stuff'

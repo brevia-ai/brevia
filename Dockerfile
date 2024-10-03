@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1
-FROM python:3.10-alpine
+FROM python:3.12-alpine
+
+RUN apk add g++
 
 # Extra python env
 ENV PYTHONDONTWRITEBYTECODE=0
@@ -13,6 +15,8 @@ WORKDIR /python-docker
 COPY . /python-docker/
 
 RUN poetry install
+
+RUN apk del g++
 
 EXPOSE 8000
 

@@ -20,8 +20,32 @@ services:
             - "${PGADMIN_PORT}:80"
         volumes:
           - pgadmindata:/var/lib/pgadmin
+    breviaapp:
+        image: ghcr.io/brevia-ai/brevia-app:latest
+        profiles: ["admin", "api"]
+        environment:
+            - NUXT_API_BASE_URL=http://breviaapi:8000
+        ports:
+            - "${BREVIA_ADMIN_PORT:-3000}:3000"
+        volumes:
+          - breviaappdata:/var/lib/breviaapp
+    breviaapi:
+        image: ghcr.io/brevia-ai/brevia:latest
+        profiles: ["api"]
+        environment:
+            - NUXT_API_BASE_URL=http://localhost:8000
+        ports:
+            - "${BREVIA_API_PORT:-8000}:8000"
+        volumes:
+          - breviaapidata:/var/lib/breviaapi
+
+
 volumes:
   pgdata:
-    name: ${PGVECTOR_VOLUME_NAME}
+    name: ${PGVECTOR_VOLUME_NAME:-pgdata}
   pgadmindata:
-    name: ${PGADMIN_VOLUME_NAME}
+    name: ${PGADMIN_VOLUME_NAME:-pgadmindata}
+  breviaappdata:
+    name: ${BREVIA_ADMIN_VOLUME_NAME:-breviaapp}
+  breviaapidata:
+    name: ${BREVIA_ADMIN_VOLUME_NAME:-breviaapi}

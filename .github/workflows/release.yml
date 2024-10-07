@@ -74,4 +74,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository }}:${{ needs.release_job.outputs.version }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}:${{ needs.release_job.outputs.version }}
+            ${{ env.REGISTRY }}/${{ github.repository }}:latest

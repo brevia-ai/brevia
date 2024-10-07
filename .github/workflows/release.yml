@@ -14,6 +14,9 @@ on:
           - patch
           - minor
           - major
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   release_job:
@@ -55,3 +58,22 @@ jobs:
         uses: JRubics/poetry-publish@v1.17
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
+
+      - name: Log in to the Container registry
+        if: ${{ !contains(needs.release_job.outputs.version, 'undefined') }}
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        if: ${{ !contains(needs.release_job.outputs.version, 'undefined') }}
+        id: push
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}:${{ needs.release_job.outputs.version }}
+            ${{ env.REGISTRY }}/${{ github.repository }}:latest

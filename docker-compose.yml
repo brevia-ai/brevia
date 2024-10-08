@@ -29,7 +29,7 @@ services:
       - PGVECTOR_DATABASE=${PGVECTOR_DATABASE:-brevia}
       - PGVECTOR_USER=${PGVECTOR_USER:-postgres}
       - PGVECTOR_PASSWORD=${PGVECTOR_PASSWORD:-postgres}
-      - BREVIA_ENV_SECRETS=${BREVIA_ENV_SECRETS}
+      - BREVIA_ENV_SECRETS=${BREVIA_ENV_SECRETS:-{}}
     ports:
       - "${BREVIA_API_PORT:-8000}:8000"
     volumes:

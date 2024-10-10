@@ -1,7 +1,38 @@
 site_name: Brevia Docs
+repo_url: https://github.com/brevia-ai/brevia
 dev_addr: "127.0.0.1:8001"
 theme:
   name: material
+  logo: assets/brevia-logo.svg
+  favicon: assets/favicon.ico
+  features:
+    - navigation.footer
+  palette:
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/brevia-ai/brevia
+    - icon: fontawesome/solid/globe
+      link: https://atlasconsulting.it
+    - icon: fontawesome/brands/linkedin
+      link: https://it.linkedin.com/company/atlas-srl
 
 nav:
   - Brevia: index.md

@@ -5,6 +5,7 @@ from typing import Any
 from os import environ
 from pydantic import Json
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from brevia.config import read_conf
 
 
 class Settings(BaseSettings):
@@ -122,6 +123,12 @@ class Settings(BaseSettings):
 def get_settings():
     """Return Settings object instance just once (using lru_cache)"""
     settings = Settings()
+    try:
+        db_conf = read_conf()
+        settings.update(db_conf)
+    except Exception as exc:
+        logging.getLogger(__name__).error('Failed to read config from db: %s', exc)
+
     settings.setup_environment()
 
     return settings

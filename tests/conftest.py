@@ -4,13 +4,13 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from dotenv import dotenv_values
-from brevia.index import init_index
+from brevia.index import init_splitting_data
 from brevia.settings import get_settings
 
 
 def pytest_sessionstart(session):
     """Init index data, just once"""
-    return init_index()
+    return init_splitting_data()
 
 
 def update_settings():

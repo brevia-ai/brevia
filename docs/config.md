@@ -3,13 +3,13 @@
 There are two type of configuration in a Brevia project:
 
 * general configuration through environment variables or a simple `.env` file
-* specific configuration of a single `collection` (mainly for RAG applications), stored as JSON in `langchain_pg_collection.cmetadata` database column
+* specific configuration of a [single `collection`](collection_config.md) mainly for RAG applications
 
 In this page we will explain the general configuration items in Brevia.
 
 All configuration items have working defaults with the exception of:
 
-* external services settings like LLM APIs or monitor/debugging tools (like Langsmith). Those services rely on specific environment variables that we cannot include or predict here.
+* external services settings like LLM APIs or monitor/debugging tools (like Langsmith). Those services rely on specific environment variables that we cannot include or predict here
 * database connection configuration
 
 ## Database
@@ -29,7 +29,9 @@ An example of such uri using Brevia defaults can look like `postgresql+psycopg2:
 
 ## External services
 
-As example of external services here we include OpenAI, Cohere and LangSmith but it may include any LLM supported by LangChain.
+As example of external services here we include OpenAI, Cohere and LangSmith but it may include any LLM supported by LangChain. Those services usually need some specific env variables like API keys or tokens. If you don't set these variables, the services that depend on them may not work properly.
+
+By using [`BREVIA_ENV_SECRETS` var as explained below](#brevia-env-secrets) you make sure that these secrets will be available as environment variables.
 
 ### OpenAI
 
@@ -47,6 +49,12 @@ If you want to use [LangSmith](https://www.langchain.com/langsmith) to monitor y
 * `LANGCHAIN_ENDPOINT`: the endpoint used, like `https://api.smith.langchain.com`
 * `LANGCHAIN_API_KEY`: your LangSmith API KEY
 * `LANGCHAIN_PROJECT`: the name of your Brevia project
+
+### Brevia env secrets
+
+As mentioned above to make these variables available as environment variables, if not done explicitly outside Brevia, you can use a special JSON object variable `BREVIA_ENV_SECRETS` in your `.env` file where each key/value pair will be loaded in the environment at startup.
+
+This variable could be something like `BREVIA_ENV_SECRETS='{"OPENAI_API_KEY": "#########", "COHERE_API_KEY": "#########"}'`
 
 ## Security
 

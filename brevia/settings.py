@@ -1,18 +1,43 @@
 """Settings module"""
+import json
 import logging
 from functools import lru_cache
 from typing import Any
 from os import environ
-from pydantic import Json
+from urllib import parse
+from fnmatch import fnmatch
+from sqlalchemy import NullPool, create_engine, Column, String, func
+from sqlalchemy.engine import Connection
+from sqlalchemy.dialects.postgresql import TIMESTAMP
+from sqlalchemy.orm import Session
+from langchain_community.vectorstores.pgembedding import BaseModel
+from pydantic import Json, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from brevia.config import read_conf
 
 
 class Settings(BaseSettings):
     """Brevia settings"""
     model_config = SettingsConfigDict(
-        env_file='.env', extra='ignore'
+        # env_file='.env', extra='ignore'
+        env_file=None
     )
+
+    # @field_validator('pgvector_port', 'pgvector_pool_size', 'text_chunk_size', 'text_chunk_overlap', 'search_docs_num')
+    # def check_positive_int(cls, value: int | str) -> int:
+    #     """Check if value is a positive integer"""
+    #     if not str(value).isdigit() or int(value) < 0:
+    #         raise ValueError('Value must be a positive integer')
+    #     return int(value)
+
+    # @field_validator('brevia_env_secrets', 'embeddings', 'qa_retriever', 'text_splitter')
+    # def check_json(cls, value: dict[str, Any] | str) -> Json[dict[str, Any]]:
+    #     """Check if value is a valid JSON"""
+    #     if isinstance(value, str):
+    #         try:
+    #             value = json.loads(value)
+    #         except ValueError as exc:
+    #             raise ValueError('Invalid JSON') from exc
+    #     return value
 
     verbose_mode: bool = False
 
@@ -118,17 +143,103 @@ class Settings(BaseSettings):
             environ['COHERE_API_KEY'] = self.cohere_api_key
             log.info('"COHERE_API_KEY" env var set')
 
+    def connection_string(self) -> str:
+        """ Db connection string from Settings """
+        if self.pgvector_dsn_uri:
+            return self.pgvector_dsn_uri
+
+        driver = self.pgvector_driver
+        host = self.pgvector_host
+        port = self.pgvector_port
+        database = self.pgvector_database
+        user = self.pgvector_user
+        password = parse.quote_plus(self.pgvector_password)
+
+        return f"postgresql+{driver}://{user}:{password}@{host}:{port}/{database}"
+
+
+def configurable_settings() -> list[str]:
+    keys = Settings.model_fields.keys()
+    excluded_keys = [
+        'pgvector_*',
+        'tokens_*',
+        'status_token',
+        'use_test_models'
+    ]
+
+    return [key for key in keys
+            if not any(fnmatch(key, pattern) for pattern in excluded_keys)]
+
+
+class ConfigStore(BaseModel):
+    # pylint: disable=too-few-public-methods,not-callable
+    """ Config table """
+    __tablename__ = "config"
+
+    config_key = Column(String(), nullable=False, unique=True)
+    config_val = Column(String(), nullable=False)
+    created = Column(
+        TIMESTAMP(timezone=False),
+        nullable=False,
+        server_default=func.current_timestamp(),
+    )
+    modified = Column(
+        TIMESTAMP(timezone=False),
+        nullable=False,
+        server_default=func.current_timestamp(),
+        onupdate=func.current_timestamp(),
+    )
+
+
+def read_db_conf(connection: Connection) -> dict[str, str]:
+    """ Read all config records """
+    with Session(connection) as session:
+        query = session.query(ConfigStore.config_key, ConfigStore.config_val)
+        items = {key: value for key, value in query.all()}
+        # Filter out non-configurable settings
+        return {key: value
+                for key, value in items.items() if key in configurable_settings()}
+
+
+def update_db_conf(connection: Connection, items: dict[str, str]) -> dict[str, str]:
+    """ Update config records """
+    # Filter out non-configurable settings
+    items = {key: value for key, value in items.items() if key in configurable_settings()}
+    with Session(connection) as session:
+        session.expire_on_commit = False
+        query = session.query(ConfigStore.config_key, ConfigStore.config_val)
+        current_conf = {u.config_key: u for u in query.all()}
+        for key, value in items.items():
+            if key not in current_conf:
+                session.add(ConfigStore(config_key=key, config_val=value))
+            elif current_conf[key].config_val != value:
+                current_conf[key].config_val = value
+                session.add(current_conf[key])
+        for key in current_conf.keys():
+            if key not in items:
+                session.delete(current_conf[key])
+
+        session.commit()
+
+    return read_db_conf(connection)
+
 
 @lru_cache
 def get_settings():
     """Return Settings object instance just once (using lru_cache)"""
     settings = Settings()
-    try:
-        db_conf = read_conf()
-        settings.update(db_conf)
-    except Exception as exc:
-        logging.getLogger(__name__).error('Failed to read config from db: %s', exc)
-
+    update_settings_from_db(settings)
     settings.setup_environment()
 
     return settings
+
+
+def update_settings_from_db(settings: Settings):
+    """Update settings from db"""
+    try:
+        engine = create_engine(settings.connection_string(), poolclass=NullPool)
+        db_conf = read_db_conf(engine.connect())
+        engine.dispose()
+        settings.update(db_conf)
+    except Exception as exc:
+        logging.getLogger(__name__).error('Failed to read config from db: %s', exc)

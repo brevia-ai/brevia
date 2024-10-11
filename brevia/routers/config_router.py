@@ -1,8 +1,9 @@
 """API endpoints definitions to handle audio input"""
 from typing import Any
 from fastapi import APIRouter, HTTPException, status
-from brevia.config import read_conf, update_conf, configurable_settings
+from brevia.settings import read_db_conf, update_db_conf, configurable_settings
 from brevia.dependencies import get_dependencies
+from brevia.connection import db_connection
 
 router = APIRouter()
 
@@ -15,7 +16,7 @@ router = APIRouter()
 )
 def get_config():
     """ /config endpoint, read Brevia configuration """
-    return read_conf()
+    return read_db_conf(db_connection())
 
 
 @router.api_route(
@@ -43,4 +44,4 @@ def set_config(config: dict[str, Any]):
                 status.HTTP_400_BAD_REQUEST,
                 f'Setting "{key}" is not configurable',
             )
-    return update_conf(config)
+    return update_db_conf(db_connection, config)

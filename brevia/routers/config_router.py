@@ -44,4 +44,4 @@ def set_config(config: dict[str, Any]):
                 status.HTTP_400_BAD_REQUEST,
                 f'Setting "{key}" is not configurable',
             )
-    return update_db_conf(db_connection, config)
+    return update_db_conf(db_connection(), config)

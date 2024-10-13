@@ -1,5 +1,4 @@
 """Settings module"""
-import json
 import logging
 from functools import lru_cache
 from typing import Any
@@ -11,7 +10,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Session
 from langchain_community.vectorstores.pgembedding import BaseModel
-from pydantic import Json, field_validator
+from pydantic import Json
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -220,6 +219,8 @@ def update_db_conf(connection: Connection, items: dict[str, str]) -> dict[str, s
                 session.delete(current_conf[key])
 
         session.commit()
+    # Clear settings cache, force settings reload
+    get_settings.cache_clear()
 
     return read_db_conf(connection)
 

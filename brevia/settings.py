@@ -191,7 +191,7 @@ def update_db_conf(connection: Connection, items: dict[str, str]) -> dict[str, s
     items = {key: value for key, value in items.items() if key in configurable_settings()}
     with Session(connection) as session:
         session.expire_on_commit = False
-        query = session.query(ConfigStore.config_key, ConfigStore.config_val)
+        query = session.query(ConfigStore)
         current_conf = {u.config_key: u for u in query.all()}
         for key, value in items.items():
             if key not in current_conf:

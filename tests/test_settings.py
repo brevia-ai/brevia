@@ -48,6 +48,17 @@ def test_brevia_env_secrets():
     assert environ.get('TEST_TOKEN') is not None
 
 
+def test_connection_string():
+    """Test connection_string method"""
+    current = get_settings().pgvector_dsn_uri
+    test_dsn_uri = 'postgresql+driver://user:password@host:port/database'
+    settings = get_settings()
+    settings.pgvector_dsn_uri = test_dsn_uri
+    assert settings.connection_string() == test_dsn_uri
+    # restore previous setting
+    settings.pgvector_dsn_uri = current
+
+
 def test_read_db_conf():
     """Test read_db_conf method"""
     with Session(db_connection()) as session:
@@ -72,17 +83,25 @@ def test_update_db_conf():
 
 def test_get_settings_db():
     """Test get_settings with configuration from DB"""
-    # current search_docs_num
-    current = get_settings().search_docs_num
+    # current settings values
+    current_doc_num = get_settings().search_docs_num
+    current_chunk_size = get_settings().text_chunk_size
 
-    new_conf = {'test_key': 'test_value', 'search_docs_num': '7'}
-    update_db_conf(db_connection(), new_conf)
+    new_conf = {'test_k': 'test_v', 'text_chunk_size': '4567', 'search_docs_num': '8'}
+    result = update_db_conf(db_connection(), new_conf)
     # update test settings since get_settings.cache_clear() was called
     conftest.update_settings()
+    assert result == {'text_chunk_size': '4567', 'search_docs_num': '8'}
+
+    new_conf = {'search_docs_num': '7'}
+    result = update_db_conf(db_connection(), new_conf)
+    conftest.update_settings()
+    assert result == {'search_docs_num': '7'}
 
     settings = get_settings()
     assert 'test_key' not in settings
     assert settings.search_docs_num == 7
 
     # restore defaults
-    settings.search_docs_num = current
+    settings.search_docs_num = current_doc_num
+    settings.text_chunk_size = current_chunk_size

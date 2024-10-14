@@ -5,7 +5,7 @@ from typing import Any
 from os import environ
 from urllib import parse
 from fnmatch import fnmatch
-from sqlalchemy import NullPool, create_engine, Column, String, func
+from sqlalchemy import NullPool, create_engine, Column, String, func, inspect
 from sqlalchemy.engine import Connection
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Session
@@ -17,26 +17,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Brevia settings"""
     model_config = SettingsConfigDict(
-        # env_file='.env', extra='ignore'
-        env_file=None
+        env_file='.env', extra='ignore'
     )
-
-    # @field_validator('pgvector_port', 'pgvector_pool_size', 'text_chunk_size', 'text_chunk_overlap', 'search_docs_num')
-    # def check_positive_int(cls, value: int | str) -> int:
-    #     """Check if value is a positive integer"""
-    #     if not str(value).isdigit() or int(value) < 0:
-    #         raise ValueError('Value must be a positive integer')
-    #     return int(value)
-
-    # @field_validator('brevia_env_secrets', 'embeddings', 'qa_retriever', 'text_splitter')
-    # def check_json(cls, value: dict[str, Any] | str) -> Json[dict[str, Any]]:
-    #     """Check if value is a valid JSON"""
-    #     if isinstance(value, str):
-    #         try:
-    #             value = json.loads(value)
-    #         except ValueError as exc:
-    #             raise ValueError('Invalid JSON') from exc
-    #     return value
 
     verbose_mode: bool = False
 
@@ -121,13 +103,16 @@ class Settings(BaseSettings):
 
     def update(
         self,
-        other: dict[str, Any],
+        other: dict[str, Any] | BaseSettings,
     ) -> None:
-        """Update settings fields, used in unit tests"""
-        for field_name in other.keys():
-            key = field_name.lower()
-            if hasattr(self, key):
-                setattr(self, key, other.get(field_name))
+        """Update settings fields, used when updating from db and in unit tests"""
+        keys = Settings.model_fields.keys()
+        if not isinstance(other, BaseSettings):
+            other = {k.lower(): v for k, v in other.items() if hasattr(self, k)}
+            keys = other.keys()
+            other = Settings(**other)
+        for key in keys:
+            setattr(self, key, getattr(other, key))
 
     def setup_environment(self):
         """Setup some useful environment variables"""
@@ -239,8 +224,10 @@ def update_settings_from_db(settings: Settings):
     """Update settings from db"""
     try:
         engine = create_engine(settings.connection_string(), poolclass=NullPool)
-        db_conf = read_db_conf(engine.connect())
+        insp = inspect(engine)
+        if insp.has_table(ConfigStore.__tablename__):
+            db_conf = read_db_conf(engine.connect())
+            settings.update(db_conf)
         engine.dispose()
-        settings.update(db_conf)
     except Exception as exc:
         logging.getLogger(__name__).error('Failed to read config from db: %s', exc)

@@ -64,19 +64,20 @@ def test_update_db_conf():
     """Test get_settings method"""
     new_conf = {'test_key': 'test_value', 'search_docs_num': '7'}
     conf = update_db_conf(db_connection(), new_conf)
+    # update test settings since get_settings.cache_clear() was called
+    conftest.update_settings()
     assert 'test_key' not in conf
     assert conf['search_docs_num'] == '7'
 
 
 def test_get_settings_db():
     """Test get_settings with configuration from DB"""
-    new_conf = {'test_key': 'test_value', 'search_docs_num': '7'}
-    update_db_conf(db_connection(), new_conf)
-
     # current search_docs_num
     current = get_settings().search_docs_num
 
-    get_settings.cache_clear()
+    new_conf = {'test_key': 'test_value', 'search_docs_num': '7'}
+    update_db_conf(db_connection(), new_conf)
+    # update test settings since get_settings.cache_clear() was called
     conftest.update_settings()
 
     settings = get_settings()

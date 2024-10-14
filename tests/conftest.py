@@ -1,8 +1,7 @@
 """Configure settings and fixtures to be used in unit tests"""
 from pathlib import Path
-from pyexpat import model
-from pydantic_settings import SettingsConfigDict
 import pytest
+import os
 from alembic import command
 from alembic.config import Config
 from dotenv import dotenv_values
@@ -15,16 +14,21 @@ def pytest_sessionstart(session):
     return init_index()
 
 
+def pytest_configure():
+    Settings.model_config['env_file'] = None
+    # make sure we don't have any env var set
+    for key in Settings.model_fields.keys():
+        os.environ.pop(key.upper(), None)
+
+
 def update_settings():
     """Update settings reading from `tests/.env` file"""
     new_settings = dotenv_values(dotenv_path=f'{Path(__file__).parent}/.env')
     new_settings = {k.lower(): v for k, v in new_settings.items()}
     test_settings = Settings(**new_settings)
-    # test_settings.__dict__.update(new_settings)
     update_settings_from_db(test_settings)
     settings = get_settings()
-    settings.__dict__.update(test_settings.model_dump())
-    # settings.update()
+    settings.update(test_settings)
     settings.setup_environment()
     # Force tokens and test models vars
     settings.tokens_secret = ''

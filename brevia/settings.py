@@ -188,7 +188,7 @@ def read_db_conf(connection: Connection) -> dict[str, str]:
 def update_db_conf(connection: Connection, items: dict[str, str]) -> dict[str, str]:
     """ Update config records """
     # Filter out non-configurable settings
-    items = {key: value for key, value in items.items() if key in configurable_settings()}
+    items = {k: v for k, v in items.items() if k in configurable_settings()}
     with Session(connection) as session:
         session.expire_on_commit = False
         query = session.query(ConfigStore)

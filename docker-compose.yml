@@ -9,7 +9,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - 5433:${PGVECTOR_PORT:-5432}
+      - ${PGVECTOR_PORT:-5432}:5432
   pgadmin:
     image: dpage/pgadmin4
     profiles: ["admin"]
@@ -21,11 +21,11 @@ services:
     volumes:
       - pgadmindata:/var/lib/pgadmin
   breviaapi:
-    image: ghcr.io/brevia-ai/brevia:latest
-    profiles: ["api"]
+    image: ghcr.io/brevia-ai/brevia
+    profiles: ["api", "fullstack"]
     environment:
       - PGVECTOR_HOST=pgdatabase
-      - PGVECTOR_PORT=${PGVECTOR_PORT:-5432}
+      - PGVECTOR_PORT=5432
       - PGVECTOR_DATABASE=${PGVECTOR_DATABASE:-brevia}
       - PGVECTOR_USER=${PGVECTOR_USER:-postgres}
       - PGVECTOR_PASSWORD=${PGVECTOR_PASSWORD:-postgres}
@@ -35,10 +35,10 @@ services:
     volumes:
       - breviaapidata:/var/lib/breviaapi
   breviaapp:
-    image: ghcr.io/brevia-ai/brevia-app:latest
-    profiles: ["admin", "api"]
+    image: ghcr.io/brevia-ai/brevia-app
+    profiles: ["fullstack"]
     environment:
-      - NUXT_API_BASE_URL=http://breviaapi:${BREVIA_API_PORT:-8000}
+      - NUXT_API_BASE_URL=http://breviaapi:8000
     ports:
       - "${BREVIA_APP_PORT:-3000}:3000"
     volumes:

@@ -109,6 +109,8 @@ Payloads:
 }
 ```
 
+### Collections endpoints
+
 `GET /collections`
 Retrieves a list of all existing collections.
 

@@ -141,6 +141,18 @@ class Settings(BaseSettings):
 
         return f"postgresql+{driver}://{user}:{password}@{host}:{port}/{database}"
 
+    def update_from_db(self):
+        """Update settings from db"""
+        try:
+            engine = create_engine(self.connection_string(), poolclass=NullPool)
+            insp = inspect(engine)
+            if insp.has_table(ConfigStore.__tablename__):
+                db_conf = read_db_conf(engine.connect())
+                self.update(db_conf)
+            engine.dispose()
+        except Exception as exc:
+            logging.getLogger(__name__).error('Failed to read config from db: %s', exc)
+
 
 def configurable_settings() -> list[str]:
     keys = Settings.model_fields.keys()
@@ -214,20 +226,7 @@ def update_db_conf(connection: Connection, items: dict[str, str]) -> dict[str, s
 def get_settings():
     """Return Settings object instance just once (using lru_cache)"""
     settings = Settings()
-    update_settings_from_db(settings)
+    settings.update_from_db()
     settings.setup_environment()
 
     return settings
-
-
-def update_settings_from_db(settings: Settings):
-    """Update settings from db"""
-    try:
-        engine = create_engine(settings.connection_string(), poolclass=NullPool)
-        insp = inspect(engine)
-        if insp.has_table(ConfigStore.__tablename__):
-            db_conf = read_db_conf(engine.connect())
-            settings.update(db_conf)
-        engine.dispose()
-    except Exception as exc:
-        logging.getLogger(__name__).error('Failed to read config from db: %s', exc)

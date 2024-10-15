@@ -6,7 +6,7 @@ from alembic import command
 from alembic.config import Config
 from dotenv import dotenv_values
 from brevia.index import init_index
-from brevia.settings import Settings, get_settings, update_settings_from_db
+from brevia.settings import Settings, get_settings
 
 
 def pytest_sessionstart(session):
@@ -27,7 +27,7 @@ def update_settings():
     new_settings = dotenv_values(dotenv_path=f'{Path(__file__).parent}/.env')
     new_settings = {k.lower(): v for k, v in new_settings.items()}
     test_settings = Settings(**new_settings)
-    update_settings_from_db(test_settings)
+    test_settings.update_from_db()
     settings = get_settings()
     settings.update(test_settings)
     settings.setup_environment()

@@ -1,5 +1,6 @@
 """Settings module tests"""
 from os import environ
+import pytest
 from sqlalchemy.orm import Session
 from brevia.connection import db_connection
 from brevia.settings import (
@@ -72,13 +73,23 @@ def test_read_db_conf():
 
 
 def test_update_db_conf():
-    """Test get_settings method"""
+    """Test update_db_conf method"""
     new_conf = {'test_key': 'test_value', 'search_docs_num': '7'}
     conf = update_db_conf(db_connection(), new_conf)
     # update test settings since get_settings.cache_clear() was called
     conftest.update_settings()
     assert 'test_key' not in conf
     assert conf['search_docs_num'] == '7'
+
+
+def test_update_db_conf_failure():
+    """Test update_db_conf failure"""
+    new_conf = {'search_docs_num': 'wrong value'}
+    with pytest.raises(ValueError) as exc:
+        update_db_conf(db_connection(), new_conf)
+
+    assert 'search_docs_num' in str(exc.value)
+    assert 'wrong value' in str(exc.value)
 
 
 def test_get_settings_db():

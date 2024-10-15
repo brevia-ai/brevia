@@ -10,7 +10,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Session
 from langchain_community.vectorstores.pgembedding import BaseModel
-from pydantic import Json
+from pydantic import Json, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -201,6 +201,13 @@ def update_db_conf(connection: Connection, items: dict[str, str]) -> dict[str, s
     """ Update config records """
     # Filter out non-configurable settings
     items = {k: v for k, v in items.items() if k in configurable_settings()}
+    # validate items - this will raise a validation Error a key is not valid
+    try:
+        Settings(**items)
+    except ValidationError as exc:
+        logging.getLogger(__name__).error('Invalid settings: %s', exc)
+        raise exc
+
     with Session(connection) as session:
         session.expire_on_commit = False
         query = session.query(ConfigStore)

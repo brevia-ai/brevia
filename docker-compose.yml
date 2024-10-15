@@ -22,7 +22,7 @@ services:
       - pgadmindata:/var/lib/pgadmin
   breviaapi:
     image: ghcr.io/brevia-ai/brevia
-    profiles: ["api"]
+    profiles: ["api", "fullstack"]
     environment:
       - PGVECTOR_HOST=pgdatabase
       - PGVECTOR_PORT=5432
@@ -36,7 +36,7 @@ services:
       - breviaapidata:/var/lib/breviaapi
   breviaapp:
     image: ghcr.io/brevia-ai/brevia-app
-    profiles: ["admin", "api"]
+    profiles: ["fullstack"]
     environment:
       - NUXT_API_BASE_URL=http://breviaapi:8000
     ports:

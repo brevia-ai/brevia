@@ -1764,7 +1764,7 @@
 					"response": []
 				},
 				{
-					"name": "Read configuration key names",
+					"name": "Read configuration schema",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1786,13 +1786,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{baseUrl}}/config/keys",
+							"raw": "{{baseUrl}}/config/schema",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"config",
-								"keys"
+								"schema"
 							]
 						}
 					},

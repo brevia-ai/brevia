@@ -4,9 +4,10 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import ValidationError
 from brevia.settings import (
     Settings,
-    read_db_conf,
+    get_configurable_keys,
+    get_settings,
+    reset_db_conf,
     update_db_conf,
-    configurable_settings,
 )
 from brevia.dependencies import get_dependencies
 from brevia.connection import db_connection
@@ -22,7 +23,7 @@ router = APIRouter()
 )
 def get_config():
     """ /config endpoint, read Brevia configuration """
-    return read_db_conf(db_connection())
+    return get_settings().model_dump()
 
 
 @router.api_route(
@@ -33,11 +34,19 @@ def get_config():
 )
 def get_config_schema():
     """ /config/schema endpoint, read Brevia configuration settings keys """
-    schema = Settings.model_json_schema()
-    props = schema.get('properties', {})
-    schema['properties'] = {key: props[key] for key in configurable_settings()}
+    return get_settings().get_configurable_schema()
 
-    return schema
+
+def check_keys(keys: list[str]):
+    """Check if all keys are configurable"""
+    not_configurable = [
+        key for key in keys if key not in get_configurable_keys()
+    ]
+    if not_configurable:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            f'There are not configurable settings: {",".join(not_configurable)}',
+        )
 
 
 @router.api_route(
@@ -48,14 +57,8 @@ def get_config_schema():
 )
 def save_config(config: dict[str, Any]):
     """POST /config endpoint, save Brevia configuration """
-    not_configurable = [
-        key for key in config.keys() if key not in configurable_settings()
-    ]
-    if not_configurable:
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST,
-            f'There are not configurable settings: {",".join(not_configurable)}',
-        )
+    check_keys(config.keys())
+
     try:
         Settings(**config)
     except ValidationError as exc:
@@ -65,3 +68,16 @@ def save_config(config: dict[str, Any]):
         )
 
     return update_db_conf(db_connection(), config)
+
+
+@router.api_route(
+    '/config/reset',
+    methods=['POST'],
+    dependencies=get_dependencies(),
+    tags=['Config'],
+)
+def reset_config(keys: list[str]):
+    """POST /config/reset endpoint, reset to default a list of settings """
+    check_keys(keys)
+
+    return reset_db_conf(db_connection(), keys)

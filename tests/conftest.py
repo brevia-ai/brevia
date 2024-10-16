@@ -1,7 +1,7 @@
 """Configure settings and fixtures to be used in unit tests"""
 from pathlib import Path
-import pytest
 import os
+import pytest
 from alembic import command
 from alembic.config import Config
 from dotenv import dotenv_values
@@ -18,7 +18,7 @@ def pytest_configure():
     """Avoid .env (dotenv) and env vars usage in settings for unit tests"""
     Settings.model_config['env_file'] = None
     # make sure we don't have any env var set
-    for key in Settings.model_fields.keys():
+    for key in Settings.model_fields:
         os.environ.pop(key.upper(), None)
 
 

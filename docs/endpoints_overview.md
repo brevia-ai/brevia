@@ -1,5 +1,7 @@
 # Endpoints
 
+## Chat and search endpoints
+
 ### POST `/chat`
 
 Initiates a natural conversation with the model.
@@ -109,7 +111,7 @@ Payloads:
 }
 ```
 
-### Collections endpoints
+## Collections endpoints
 
 `GET /collections`
 Retrieves a list of all existing collections.
@@ -180,6 +182,8 @@ In this example, we update the collection metadata to include additional informa
 `DELETE /collections/{{collection_id}}`
 Deletes a collection.
 
+## Index endpoints
+
 ### POST `/index`
 
 Splits the text and creates new vectors index and a list of embeddings for a document.
@@ -239,6 +243,8 @@ Returns a list of documents metadata in a collection, so you will get unique ite
 
 Deletes an indexed document.
 
+## Analysis endpoints
+
 ### POST `/summarize`
 
 Performs summarization of a text passed as input
@@ -273,6 +279,8 @@ It works only with `form-data` input that must include a `file` parameter with t
 * `service`: string with service class name to use to perform the analysys in dot notation format
 * `payload`: additional input parameters as JSON string
 
+## Async jobs endpoints
+
 ### GET `/jobs/{uuid}`
 
 Retrieve aync job data using its `uuid`
@@ -300,6 +308,8 @@ Retrieve aync job data using its `uuid`
 }
 ```
 
+## Status endpoints
+
 ### GET `/status`
 
 Retrieve API status, check if database is up and running.
@@ -317,4 +327,77 @@ If, for instance, there is an issue with the database connection or performing s
 {
     "db_status": "KO",
 }
+```
+
+## Configuration endpoints
+
+### GET `/config`
+
+Retrieve current global configuration. A JSON object with configuration keys and value pairs is returned.
+A small example excerpt could look like this (there are many more items):
+
+```JSON
+{
+    "verbose_mode": true,
+    "text_chunk_size": 4555,
+    "text_chunk_overlap": 550,
+}
+```
+
+### GET `/config/schema`
+
+Get the configuration JSON Schema A JSON object with configuration keys and value pairs is returned.
+Here is a short sample excerpt, there are many more properties:
+
+```JSON
+{
+    "description": "Brevia settings",
+    "properties": {
+        "verbose_mode": {
+            "default": true,
+            "title": "Verbose Mode",
+            "type": "boolean"
+        },
+        "text_chunk_size": {
+            "default": 4000,
+            "title": "Text Chunk Size",
+            "type": "integer"
+        },
+    }
+}
+```
+
+### POST `/config`
+
+Update some configuration settings with key/value pairs. The new settings will be saved in the database and will override the corresponding default settings.
+
+Only the submitted items will be changed, other configuration settings will not change.
+
+But there are some limitations: some parameters such as the DB connection or security tokens cannot be changed.
+
+Example payload:
+
+```JSON
+{
+    "text_chunk_size": 4500,
+    "text_chunk_overlap": 550,
+    "search_docs_num": 8
+}
+```
+
+### POST `/config/reset`
+
+Reset some configuration settings to default values.
+These settings will be removed from the database, if previously customized.
+
+Only the submitted items will be reset, other configuration settings will not change.
+
+Example payload:
+
+```JSON
+[
+    "text_chunk_size",
+    "text_chunk_overlap",
+    "search_docs_num"
+]
 ```

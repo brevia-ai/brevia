@@ -9,10 +9,10 @@ Brevia database schema consists, as of now, of just five tables:
 
 * `alembic_version` - used by [Alembic](https://alembic.sqlalchemy.org) to keep track of migration status
 * `async_jobs` - store [asynchronous jobs](async_jobs.md) data
+* `config` - store [configuration](config.md) data
 * `langchain_pg_collection` - collection information, table used by Postgres vector store in [LangChain](https://github.com/langchain-ai/langchain)Chain
 * `langchain_pg_embedding` - collection embeddings, used by Postgres vector store in LangChain
 * `chat_history` - store chat messages history
-
 
 Here a simple ERD diagram of Brevia database schema
 

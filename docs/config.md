@@ -2,8 +2,8 @@
 
 There are two type of configuration in a Brevia project:
 
-* general configuration through environment variables or a simple `.env` file
-* specific configuration of a [single `collection`](collection_config.md) mainly for RAG applications
+* general configuration set through environment variables or a simple `.env` file, [see below](#configuration-customization)
+* specific configuration of a [single `collection`](collection_config.md) mainly for RAG applications, that are stored in the collection metadata
 
 In this page we will explain the general configuration items in Brevia.
 
@@ -12,7 +12,19 @@ All configuration items have working defaults with the exception of:
 * external services settings like LLM APIs or monitor/debugging tools (like Langsmith). Those services rely on specific environment variables that we cannot include or predict here
 * database connection configuration
 
-## Database
+## Configuration customization
+
+General configurations can be customized in various ways, some modes have precedence over others.
+
+1. through a `.env` file in the app root folder
+1. through environment variables
+1. through the [`config` table records](database.md#schema) of the database
+
+Each of the described modes prevails over the previouse ones in the order in which they are listed (DB configuration wins).
+
+Database configuration can be done through [configuration endpoints](endpoints_overview.md#configuration-endpoints) but has some limitations: you cannot change some parameters such as the DB connection or security tokens.
+
+## Database connection
 
 These settings define the connection to your Postgres database with `pgvector` extension:
 

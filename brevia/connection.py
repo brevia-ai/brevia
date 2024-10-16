@@ -2,7 +2,6 @@
 import subprocess
 from functools import lru_cache
 import sys
-from urllib import parse
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Session
@@ -13,18 +12,7 @@ from brevia.settings import get_settings
 
 def connection_string() -> str:
     """ Postgres+pgvector db connection string """
-    conf = get_settings()
-    if conf.pgvector_dsn_uri:
-        return conf.pgvector_dsn_uri
-
-    driver = conf.pgvector_driver
-    host = conf.pgvector_host
-    port = conf.pgvector_port
-    database = conf.pgvector_database
-    user = conf.pgvector_user
-    password = parse.quote_plus(conf.pgvector_password)
-
-    return f"postgresql+{driver}://{user}:{password}@{host}:{port}/{database}"
+    return get_settings().connection_string()
 
 
 @lru_cache

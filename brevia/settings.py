@@ -1,16 +1,15 @@
 """Settings module"""
 import logging
 from functools import lru_cache
-from typing import Any
+from typing import Annotated, Any
 from os import environ
 from urllib import parse
-from fnmatch import fnmatch
 from sqlalchemy import NullPool, create_engine, Column, String, func, inspect
 from sqlalchemy.engine import Connection
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Session
 from langchain_community.vectorstores.pgembedding import BaseModel
-from pydantic import Json, ValidationError
+from pydantic import Field, Json, PrivateAttr, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,33 +18,34 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file='.env', extra='ignore'
     )
+    _defaults: dict[str, Any] = PrivateAttr(default={})
 
     verbose_mode: bool = False
 
     # Postgres+pgvector vector db
-    pgvector_host: str = 'localhost'
-    pgvector_driver: str = 'psycopg2'
-    pgvector_port: int = 5432
-    pgvector_database: str = 'brevia'
-    pgvector_user: str = ''
-    pgvector_password: str = ''
-    pgvector_pool_size: int = 10
+    pgvector_host: str = Field(default='localhost', exclude=True)
+    pgvector_driver: str = Field(default='psycopg2', exclude=True)
+    pgvector_port: int = Field(default=5432, exclude=True)
+    pgvector_database: str = Field(default='brevia', exclude=True)
+    pgvector_user: str = Field(default='', exclude=True)
+    pgvector_password: str = Field(default='', exclude=True)
+    pgvector_pool_size: int = Field(default=10, exclude=True)
     # optional DSN URI, if set other pgvector_* settings are ignored
-    pgvector_dsn_uri: str = ''
+    pgvector_dsn_uri: str = Field(default='', exclude=True)
 
     # Tokens
-    tokens_secret: str = ''
-    tokens_users: str = ''
-    status_token: str = ''
+    tokens_secret: str = Field(default='', exclude=True)
+    tokens_users: str = Field(default='', exclude=True)
+    status_token: str = Field(default='', exclude=True)
 
-    # API keys, tokens...
+    # External services API keys (deprecated)
     # You should use `brevia_env_secrets` to store secrets that
     # must be available as environment variables
-    openai_api_key: str = ''
-    cohere_api_key: str = ''
+    openai_api_key: Annotated[str, Field(deprecated='Use `brevia_env_secrets` instead')] = Field(default='', exclude=True)
+    cohere_api_key: Annotated[str, Field(deprecated='Use `brevia_env_secrets` instead')] = Field(default='', exclude=True)
 
     # Test models - only in unit tests
-    use_test_models: bool = False
+    use_test_models: bool = Field(default=False, exclude=True)
 
     # Index - text splitter settings
     text_chunk_size: int = 2000
@@ -86,7 +86,7 @@ class Settings(BaseSettings):
     embeddings: Json = '{"_type": "openai-embeddings"}'
     # every vendor has its own embeddings vector size, some vendors have multiple sizes
     # this value should be unique in your project to avoid calculation errors
-    embeddings_size: int = 1536
+    embeddings_size: Annotated[int, Field(deprecated='Define size in `embeddings` conf')] = Field(default=1536, exclude=True)
 
     # QA
     qa_no_chat_history: bool = False  # don't load chat history
@@ -115,17 +115,11 @@ class Settings(BaseSettings):
             setattr(self, key, getattr(other, key))
 
     def setup_environment(self):
-        """Setup some useful environment variables"""
+        """Setup some useful environment variables from `brevia_env_secrets`"""
         log = logging.getLogger(__name__)
         for key in self.brevia_env_secrets.keys():
             environ[key] = self.brevia_env_secrets.get(key)
             log.info('"%s" env var set', key)
-        if self.openai_api_key:
-            environ['OPENAI_API_KEY'] = self.openai_api_key
-            log.info('"OPENAI_API_KEY" env var set')
-        if self.cohere_api_key:
-            environ['COHERE_API_KEY'] = self.cohere_api_key
-            log.info('"COHERE_API_KEY" env var set')
 
     def connection_string(self) -> str:
         """ Db connection string from Settings """
@@ -153,18 +147,17 @@ class Settings(BaseSettings):
         except Exception as exc:
             logging.getLogger(__name__).error('Failed to read config from db: %s', exc)
 
+    def setup_defaults(self):
+        """Setup defaults"""
+        self._defaults = self.model_dump()
 
-def configurable_settings() -> list[str]:
-    keys = Settings.model_fields.keys()
-    excluded_keys = [
-        'pgvector_*',
-        'tokens_*',
-        'status_token',
-        'use_test_models'
-    ]
+    def get_configurable_schema(self) -> dict[str, Any]:
+        """Get JSON Schema of configurable properties, with actual defaults"""
+        schema = self.model_json_schema(mode='serialization')
+        for key, value in schema['properties'].items():
+            value['default'] = self._defaults[key]
 
-    return [key for key in keys
-            if not any(fnmatch(key, pattern) for pattern in excluded_keys)]
+        return schema
 
 
 class ConfigStore(BaseModel):
@@ -187,20 +180,26 @@ class ConfigStore(BaseModel):
     )
 
 
+@lru_cache
+def get_configurable_keys():
+    """Get configurable keys"""
+    return Settings().model_dump().keys()
+
+
 def read_db_conf(connection: Connection) -> dict[str, str]:
     """ Read all config records """
     with Session(connection) as session:
         query = session.query(ConfigStore.config_key, ConfigStore.config_val)
-        items = {key: value for key, value in query.all()}
         # Filter out non-configurable settings
-        return {key: value
-                for key, value in items.items() if key in configurable_settings()}
+        keys = get_configurable_keys()
+        return {key: value for key, value in query.all() if key in keys}
 
 
 def update_db_conf(connection: Connection, items: dict[str, str]) -> dict[str, str]:
-    """ Update config records """
+    """ Update some config items """
     # Filter out non-configurable settings
-    items = {k: v for k, v in items.items() if k in configurable_settings()}
+    keys = get_configurable_keys()
+    items = {k: v for k, v in items.items() if k in keys}
     # validate items - this will raise a validation Error a key is not valid
     try:
         Settings(**items)
@@ -218,10 +217,26 @@ def update_db_conf(connection: Connection, items: dict[str, str]) -> dict[str, s
             elif current_conf[key].config_val != value:
                 current_conf[key].config_val = value
                 session.add(current_conf[key])
-        for key in current_conf.keys():
-            if key not in items:
-                session.delete(current_conf[key])
 
+        session.commit()
+    # Clear settings cache, force settings reload
+    get_settings.cache_clear()
+
+    return read_db_conf(connection)
+
+
+def reset_db_conf(connection: Connection, items: list[str]) -> dict[str, str]:
+    """ Reset to defatul some config items """
+    # Filter out non-configurable settings
+    keys = get_configurable_keys()
+    items = [k for k in items if k in keys]
+    with Session(connection) as session:
+        session.expire_on_commit = False
+        query = session.query(ConfigStore)
+        current_conf = {u.config_key: u for u in query.all()}
+        for key in items:
+            if key in current_conf:
+                session.delete(current_conf[key])
         session.commit()
     # Clear settings cache, force settings reload
     get_settings.cache_clear()
@@ -233,6 +248,7 @@ def update_db_conf(connection: Connection, items: dict[str, str]) -> dict[str, s
 def get_settings():
     """Return Settings object instance just once (using lru_cache)"""
     settings = Settings()
+    settings.setup_defaults()
     settings.update_from_db()
     settings.setup_environment()
 

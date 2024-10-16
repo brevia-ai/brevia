@@ -41,8 +41,14 @@ class Settings(BaseSettings):
     # External services API keys (deprecated)
     # You should use `brevia_env_secrets` to store secrets that
     # must be available as environment variables
-    openai_api_key: Annotated[str, Field(deprecated='Use `brevia_env_secrets` instead')] = Field(default='', exclude=True)
-    cohere_api_key: Annotated[str, Field(deprecated='Use `brevia_env_secrets` instead')] = Field(default='', exclude=True)
+    openai_api_key: Annotated[
+        str,
+        Field(deprecated='Use `brevia_env_secrets` instead')
+    ] = Field(default='', exclude=True)
+    cohere_api_key: Annotated[
+        str,
+        Field(deprecated='Use `brevia_env_secrets` instead')
+    ] = Field(default='', exclude=True)
 
     # Test models - only in unit tests
     use_test_models: bool = Field(default=False, exclude=True)
@@ -86,7 +92,10 @@ class Settings(BaseSettings):
     embeddings: Json = '{"_type": "openai-embeddings"}'
     # every vendor has its own embeddings vector size, some vendors have multiple sizes
     # this value should be unique in your project to avoid calculation errors
-    embeddings_size: Annotated[int, Field(deprecated='Define size in `embeddings` conf')] = Field(default=1536, exclude=True)
+    embeddings_size: Annotated[
+        int,
+        Field(deprecated='Define size in `embeddings` conf')
+    ] = Field(default=1536, exclude=True)
 
     # QA
     qa_no_chat_history: bool = False  # don't load chat history

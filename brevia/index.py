@@ -1,6 +1,8 @@
 """Index document with embeddings in vector database."""
+from functools import lru_cache
 from os import path
 from logging import getLogger
+from warnings import warn
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgembedding import EmbeddingStore
 from langchain_community.vectorstores.pgvector import PGVector
@@ -19,9 +21,16 @@ from brevia.utilities.types import load_type
 
 def init_index():
     """Init index data"""
+    warn("init_index deprecated, use init_splitting_data instead", DeprecationWarning)
+    init_splitting_data()
+
+
+@lru_cache
+def init_splitting_data() -> bool:
+    """Init splitting tools data (NLTK for now)"""
     try:
         import nltk  # pylint: disable=import-outside-toplevel
-        nltk.download('punkt')
+        return nltk.download('punkt')
 
     except ImportError as exc:
         raise ImportError(
@@ -92,6 +101,7 @@ def split_document(
     document: Document, collection_meta: dict = {}
 ) -> list[Document]:
     """ Split document into text chunks and return a list of documents"""
+    init_splitting_data()
     text_splitter = create_splitter(collection_meta)
     texts = text_splitter.split_documents([document])
     counter = 1

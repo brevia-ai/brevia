@@ -37,7 +37,9 @@ extra:
 nav:
   - Brevia: index.md
   - Setup: setup.md
-  - Configuration: config.md
+  - Configuration:
+     - Global configuration: config.md
+     - Collection configuration: collection_config.md
   - Security: security.md
   - Tutorials:
     - Create Simple RAG: tutorials/create_collection.md

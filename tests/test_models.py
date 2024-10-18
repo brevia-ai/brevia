@@ -38,8 +38,13 @@ def test_load_chatmodel():
 
     settings = get_settings()
     settings.use_test_models = False
+    # load with alias
     result = load_chatmodel({'_type': 'openai-chat'})
     assert isinstance(result, ChatOpenAI)
+    # load with class path name
+    result = load_chatmodel({'_type': 'langchain_openai.chat_models.ChatOpenAI'})
+    assert isinstance(result, ChatOpenAI)
+
     settings.use_test_models = True
 
 
@@ -77,7 +82,14 @@ def test_load_embeddings():
 
     settings = get_settings()
     settings.use_test_models = False
+    # load default
     result = load_embeddings()
+    assert isinstance(result, OpenAIEmbeddings)
+    # load with alias
+    result = load_embeddings({'_type': 'openai-embeddings'})
+    assert isinstance(result, OpenAIEmbeddings)
+    # load with class path name
+    result = load_embeddings({'_type': 'langchain_openai.embeddings.OpenAIEmbeddings'})
     assert isinstance(result, OpenAIEmbeddings)
     settings.use_test_models = True
 
@@ -87,9 +99,15 @@ def test_load_embeddings_fail():
     settings = get_settings()
     settings.use_test_models = False
     curr_embeddings = settings.embeddings
+    # load with missing alias
     settings.embeddings = {'_type': 'unknown-embeddings'}
     with pytest.raises(ValueError) as exc:
         load_embeddings()
-    assert str(exc.value) == 'Loading "unknown-embeddings" Embeddings not supported'
+    assert str(exc.value).startswith('Class "unknown-embeddings" not found in ')
+    # load with missing class name path
+    settings.embeddings = {'_type': 'some.unknown.StrangeEmbeddings'}
+    with pytest.raises(ValueError) as exc:
+        load_embeddings()
+    assert str(exc.value) == 'Module "some.unknown" not found'
     settings.use_test_models = True
     settings.embeddings = curr_embeddings

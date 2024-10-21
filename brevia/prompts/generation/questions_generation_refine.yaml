@@ -1,0 +1,18 @@
+_type: prompt
+input_variables:
+    ["existing_answer", "text"]
+template: |
+    Ti viene fornito il seguente documento parziale contenente una lista di domande:
+    -------------------
+    {existing_answer}
+    -------------------
+
+    Devi integrare le domande presenti nel documento parziale con delle nuove domande create partendo dal seguente testo nuovo:
+    --------------
+    {text}
+    --------------
+
+    Nel nuovo crea delle domande per un concorso per la pubblica amministrazione tenendo conto delle seguenti regole:
+
+    linee guida:
+

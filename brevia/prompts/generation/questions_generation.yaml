@@ -1,0 +1,30 @@
+_type: prompt
+input_variables:
+    ["input"]
+template: |
+    Testo Normativo:
+    -------------
+    {input}
+    -------------
+
+    Genera un elenco di controllo basato sul testo normativo fornito.
+
+    Ripeti i seguenti 2 passaggi 8 volte.
+
+    Passo 1. Identifica 5-6 informazioni dal testo normativo necessarie per l'elenco di controllo, mancanti dall'elenco di controllo precedentemente generato.
+    Passo 2. Scrivi un nuovo elenco di controllo più preciso degli stessi punti che copre e riempie tutte le informazioni dall'elenco di controllo precedente più i punti mancanti.
+
+    Linee Guida:
+
+    - Ogni parola conta: riscrivi l'elenco di controllo precedente per migliorare le informazioni delle risposte e fare spazio per informazioni aggiuntive.
+    - Crea spazio con fusione, compressione e rimozione di frasi non informative come "il testo normativo tratta".
+    - L'elenco di controllo deve diventare altamente dettagliato.
+    - I punti mancanti possono apparire ovunque nel nuovo riepilogo.
+    - Non eliminare mai punti dall'elenco di controllo precedente.
+    - Scrivi solo l'elenco di controllo finale in CORSIVO.
+
+    ----------------------------
+    ESEMPIO DI ELENCO DI CONTROLLO DI OUTPUT:
+
+
+    --------------------

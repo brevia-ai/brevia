@@ -2,7 +2,7 @@
 from abc import ABC, abstractmethod
 from os import unlink
 from langchain_community.callbacks import get_openai_callback
-from brevia import load_file, analysis
+from brevia import generate, load_file, analysis
 
 
 class BaseService(ABC):
@@ -21,6 +21,25 @@ class BaseService(ABC):
     @abstractmethod
     def validate(self, payload: dict) -> bool:
         """Validate service payload"""
+
+
+class GenerateQuestionsService(BaseService):
+    """Service to perform summarization from text input"""
+
+    def execute(self, payload: dict):
+        """Service logic"""
+        # token_data = payload.pop('token_data')
+        with get_openai_callback() as callb:
+            result = generate.questions(**payload)
+
+        return {
+            'output': result,
+            'token_data': callb.__dict__
+        }
+
+    def validate(self, payload: dict):
+        """Payload validation"""
+        return True
 
 
 class SummarizeTextService(BaseService):

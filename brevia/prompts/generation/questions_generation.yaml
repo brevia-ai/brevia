@@ -1,17 +1,17 @@
 _type: prompt
 input_variables:
-    ["input"]
+    ["text"]
 template: |
-    Testo Normativo:
+    Testo da Analizzare:
     -------------
-    {input}
+    {text}
     -------------
 
     Genera un elenco di controllo basato sul testo normativo fornito.
 
     Ripeti i seguenti 2 passaggi 8 volte.
 
-    Passo 1. Identifica 5-6 informazioni dal testo normativo necessarie per l'elenco di controllo, mancanti dall'elenco di controllo precedentemente generato.
+    Passo 1. Identifica 2-3 informazioni dal testo necessarie per l'elenco di controllo, mancanti dall'elenco di controllo precedentemente generato.
     Passo 2. Scrivi un nuovo elenco di controllo più preciso degli stessi punti che copre e riempie tutte le informazioni dall'elenco di controllo precedente più i punti mancanti.
 
     Linee Guida:

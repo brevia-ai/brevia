@@ -2,7 +2,7 @@ _type: prompt
 input_variables:
     ["existing_answer", "text"]
 template: |
-    Ti viene fornito il seguente documento parziale contenente una lista di domande:
+    Ti viene fornito il seguente documento parziale contenente una lista di domande a risposta multipla:
     -------------------
     {existing_answer}
     -------------------
@@ -12,7 +12,7 @@ template: |
     {text}
     --------------
 
-    Nel nuovo crea delle domande per un concorso per la pubblica amministrazione tenendo conto delle seguenti regole:
+    Nel nuovo crea delle domande per un concorso per la pubblica amministrazione a risposta multipla tenendo conto delle seguenti regole:
 
     linee guida:
 

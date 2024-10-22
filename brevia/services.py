@@ -30,7 +30,10 @@ class GenerateQuestionsService(BaseService):
         """Service logic"""
         # token_data = payload.pop('token_data')
         with get_openai_callback() as callb:
-            result = generate.questions(**payload)
+            result = generate.questions(
+                file_path=payload.get('file_path'),
+                prompts={}
+            )
 
         return {
             'output': result,

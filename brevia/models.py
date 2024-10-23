@@ -104,7 +104,7 @@ def load_embeddings(custom_conf: dict | None = None) -> Embeddings:
     """ Load Embeddings engine """
     settings = get_settings()
     if test_models_in_use():
-        return FakeEmbeddings(size=settings.embeddings_size)
+        return FakeEmbeddings(size=1536)
 
     config = settings.embeddings.copy() if not custom_conf else custom_conf
     embed_aliases = {

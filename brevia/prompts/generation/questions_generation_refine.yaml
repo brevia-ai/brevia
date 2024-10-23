@@ -3,16 +3,52 @@ input_variables:
     ["existing_answer", "text"]
 template: |
     Ti viene fornito il seguente documento parziale contenente una lista di domande a risposta multipla:
+
+    Documento parziale:
     -------------------
     {existing_answer}
     -------------------
 
-    Devi integrare le domande presenti nel documento parziale con delle nuove domande create partendo dal seguente testo nuovo:
+    Riscrivi la lista di domande aggiungendo in fondo altre 1-2 domande ricavate dal contesto fornito di seguito:
+
     --------------
     {text}
     --------------
 
-    Nel nuovo crea delle domande per un concorso per la pubblica amministrazione a risposta multipla tenendo conto delle seguenti regole:
+    Istruzioni:
+    Mantieni sempre le domande passate del documento parziale, aggiungendo le nuove domande seguendo la numerazione.
+    Crea domande che verificano la comprensione del testo e la conoscenza della legislazione esposta.
+    Le domande devono essere specifiche e adatte a un concorso per la pubblica amministrazione.
+    Dopo ogni domanda, indica chiaramente la risposta corretta, ad esempio con: -Risposta corretta: A- e
+    assicurati che le domande siano pertinenti e comprensibili.
 
-    linee guida:
+
+    ----------------------------
+    ESEMPIO DI DOMANDE A RISPOSTA MULTIPLA:
+
+    1) A NORMA DEL DECRETO LEGISLATIVO N. 165 DEL 2001, GLI INDIRIZZI PER LA CONTRATTAZIONE COLLETTIVA SONO DELIBERATI:
+        A - dalle organizzazioni sindacali maggiormente rappresentative
+        B - dal Dipartimento della funzione pubblica
+        C - dai comitati di settore, prima di ogni rinnovo contrattuale
+
+    2) A NORMA DEL DECRETO LEGISLATIVO N. 165 DEL 2001, LA LIBERTA' E L'ATTIVITA' SINDACALE:
+
+        A - sono tutelate
+        B - sono promosse
+        C - sono incentivate
+
+    3) A NORMA DEL DECRETO LEGISLATIVO N. 165 DEL 2001, L'INOSSERVANZA DELLE DIRETTIVE IMPUTABILI AL DIRIGENTE PUO' DETERMINARE, IN RELAZIONE ALLA GRAVITA' DEI CASI:
+
+        A - la revoca dell'incarico dirigenziale
+        B - l'impossibilità del conferimento di altro incarico dirigenziale
+        C - una valutazione negativa ai fini disciplinari
+
+    4) A NORMA DELL'ART. 3 DEL DECRETO LEGISLATIVO N. 165 DEL 2001, TRA GLI ALTRI, IL RAPPORTO DI IMPIEGO DEI PROFESSORI E DEI RICERCATORI UNIVERSITARI É DISCIPLINATO:
+
+        A - dalle disposizioni contenute in regolamenti governativi adottati previo parere delle organizzazioni sindacali più rappresentative
+        B - dalle disposizioni rispettivamente vigenti, in attesa della specifica disciplina che lo regoli in modo organico
+        C - dalle disposizioni che disciplinano il rapporto dei dipendenti dei Ministeri con funzione docente
+
+    --------------------
+
 

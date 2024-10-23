@@ -2,29 +2,45 @@ _type: prompt
 input_variables:
     ["text"]
 template: |
-    Testo da Analizzare:
+    Analizza il seguente testo che contiene informazioni normative e giuridiche rilevanti per la pubblica amministrazione.
+    Sulla base di questo contesto, genera 1-2 domande a risposta multipla, ciascuna con quattro opzioni (A, B, C, D),
+    di cui una sola risposta corretta.
+    Evidenzia la risposta corretta e assicurati che le domande siano pertinenti e comprensibili.
+
+    Testo di riferimento:
     -------------
     {text}
     -------------
 
-    Genera un elenco di controllo basato sul testo normativo fornito.
-
-    Ripeti i seguenti 2 passaggi 8 volte.
-
-    Passo 1. Identifica 2-3 informazioni dal testo necessarie per l'elenco di controllo, mancanti dall'elenco di controllo precedentemente generato.
-    Passo 2. Scrivi un nuovo elenco di controllo più preciso degli stessi punti che copre e riempie tutte le informazioni dall'elenco di controllo precedente più i punti mancanti.
-
-    Linee Guida:
-
-    - Ogni parola conta: riscrivi l'elenco di controllo precedente per migliorare le informazioni delle risposte e fare spazio per informazioni aggiuntive.
-    - Crea spazio con fusione, compressione e rimozione di frasi non informative come "il testo normativo tratta".
-    - L'elenco di controllo deve diventare altamente dettagliato.
-    - I punti mancanti possono apparire ovunque nel nuovo riepilogo.
-    - Non eliminare mai punti dall'elenco di controllo precedente.
-    - Scrivi solo l'elenco di controllo finale in CORSIVO.
+    Richiesta:
+    Crea domande che verificano la comprensione del testo e la conoscenza della legislazione esposta.
+    Le domande devono essere specifiche e adatte a un concorso per la pubblica amministrazione.
+    Dopo ogni domanda, indica chiaramente la risposta corretta, ad esempio con: -Risposta corretta: A-.
 
     ----------------------------
-    ESEMPIO DI ELENCO DI CONTROLLO DI OUTPUT:
+    ESEMPIO DI DOMANDE A RISPOSTA MULTIPLA:
 
+    1) A NORMA DEL DECRETO LEGISLATIVO N. 165 DEL 2001, GLI INDIRIZZI PER LA CONTRATTAZIONE COLLETTIVA SONO DELIBERATI:
+        A - dalle organizzazioni sindacali maggiormente rappresentative
+        B - dal Dipartimento della funzione pubblica
+        C - dai comitati di settore, prima di ogni rinnovo contrattuale
+
+    2) A NORMA DEL DECRETO LEGISLATIVO N. 165 DEL 2001, LA LIBERTA' E L'ATTIVITA' SINDACALE:
+
+        A - sono tutelate
+        B - sono promosse
+        C - sono incentivate
+
+    3) A NORMA DEL DECRETO LEGISLATIVO N. 165 DEL 2001, L'INOSSERVANZA DELLE DIRETTIVE IMPUTABILI AL DIRIGENTE PUO' DETERMINARE, IN RELAZIONE ALLA GRAVITA' DEI CASI:
+
+        A - la revoca dell'incarico dirigenziale
+        B - l'impossibilità del conferimento di altro incarico dirigenziale
+        C - una valutazione negativa ai fini disciplinari
+
+    4) A NORMA DELL'ART. 3 DEL DECRETO LEGISLATIVO N. 165 DEL 2001, TRA GLI ALTRI, IL RAPPORTO DI IMPIEGO DEI PROFESSORI E DEI RICERCATORI UNIVERSITARI É DISCIPLINATO:
+
+        A - dalle disposizioni contenute in regolamenti governativi adottati previo parere delle organizzazioni sindacali più rappresentative
+        B - dalle disposizioni rispettivamente vigenti, in attesa della specifica disciplina che lo regoli in modo organico
+        C - dalle disposizioni che disciplinano il rapporto dei dipendenti dei Ministeri con funzione docente
 
     --------------------

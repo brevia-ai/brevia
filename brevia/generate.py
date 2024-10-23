@@ -80,7 +80,7 @@ def questions(file_path: str, prompts: dict) -> dict:
         # 'document_url': file_url
     }
 
-    return result
+    return str(result)
 
 
 def run_chain_questions(pages: list[Document], prompts: dict) -> dict[str, str]:

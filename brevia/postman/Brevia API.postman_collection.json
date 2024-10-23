@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "b8d07c1e-d4fa-4b02-8759-d4ed41e1f7ce",
+		"_postman_id": "75445fbb-2a26-4142-9786-52f2a7b230bf",
 		"name": "Brevia API",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "234034"
@@ -1719,6 +1719,201 @@
 							],
 							"path": [
 								"status"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Config",
+			"item": [
+				{
+					"name": "Read configuration",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/config",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"config"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Read configuration schema",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/config/schema",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"config",
+								"schema"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update settings",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseJSON;",
+									"try {",
+									"    responseJSON = JSON.parse(responseBody); ",
+									"    tests[\"Status code is 201\"] = responseCode.code === 201;",
+									"    if (responseJSON && responseJSON.uuid) {",
+									"        postman.setEnvironmentVariable(\"collection_id\", responseJSON.uuid);",
+									"    }",
+									"} catch (e) {",
+									"    tests[\"Error in parsing response\"] = e;",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text_chunk_size\": 4500,\n    \"text_chunk_overlap\": 550,\n    \"search_docs_num\": 9\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/config",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"config"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset settings to default",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseJSON;",
+									"try {",
+									"    responseJSON = JSON.parse(responseBody); ",
+									"    tests[\"Status code is 201\"] = responseCode.code === 201;",
+									"    if (responseJSON && responseJSON.uuid) {",
+									"        postman.setEnvironmentVariable(\"collection_id\", responseJSON.uuid);",
+									"    }",
+									"} catch (e) {",
+									"    tests[\"Error in parsing response\"] = e;",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n    \"text_chunk_size\",\n    \"text_chunk_overlap\",\n    \"search_docs_num\"\n]\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/config/reset",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"config",
+								"reset"
 							]
 						}
 					},

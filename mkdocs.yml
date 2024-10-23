@@ -40,6 +40,11 @@ nav:
   - Configuration:
      - Global configuration: config.md
      - Collection configuration: collection_config.md
+  - Models:
+    - Overview: models/overview.md
+    - OpenAI: models/openai.md
+    - Cohere: models/cohere.md
+    - Ollama: models/other_models.md
   - Security: security.md
   - Tutorials:
     - Create Simple RAG: tutorials/create_collection.md
@@ -54,10 +59,6 @@ nav:
   # /summarize, upload, generic service, /transcribe...
   - Analyze services: analyze_services.md
   - Async jobs: async_jobs.md
-  # - Models:
-  #   - OpenAI: models/openai.md
-  #   - Cohere: models/cohere.md
-  #   - Other Models: models/other_models.md
   - Endpoints Overview: endpoints_overview.md
   - Reference:
     - REST API Reference:  redoc/

@@ -10,6 +10,7 @@ from langchain_community.embeddings.fake import FakeEmbeddings
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from openai import OpenAI
 from brevia.settings import get_settings
+from brevia.utilities.types import load_type
 
 
 class FakeBreviaLLM(FakeListLLM):
@@ -32,14 +33,8 @@ def load_llm(config: dict) -> BaseLLM:
     return load_llm_from_config(config=config)
 
 
-CHAT_MODEL_TYPES: dict[str, BaseChatModel] = {
-    'openai-chat': ChatOpenAI,
-    'fake-list-chat-model': FakeListChatModel,
-}
-
-
 class FakeBreviaChatModel(FakeListChatModel):
-    """Fake LLM for testing purposes."""
+    """Fake Chat Model for testing purposes."""
 
     def get_token_ids(self, text: str) -> list[int]:
         """Fake for testing purposes."""
@@ -51,11 +46,20 @@ def load_chatmodel(config: dict) -> BaseChatModel:
     if test_models_in_use():
         return FakeBreviaChatModel(responses=[LOREM_IPSUM] * 10)
 
-    config_type = config.pop('_type')
-    if config_type not in CHAT_MODEL_TYPES:
-        raise ValueError(f"Loading {config_type} Chat Model not supported")
+    chatmodel_aliases = {
+        'openai-chat': ChatOpenAI,
+        'fake-list-chat-model': FakeListChatModel,
+    }
+    model_type = config.pop('_type')
+    if model_type in chatmodel_aliases:
+        llm_cls = chatmodel_aliases[model_type]
+    else:
+        llm_cls = load_type(
+            model_type,
+            BaseChatModel,
+            'langchain_community.chat_models',
+        )
 
-    llm_cls = CHAT_MODEL_TYPES[config_type]
     return llm_cls(**config)
 
 
@@ -96,12 +100,6 @@ def load_audiotranscriber() -> BaseAudio:
     return AudioOpenAI()
 
 
-EMBEDDING_TYPES: dict[str, BaseChatModel] = {
-    'openai-embeddings': OpenAIEmbeddings,
-    'fake-embeddings': FakeEmbeddings,
-}
-
-
 def load_embeddings(custom_conf: dict | None = None) -> Embeddings:
     """ Load Embeddings engine """
     settings = get_settings()
@@ -109,11 +107,20 @@ def load_embeddings(custom_conf: dict | None = None) -> Embeddings:
         return FakeEmbeddings(size=1536)
 
     config = settings.embeddings.copy() if not custom_conf else custom_conf
-    config_type = config.pop('_type', None)
-    if config_type not in EMBEDDING_TYPES:
-        raise ValueError(f'Loading "{config_type}" Embeddings not supported')
+    embed_aliases = {
+        'openai-embeddings': OpenAIEmbeddings,
+        'fake-embeddings': FakeEmbeddings,
+    }
+    model_type = config.pop('_type')
+    if model_type in embed_aliases:
+        emb_cls = embed_aliases[model_type]
+    else:
+        emb_cls = load_type(
+            model_type,
+            Embeddings,
+            'langchain_community.embeddings',
+        )
 
-    emb_cls = EMBEDDING_TYPES[config_type]
     return emb_cls(**config)
 
 

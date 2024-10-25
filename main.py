@@ -3,6 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+from brevia.middleware import VersionHeaderMiddleware
 from brevia.routers.app_routers import add_routers
 from brevia.utilities.openapi import metadata
 
@@ -14,6 +15,10 @@ app.add_middleware(
     allow_origins=["*"],
     allow_methods=["POST"],
     allow_headers=["*"],
+)
+app.add_middleware(
+    VersionHeaderMiddleware,
+    brevia_version=app.version,
 )
 add_routers(app)
 

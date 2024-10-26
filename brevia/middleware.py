@@ -1,5 +1,8 @@
+"""Brevia Middleware classes"""
 from importlib.metadata import version
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.requests import Request
+from starlette.responses import Response
 from starlette.types import ASGIApp
 
 
@@ -8,20 +11,23 @@ class VersionHeaderMiddleware(BaseHTTPMiddleware):
     def __init__(
         self,
         app: ASGIApp,
-        brevia_version: str | None = None,
-        api_version: str | None = None,
+        api_version: str = '',
+        api_name: str = '',
     ) -> None:
         super().__init__(app)
-        self.brevia_version = brevia_version
         self.api_version = api_version
+        self.api_name = api_name
 
-    async def dispatch(self, request, call_next):
+    async def dispatch(
+        self, request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
         """Add version header to response"""
         response = await call_next(request)
-        if self.brevia_version:
-            response.headers['X-Brevia-Version'] = self.brevia_version
-        else:
-            response.headers['X-Brevia-Version'] = version('Brevia')
+        response.headers['X-Brevia-Version'] = version('Brevia')
+        # Add API version and name headers
+        # about the custom API created with Brevia
+        if self.api_name:
+            response.headers['X-API-Name'] = self.api_name
         if self.api_version:
             response.headers['X-API-Version'] = self.api_version
 

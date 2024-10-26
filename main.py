@@ -16,10 +16,7 @@ app.add_middleware(
     allow_methods=["POST"],
     allow_headers=["*"],
 )
-app.add_middleware(
-    VersionHeaderMiddleware,
-    brevia_version=app.version,
-)
+app.add_middleware(VersionHeaderMiddleware)
 add_routers(app)
 
 

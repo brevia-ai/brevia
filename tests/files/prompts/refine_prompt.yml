@@ -1,0 +1,17 @@
+_type: prompt
+input_variables:
+    ["existing_answer", "text"]
+template: |
+    Ti viene fornito il seguente documento parziale contenente una lista di domande a risposta multipla:
+
+    Documento parziale:
+    -------------------
+    {existing_answer}
+    -------------------
+
+    Riscrivi la lista di domande aggiungendo in fondo altre 1-2 domande ricavate dal contesto fornito di seguito:
+
+    --------------
+    {text}
+    --------------
+

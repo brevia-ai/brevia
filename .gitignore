@@ -19,7 +19,7 @@ brevia/extensions/*
 !brevia/extensions/__init__.py
 
 # local prompts folder
-prompts/
+./prompts/
 
 # Editor directories and files
 .idea

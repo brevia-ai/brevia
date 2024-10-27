@@ -2,7 +2,7 @@
 import logging
 from functools import lru_cache
 from typing import Annotated, Any
-from os import environ
+from os import environ, getcwd
 from urllib import parse
 from sqlalchemy import NullPool, create_engine, Column, String, func, inspect
 from sqlalchemy.engine import Connection
@@ -106,6 +106,9 @@ class Settings(BaseSettings):
     summ_default_chain: str = 'stuff'
     summ_token_splitter: int = 4000
     summ_token_overlap: int = 500
+
+    # Prompt files base path - local file system or remote URL
+    prompts_base_path: str = Field(default=f'{getcwd()}/prompts', exclude=True)
 
     # App metadata
     block_openapi_urls: bool = False

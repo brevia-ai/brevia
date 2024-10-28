@@ -41,3 +41,18 @@ def test_refine_text_analysis():
     result = service.run(payload)
     assert 'output' in result
     assert 'token_data' in result
+
+
+def test_refine_text_analysis_fail():
+    """Test refine text analysis service failure"""
+    service = RefineTextAnalysisService()
+    with pytest.raises(ValueError) as exc:
+        service.run({})
+    assert str(exc.value) == 'Invalid service payload - {}'
+
+    with pytest.raises(ValueError) as exc:
+        service.run({
+            'file_path': '/some/path',
+            'prompts': {'a': 'b'}
+        })
+    assert str(exc.value).startswith('Invalid service payload - ')

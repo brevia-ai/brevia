@@ -2,11 +2,10 @@ _type: prompt
 input_variables:
     ["text"]
 template: |
-    Analizza il seguente testo che contiene informazioni normative e giuridiche rilevanti per la pubblica amministrazione.
-    Sulla base di questo contesto, genera 1-2 domande a risposta multipla, ciascuna con quattro opzioni (A, B, C, D),
-    di cui una sola risposta corretta.
-    Evidenzia la risposta corretta e assicurati che le domande siano pertinenti e comprensibili.
+    Analyze the following text and generate 1-2 multiple choice questions, each with four options
+    (A, B, C, D), of which only one is correct.
+    Highlight the correct answer and make sure that the questions are relevant and understandable.
 
-    Testo di riferimento:
-    -------------
+    Reference text:
+    -------------------
     {text}

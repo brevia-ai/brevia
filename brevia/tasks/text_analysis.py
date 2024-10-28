@@ -60,9 +60,11 @@ class RefineTextAnalysisTask(BaseTextAnalysisTask):
 
     def load_analysis_prompts(self, prompts: dict | None = None):
         """Load analysis prompts"""
-        if not prompts or 'initial_prompt' not in prompts or 'refine_prompt' not in prompts:
-            raise ValueError(
-                "Both 'initial_prompt' and 'refine_prompt' must be provided.")
+        if not prompts:
+            raise ValueError('Prompts dictionary must be provided.')
+        missing = {'initial_prompt', 'refine_prompt'} - prompts.keys()
+        if missing:
+            raise ValueError(f'Missing required prompts: {", ".join(missing)}')
 
         for key, value in prompts.items():
             if isinstance(value, dict):

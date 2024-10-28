@@ -156,7 +156,7 @@ class Settings(BaseSettings):
                 db_conf = read_db_conf(engine.connect())
                 self.update(db_conf)
             engine.dispose()
-        except Exception as exc:
+        except Exception as exc:  # pylint: disable=broad-excepttion-caught
             logging.getLogger(__name__).error('Failed to read config from db: %s', exc)
 
     def setup_defaults(self):

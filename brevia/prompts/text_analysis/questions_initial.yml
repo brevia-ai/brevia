@@ -1,0 +1,12 @@
+# Reference initial prompt to generate questions from a given text.
+_type: prompt
+input_variables:
+    ["text"]
+template: |
+    Analyze the following text and generate 1-2 multiple choice questions, each with four options
+    (A, B, C, D), of which only one is correct.
+    Highlight the correct answer and make sure that the questions are relevant and understandable.
+
+    Reference text:
+    -------------------
+    {text}

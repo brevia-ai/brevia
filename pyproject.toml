@@ -39,6 +39,7 @@ repository = "https://github.com/brevia-ai/brevia"
   langchain-openai = "^0.2.2"
   jinja2 = "^3.1.4"
   langchain-cohere = "^0.3.1"
+  langchain-ollama = "^0.2.0"
 
     [tool.poetry.dependencies.uvicorn]
     extras = [ "standard" ]
@@ -61,7 +62,7 @@ flake8 = "^6.1.0"
 pylint = "^3.0.1"
 pytest = "^7.4.2"
 pytest-cov = "^4.1.0"
-httpx = "^0.25.0"
+httpx = "^0.27.2"
 
 [tool.pylint.main]
 fail-under = 9.5

@@ -2,7 +2,7 @@
 import logging
 from functools import lru_cache
 from typing import Annotated, Any
-from os import environ
+from os import environ, getcwd
 from urllib import parse
 from sqlalchemy import NullPool, create_engine, Column, String, func, inspect
 from sqlalchemy.engine import Connection
@@ -107,6 +107,9 @@ class Settings(BaseSettings):
     summ_token_splitter: int = 4000
     summ_token_overlap: int = 500
 
+    # Prompt files base path - local file system or remote URL
+    prompts_base_path: str = Field(default=f'{getcwd()}/prompts', exclude=True)
+
     # App metadata
     block_openapi_urls: bool = False
 
@@ -153,7 +156,7 @@ class Settings(BaseSettings):
                 db_conf = read_db_conf(engine.connect())
                 self.update(db_conf)
             engine.dispose()
-        except Exception as exc:
+        except Exception as exc:  # pylint: disable=broad-excepttion-caught
             logging.getLogger(__name__).error('Failed to read config from db: %s', exc)
 
     def setup_defaults(self):

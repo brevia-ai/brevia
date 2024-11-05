@@ -1,0 +1,14 @@
+# Reference refine prompt to generate questions from a given text.
+_type: prompt
+input_variables:
+    ["existing_answer", "text"]
+template: |
+    You are given the following partial document containing a list of multiple choice questions:
+    Partial Document:
+    -------------------
+    {existing_answer}
+    -------------------
+    Rewrite the list of questions by adding 1-2 more questions at the bottom from the context provided below:
+    -------------
+    {text}
+    -------------------

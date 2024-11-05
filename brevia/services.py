@@ -1,8 +1,10 @@
 """Base service and some basic implementations"""
 from abc import ABC, abstractmethod
 from os import unlink
-from langchain_community.callbacks import get_openai_callback
-from brevia import load_file, analysis
+from brevia.callback import token_usage_callback
+from brevia.tasks.text_analysis import RefineTextAnalysisTask
+from brevia.analysis import summarize
+from brevia.load_file import read
 
 
 class BaseService(ABC):
@@ -29,8 +31,8 @@ class SummarizeTextService(BaseService):
     def execute(self, payload: dict):
         """Service logic"""
         token_data = payload.pop('token_data')
-        with get_openai_callback() as callb:
-            result = analysis.summarize(**payload)
+        with token_usage_callback() as callb:
+            result = summarize(**payload)
 
         return {
             'output': result['output_text'],
@@ -74,15 +76,15 @@ class SummarizeFileService(BaseService):
         File is removed after summarization.
         """
         try:
-            text = load_file.read(file_path=file_path)
+            text = read(file_path=file_path)
         finally:
             unlink(file_path)  # Delete the temp file
 
         if not text:
             raise ValueError('Empty text')
 
-        with get_openai_callback() as callb:
-            result = analysis.summarize(
+        with token_usage_callback() as callb:
+            result = summarize(
                 text,
                 chain_type=chain_type,
                 initial_prompt=initial_prompt,
@@ -93,6 +95,38 @@ class SummarizeFileService(BaseService):
             'output': result['output_text'],
             'token_data': None if not token_data else callb.__dict__
         }
+
+
+class RefineTextAnalysisService(BaseService):
+    """Service to perform summarization from text input"""
+
+    def execute(self, payload: dict):
+        """Service logic"""
+        analysis = RefineTextAnalysisTask(
+            file_path=payload['file_path'],
+            prompts=payload['prompts'],
+            llm_conf=payload.get('llm_conf'),
+            text_options=payload.get('text_options')
+        )
+        with token_usage_callback() as callb:
+            result = analysis.perform_task()
+        token_data = callb.__dict__
+        token_data.pop('_lock', None)
+
+        return {
+            'output': result['output_text'],
+            'token_data': token_data
+        }
+
+    def validate(self, payload: dict):
+        """Payload validation"""
+        if not payload.get('file_path') or not payload.get('prompts'):
+            return False
+        prompts = payload['prompts']
+        if 'initial_prompt' not in prompts or 'refine_prompt' not in prompts:
+            return False
+
+        return True
 
 
 class FakeService(BaseService):

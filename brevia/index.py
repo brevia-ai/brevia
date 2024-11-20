@@ -30,7 +30,7 @@ def init_splitting_data() -> bool:
     """Init splitting tools data (NLTK for now)"""
     try:
         import nltk  # pylint: disable=import-outside-toplevel
-        return nltk.download('punkt')
+        return nltk.download('punkt_tab')
 
     except ImportError as exc:
         raise ImportError(

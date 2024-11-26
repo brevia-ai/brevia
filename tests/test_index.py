@@ -100,15 +100,19 @@ def test_update_links_documents_http_error(mock_get):
 
 def test_select_load_link_options():
     """Test select_load_link_options method"""
-    options = [{'url': 'example.com', 'selector': 'test'}]
-    result = select_load_link_options(url='example.com', options=options)
-    assert result == {'selector': 'test'}
+    options = [
+        {'url': 'example.com', 'selector': 'test'},
+        {'url': 'example.com/some', 'selector': 'test2'},
+        {'url': 'example.com/other', 'other': 'value'}
+    ]
+    result = select_load_link_options(url='example.com/other', options=options)
+    assert result == {'selector': 'test', 'other': 'value'}
 
-    result = select_load_link_options(url='example.com/somepath', options=options)
-    assert result == {'selector': 'test'}
+    result = select_load_link_options(url='example.com/some', options=options)
+    assert result == {'selector': 'test2', 'other': None}
 
     result = select_load_link_options(url='someurl.org', options=options)
-    assert result == {}
+    assert result == {'selector': None, 'other': None}
 
 
 def test_custom_split():

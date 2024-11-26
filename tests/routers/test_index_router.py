@@ -233,6 +233,40 @@ def test_index_link_selector(mock_get):
 
 
 @patch('brevia.routers.index_router.load_file.requests.get')
+def test_index_link_metadata_options(mock_get):
+    """Test POST /index/link endpoint using collection metadata options"""
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.text = '<h1>lorem ipsum</h1><p class="test"> any text </p>'
+    opts = {'link_load_options': [
+        {
+            'url': 'https://www.example.com',
+            'selector': 'p.test',
+        },
+        {
+            'url': 'https://www.example.com/some/page',
+            'callback': 'string.capwords',
+        }
+    ]}
+    collection = create_collection('test_collection', opts)
+    response = client.post(
+        '/index/link',
+        headers={'Content-Type': 'application/json'},
+        content=json.dumps({
+            'link': 'https://www.example.com/some/page',
+            'collection_id': str(collection.uuid),
+            'document_id': '123',
+            'metadata': {'type': 'links'},
+        })
+    )
+    assert response.status_code == 204
+    assert response.text == ''
+    docs = read_document(collection_id=str(collection.uuid), document_id='123')
+    assert len(docs) == 1
+    assert docs[0].get('cmetadata') == {'type': 'links', 'part': 1}
+    assert docs[0].get('document') == 'Any Text'
+
+
+@patch('brevia.routers.index_router.load_file.requests.get')
 def test_index_link_empty(mock_get):
     """Test POST /index/link endpoint with empty or missing response"""
     mock_get.return_value.status_code = 200

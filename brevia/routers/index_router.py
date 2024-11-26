@@ -133,6 +133,9 @@ def parse_link_and_index(item: IndexLink):
         collection.name,
         item.document_id
     )
+    if not item.options:
+        options = collection.cmetadata.get('link_load_options', [])
+        item.options = index.select_load_link_options(url=item.link, options=options)
 
     text = load_file.read_html_url(url=item.link, **item.options)
     if not text:

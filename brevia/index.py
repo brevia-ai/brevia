@@ -309,14 +309,25 @@ def document_has_changed(document: Document, collection_id: str, document_id: st
     return False
 
 
-def select_load_link_options(url: str, options: list):
+def select_load_link_options(url: str, options: list) -> dict:
     """ Select load link options for a given URL"""
+    unique_keys = set()
+    for option in options:
+        unique_keys.update(option.keys())
+    unique_keys.discard('url')
+
+    res = {}
+    for key in unique_keys:
+        res[key] = load_link_option(url=url, name=key, options=options)
+
+    return res
+
+
+def load_link_option(url: str, name: str, options: list) -> str | None:
+    """Find load link option for a given URL"""
     item = next((x for x in options if url == x['url']), None)
-    if item:
-        return {'selector': item.get('selector', '')}
+    if item and item.get(name) is not None:
+        return item.get(name)
 
     item = next((x for x in options if url.startswith(x['url'])), None)
-    if item:
-        return {'selector': item.get('selector', '')}
-
-    return {}
+    return item.get(name) if item else None

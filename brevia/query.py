@@ -1,8 +1,12 @@
 """Question-answering and search functions against a vector database."""
 from os import path
+from langchain.globals import set_verbose
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.chains.base import Chain
+from langchain.callbacks.tracers import ConsoleCallbackHandler
 from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.question_answering import load_qa_chain
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.retrievers import BaseRetriever
@@ -241,32 +245,40 @@ def conversation_chain(
     )
 
     verbose = settings.verbose_mode
+    set_verbose(verbose)
 
     # LLM to rewrite follow-up question
     fup_llm = load_chatmodel(fup_llm_conf)
 
-    logging_handler = AsyncLoggingCallbackHandler()
+    logging_handler_callback = AsyncLoggingCallbackHandler()
     # Create chain for follow-up question using chat history (if present)
-    question_generator = LLMChain(
-        llm=fup_llm,
-        prompt=load_condense_prompt(prompts),
-        verbose=verbose,
-        callbacks=[logging_handler],
-    )
+    # question_generator = LLMChain(
+    #     llm=fup_llm,
+    #     prompt=load_condense_prompt(prompts),
+    #     verbose=verbose,
+    #     callbacks=[logging_handler],
+    # )
+    qg = load_condense_prompt(prompts) | fup_llm
+    qg_chain = qg.with_config([logging_handler_callback])
 
     # Model to use in final prompt
-    answer_callbacks.append(logging_handler)
+    answer_callbacks.append(logging_handler_callback)
     qa_llm_conf['callbacks'] = answer_callbacks
     qa_llm_conf['streaming'] = chat_params.streaming
     chatllm = load_chatmodel(qa_llm_conf)
 
     # this chain use "stuff" to elaborate context
-    doc_chain = load_qa_chain(
+    # doc_chain = load_qa_chain(
+    #     llm=chatllm,
+    #     prompt=load_qa_prompt(prompts),
+    #     chain_type="stuff",
+    #     verbose=verbose,
+    #     callbacks=[logging_handler],
+    # )
+    doc_chain = create_stuff_documents_chain(
         llm=chatllm,
         prompt=load_qa_prompt(prompts),
-        chain_type="stuff",
-        verbose=verbose,
-        callbacks=[logging_handler],
+        callbacks=[logging_handler_callback],
     )
 
     # main chain, do all the jobs
@@ -285,7 +297,7 @@ def conversation_chain(
     else:   # custom retriever
         retriever = create_custom_retriever(docsearch, search_kwargs, retriever_conf)
 
-    conversation_callbacks.append(logging_handler)
+    conversation_callbacks.append(logging_handler_callback)
 
     return ConversationalRetrievalChain(
         retriever=retriever,

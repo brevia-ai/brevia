@@ -3,15 +3,11 @@ from os import path
 from langchain.globals import set_verbose
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.chains.base import Chain
-from langchain.callbacks.tracers import ConsoleCallbackHandler
-from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
-from langchain.chains import create_retrieval_chain
+from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains.question_answering import load_qa_chain
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.retrievers import BaseRetriever
 from langchain_core.vectorstores import VectorStore
-from langchain.chains.llm import LLMChain
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgvector import DistanceStrategy, PGVector
 from langchain_core.callbacks import BaseCallbackHandler
@@ -213,6 +209,7 @@ def conversation_chain(
                 "search_distance": 0.9
             }
     """
+    logging_handler_callback = AsyncLoggingCallbackHandler()
     settings = get_settings()
     if chat_params.docs_num is None:
         default_num = settings.search_docs_num
@@ -225,13 +222,6 @@ def conversation_chain(
     strategy = DISTANCE_MAP.get(
         chat_params.distance_strategy_name,
         DistanceStrategy.COSINE
-    )
-    docsearch = PGVector(
-        connection_string=connection_string(),
-        embedding_function=load_embeddings(collection.cmetadata.get('embedding', None)),
-        collection_name=collection.name,
-        distance_strategy=strategy,
-        use_jsonb=True,
     )
 
     prompts = collection.cmetadata.get('prompts')
@@ -247,41 +237,20 @@ def conversation_chain(
     verbose = settings.verbose_mode
     set_verbose(verbose)
 
-    # LLM to rewrite follow-up question
-    fup_llm = load_chatmodel(fup_llm_conf)
-
-    logging_handler_callback = AsyncLoggingCallbackHandler()
-    # Create chain for follow-up question using chat history (if present)
-    # question_generator = LLMChain(
-    #     llm=fup_llm,
-    #     prompt=load_condense_prompt(prompts),
-    #     verbose=verbose,
-    #     callbacks=[logging_handler],
-    # )
-    qg = load_condense_prompt(prompts) | fup_llm
-    qg_chain = qg.with_config([logging_handler_callback])
-
-    # Model to use in final prompt
+    # Main LLM configuration
     answer_callbacks.append(logging_handler_callback)
     qa_llm_conf['callbacks'] = answer_callbacks
     qa_llm_conf['streaming'] = chat_params.streaming
     chatllm = load_chatmodel(qa_llm_conf)
 
-    # this chain use "stuff" to elaborate context
-    # doc_chain = load_qa_chain(
-    #     llm=chatllm,
-    #     prompt=load_qa_prompt(prompts),
-    #     chain_type="stuff",
-    #     verbose=verbose,
-    #     callbacks=[logging_handler],
-    # )
-    doc_chain = create_stuff_documents_chain(
-        llm=chatllm,
-        prompt=load_qa_prompt(prompts),
-        callbacks=[logging_handler_callback],
+    # Create Retriever
+    document_search = PGVector(
+        connection_string=connection_string(),
+        embedding_function=load_embeddings(collection.cmetadata.get('embedding', None)),
+        collection_name=collection.name,
+        distance_strategy=strategy,
+        use_jsonb=True,
     )
-
-    # main chain, do all the jobs
     search_kwargs = {'k': chat_params.docs_num, 'filter': chat_params.filter}
     retriever_conf = collection.cmetadata.get(
         'qa_retriever',
@@ -289,21 +258,29 @@ def conversation_chain(
     )
     if not retriever_conf:
         retriever = create_default_retriever(
-            store=docsearch,
+            store=document_search,
             search_kwargs=search_kwargs,
             llm=chatllm,
             multiquery=chat_params.multiquery,
         )
     else:   # custom retriever
-        retriever = create_custom_retriever(docsearch, search_kwargs, retriever_conf)
+        retriever = create_custom_retriever(
+            document_search, search_kwargs, retriever_conf)
 
-    conversation_callbacks.append(logging_handler_callback)
-
-    return ConversationalRetrievalChain(
-        retriever=retriever,
-        combine_docs_chain=doc_chain,
-        return_source_documents=chat_params.source_docs,
-        question_generator=question_generator,
-        callbacks=conversation_callbacks,
-        verbose=verbose,
+    # Chain to rewrite question with history
+    fup_llm_conf['callbacks'] = answer_callbacks
+    fup_llm = load_chatmodel(fup_llm_conf)
+    history_aware_retriever = create_history_aware_retriever(
+        fup_llm, retriever, load_condense_prompt(prompts)
     )
+
+    # Chain with "stuff document" type
+    doc_stuff_chain = create_stuff_documents_chain(
+        llm=chatllm,
+        prompt=load_qa_prompt(prompts)
+    )
+
+    # Create Main chain with all the stuff
+    rag_chain = create_retrieval_chain(history_aware_retriever, doc_stuff_chain)
+
+    return rag_chain

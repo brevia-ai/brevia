@@ -142,7 +142,7 @@ async def run_chain(
         ),
         'lang': lang,
     }, return_only_outputs=True)
-    print(result)
+
     return chat_result(
         result=result,
         callb=token_callback,
@@ -170,7 +170,7 @@ def chat_result(
             metadata=token_usage(callb),
         )
         chat_history_id = None if chat_hist is None else str(chat_hist.uuid)
-    print(result)
+
     return {
         'bot': answer,
         'docs': None if not chat_body.source_docs else result['context'],

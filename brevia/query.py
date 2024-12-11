@@ -282,5 +282,4 @@ def conversation_chain(
 
     # Create Main chain with all the stuff
     rag_chain = create_retrieval_chain(history_aware_retriever, doc_stuff_chain)
-
     return rag_chain

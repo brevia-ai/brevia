@@ -133,7 +133,7 @@ async def run_chain(
 ):
     """Run chain usign async methods and return result"""
     result = await chain.ainvoke({
-        'question': chat_body.question,
+        'input': chat_body.question,
         'chat_history': retrieve_chat_history(
             history=chat_body.chat_history,
             question=chat_body.question,
@@ -142,7 +142,7 @@ async def run_chain(
         ),
         'lang': lang,
     }, return_only_outputs=True)
-    print(result)
+
     return chat_result(
         result=result,
         callb=token_callback,
@@ -173,7 +173,7 @@ def chat_result(
 
     return {
         'bot': answer,
-        'docs': None if not chat_body.source_docs else result['source_documents'],
+        'docs': None if not chat_body.source_docs else result['context'],
         'chat_history_id': chat_history_id,
         'token_data': None if not chat_body.token_data else token_usage(callb)
     }

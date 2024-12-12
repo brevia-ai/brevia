@@ -1,6 +1,6 @@
 _type: prompt
 input_variables:
-    ["chat_history", "question"]
+    ["chat_history", "input"]
 template: |
     Given the following conversation and a "follow-up question", rephrase the "follow-up question" to be a "standalone question" written always in the same language of the "follow-up question".
 
@@ -8,7 +8,7 @@ template: |
 
     {chat_history}
 
-    follow-up question: {question}
+    follow-up question: {input}
 
     Standalone question in the same language of the follow-up question:
     """

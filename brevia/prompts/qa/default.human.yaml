@@ -1,5 +1,5 @@
 _type: prompt
 input_variables:
-    ["question"]
+    ["input"]
 template: |
-    Question: {question}
+    Question: {input}

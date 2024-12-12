@@ -1,0 +1,20 @@
+_type: prompt
+input_variables:
+    ["chat_history", "input"]
+template: |
+    Given a chat history and the latest user question
+    which might reference context in the chat history,
+    formulate a standalone question which can be understood
+    without the chat history.
+    Do NOT answer the question,
+    just reformulate it if needed and otherwise return it as is.\n\n
+
+    chat history:\n\n
+    {chat_history}\n\n
+
+    last question:\n\n
+    {input}\n\n
+
+    Standalone question in the same language
+    of the follow-up question:
+    """

@@ -7,6 +7,7 @@ from alembic.config import Config
 from dotenv import dotenv_values
 from brevia.settings import Settings, get_settings
 from brevia.index import init_splitting_data
+import brevia.alembic
 
 
 def pytest_sessionstart(session):
@@ -45,6 +46,8 @@ def env_vars_db():
     update_settings()
     root_path = Path(__file__).parent.parent
     alembic_conf = Config(f'{root_path}/alembic.ini')
+    script_location = os.path.dirname(brevia.alembic.__file__)
+    alembic_conf.set_main_option('script_location', script_location)
     command.upgrade(alembic_conf, 'head')
 
     yield

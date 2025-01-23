@@ -9,6 +9,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Session
 from langchain_community.vectorstores.pgembedding import BaseModel
+from langchain.globals import set_verbose
 from pydantic import Field, Json, PrivateAttr, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -263,5 +264,7 @@ def get_settings():
     settings.setup_defaults()
     settings.update_from_db()
     settings.setup_environment()
+
+    set_verbose(settings.verbose_mode)
 
     return settings

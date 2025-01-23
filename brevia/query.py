@@ -1,6 +1,5 @@
 """Question-answering and search functions against a vector database."""
 from os import path
-from langchain.globals import set_verbose
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.chains.base import Chain
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
@@ -233,9 +232,6 @@ def conversation_chain(
         'qa_followup_llm',
         settings.qa_followup_llm.copy()
     )
-
-    verbose = settings.verbose_mode
-    set_verbose(verbose)
 
     # Main LLM configuration
     answer_callbacks.append(logging_handler_callback)

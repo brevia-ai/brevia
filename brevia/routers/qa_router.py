@@ -3,6 +3,7 @@ from typing import Annotated
 import asyncio
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain.chains.base import Chain
+from langchain_core.callbacks import BaseCallbackHandler
 from fastapi import APIRouter, Header
 from fastapi.responses import StreamingResponse
 from brevia import chat_history
@@ -49,9 +50,12 @@ async def chat_action(
         collection=collection,
         chat_params=ChatParams(**chat_body.model_dump()),
         answer_callbacks=[stream_handler] if chat_body.streaming else [],
-        conversation_callbacks=[conversation_handler]
     )
     embeddings = collection.cmetadata.get('embedding', None)
+
+    chain_callbacks = [conversation_handler]
+    if chat_body.streaming:
+        chain_callbacks.append(stream_handler)
 
     with token_usage_callback() as token_callback:
         if not chat_body.streaming or test_models_in_use():
@@ -62,6 +66,7 @@ async def chat_action(
                 token_callback=token_callback,
                 x_chat_session=x_chat_session,
                 embeddings=embeddings,
+                chain_callbacks=chain_callbacks,
             )
 
         asyncio.create_task(run_chain(
@@ -71,6 +76,7 @@ async def chat_action(
             token_callback=token_callback,
             x_chat_session=x_chat_session,
             embeddings=embeddings,
+            chain_callbacks=chain_callbacks,
         ))
 
         async def event_generator(
@@ -130,18 +136,22 @@ async def run_chain(
     token_callback: TokensCallbackHandler,
     x_chat_session: str,
     embeddings: dict | None = None,
+    chain_callbacks: list[BaseCallbackHandler] | None = None,
 ):
     """Run chain usign async methods and return result"""
     result = await chain.ainvoke({
-        'input': chat_body.question,
-        'chat_history': retrieve_chat_history(
-            history=chat_body.chat_history,
-            question=chat_body.question,
-            session=x_chat_session,
-            embeddings=embeddings,
-        ),
-        'lang': lang,
-    }, return_only_outputs=True)
+            'input': chat_body.question,
+            'chat_history': retrieve_chat_history(
+                history=chat_body.chat_history,
+                question=chat_body.question,
+                session=x_chat_session,
+                embeddings=embeddings,
+            ),
+            'lang': lang,
+        },
+        config={'callbacks': chain_callbacks},
+        return_only_outputs=True,
+    )
 
     return chat_result(
         result=result,

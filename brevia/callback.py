@@ -32,6 +32,8 @@ def token_usage(callb: TokensCallbackHandler) -> dict[str, int | float]:
 class ConversationCallbackHandler(AsyncCallbackHandler):
     """Call back handler to return conversation chain results"""
     result: Dict[str, Any] = {}
+    documents: List[Document] = []
+    answer: str = ''
     chain_ended = asyncio.Event()
 
     async def on_chat_model_start(
@@ -55,7 +57,20 @@ class ConversationCallbackHandler(AsyncCallbackHandler):
         **kwargs: Any,
     ) -> None:
         """Run when chain starts running."""
-        self.chain_ended.clear()
+        if parent_run_id is None:
+            self.chain_ended.clear()
+
+    async def on_retriever_end(
+        self,
+        documents: Sequence[Document],
+        *,
+        run_id: UUID,
+        parent_run_id: UUID | None = None,
+        tags: List[str] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        """Run on retriever end."""
+        self.documents = documents
 
     async def on_chain_end(
         self,
@@ -66,8 +81,9 @@ class ConversationCallbackHandler(AsyncCallbackHandler):
         **kwargs: Any,
     ) -> None:
         """Run when chain ends running."""
-        self.result = outputs
-        self.chain_ended.set()
+        if parent_run_id is None:
+            self.answer = outputs.get('answer')
+            self.chain_ended.set()
 
     async def wait_conversation_done(self):
         """Wait for conversation end"""
@@ -85,18 +101,17 @@ class ConversationCallbackHandler(AsyncCallbackHandler):
             session_id=x_chat_session,
             collection=collection,
             question=question,
-            answer=self.result['answer'].strip(" \n"),
+            answer=self.answer.strip(" \n"),
             metadata=token_usage(callb),
         )
 
         docs = [{'chat_history_id': None if chat_hist is None else str(chat_hist.uuid)}]
 
-        if 'source_documents' in self.result:
-            for doc in self.result['source_documents']:
-                docs.append({
-                    'page_content': doc.page_content,
-                    'metadata': doc.metadata
-                })
+        for doc in self.documents:
+            docs.append({
+                'page_content': doc.page_content,
+                'metadata': doc.metadata
+            })
 
         return json.dumps(docs)
 

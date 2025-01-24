@@ -31,7 +31,6 @@ def token_usage(callb: TokensCallbackHandler) -> dict[str, int | float]:
 
 class ConversationCallbackHandler(AsyncCallbackHandler):
     """Call back handler to return conversation chain results"""
-    result: Dict[str, Any] = {}
     documents: List[Document] = []
     answer: str = ''
     chain_ended = asyncio.Event()

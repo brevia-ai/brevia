@@ -49,7 +49,6 @@ async def chat_action(
     chain = conversation_chain(
         collection=collection,
         chat_params=ChatParams(**chat_body.model_dump()),
-        answer_callbacks=[stream_handler] if chat_body.streaming else [],
     )
     embeddings = collection.cmetadata.get('embedding', None)
 

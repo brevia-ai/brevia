@@ -9,7 +9,6 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_core.vectorstores import VectorStore
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgvector import DistanceStrategy, PGVector
-from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.documents import Document
 from langchain_core.prompts import (
     ChatPromptTemplate,
@@ -22,7 +21,6 @@ from langchain_core.prompts.loading import load_prompt_from_config
 from pydantic import BaseModel
 from brevia.connection import connection_string
 from brevia.collections import single_collection_by_name
-from brevia.callback import AsyncLoggingCallbackHandler
 from brevia.models import load_chatmodel, load_embeddings
 from brevia.settings import get_settings
 from brevia.utilities.types import load_type
@@ -183,8 +181,6 @@ def create_default_retriever(
 def conversation_chain(
     collection: CollectionStore,
     chat_params: ChatParams,
-    answer_callbacks: list[BaseCallbackHandler] | None = None,
-    conversation_callbacks: list[BaseCallbackHandler] | None = None,
 ) -> Chain:
     """
         Return conversation chain for Q/A with embdedded dataset knowledge
@@ -196,27 +192,11 @@ def conversation_chain(
             streaming: activate streaming (default False),
             distance_strategy_name: distance strategy to use (default 'cosine')
             filter: optional dictionary of metadata to use as filter (defailt None)
-            source_docs: flag to retrieve source docs in response (default True)
-        answer_callbacks: callbacks to use in the final LLM answer to enable streaming
-            (default empty list)
-        conversation_callbacks: callback to handle conversation results
-            (default empty list)
-        multiquery: flag for activate langchain's multiquery retriver
-
-        can implement "vectordbkwargs" into quest_dict:
-            {
-                "search_distance": 0.9
-            }
     """
-    logging_handler_callback = AsyncLoggingCallbackHandler()
     settings = get_settings()
     if chat_params.docs_num is None:
         default_num = settings.search_docs_num
         chat_params.docs_num = int(collection.cmetadata.get('docs_num', default_num))
-    if answer_callbacks is None:
-        answer_callbacks = []
-    if conversation_callbacks is None:
-        conversation_callbacks = []
 
     strategy = DISTANCE_MAP.get(
         chat_params.distance_strategy_name,
@@ -234,9 +214,6 @@ def conversation_chain(
     )
 
     # Main LLM configuration
-    answer_callbacks.append(logging_handler_callback)
-    qa_llm_conf['callbacks'] = answer_callbacks
-    qa_llm_conf['streaming'] = chat_params.streaming
     chatllm = load_chatmodel(qa_llm_conf)
 
     # Create Retriever
@@ -264,7 +241,6 @@ def conversation_chain(
             document_search, search_kwargs, retriever_conf)
 
     # Chain to rewrite question with history
-    fup_llm_conf['callbacks'] = answer_callbacks
     fup_llm = load_chatmodel(fup_llm_conf)
     history_aware_retriever = create_history_aware_retriever(
         fup_llm, retriever, load_condense_prompt(prompts)

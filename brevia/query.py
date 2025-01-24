@@ -2,13 +2,14 @@
 from os import path
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.chains.base import Chain
-from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_core.language_models import BaseLanguageModel
-from langchain_core.retrievers import BaseRetriever
-from langchain_core.vectorstores import VectorStore
+from langchain.chains.history_aware_retriever import create_history_aware_retriever
+from langchain.chains.retrieval import create_retrieval_chain
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgvector import DistanceStrategy, PGVector
+from langchain_core.language_models import BaseChatModel
+from langchain_core.retrievers import BaseRetriever
+from langchain_core.vectorstores import VectorStore
 from langchain_core.documents import Document
 from langchain_core.prompts import (
     ChatPromptTemplate,
@@ -163,7 +164,7 @@ def create_custom_retriever(
 def create_default_retriever(
         store: VectorStore,
         search_kwargs: dict,
-        llm: BaseLanguageModel,
+        llm: BaseChatModel,
         multiquery: bool = False,
 
 ) -> BaseRetriever:
@@ -176,6 +177,44 @@ def create_default_retriever(
         return MultiQueryRetriever.from_llm(retriever=retriever, llm=llm)
 
     return retriever
+
+
+def create_conversation_retriever(
+    collection: CollectionStore,
+    chat_params: ChatParams,
+    llm: BaseChatModel,
+) -> BaseRetriever:
+    """ Create a retriever for a collection with chat parameters """
+    strategy = DISTANCE_MAP.get(
+        chat_params.distance_strategy_name,
+        DistanceStrategy.COSINE
+    )
+
+    embeddings_conf = collection.cmetadata.get('embedding', None)
+    document_search = PGVector(
+        connection_string=connection_string(),
+        embedding_function=load_embeddings(embeddings_conf),
+        collection_name=collection.name,
+        distance_strategy=strategy,
+        use_jsonb=True,
+    )
+
+    search_kwargs = {'k': chat_params.docs_num, 'filter': chat_params.filter}
+    retriever_conf = collection.cmetadata.get(
+        'qa_retriever',
+        get_settings().qa_retriever.copy()
+    )
+    if not retriever_conf:
+        return create_default_retriever(
+            store=document_search,
+            search_kwargs=search_kwargs,
+            llm=llm,
+            multiquery=chat_params.multiquery,
+        )
+
+    # custom retriever
+    return create_custom_retriever(
+        document_search, search_kwargs, retriever_conf)
 
 
 def conversation_chain(
@@ -195,52 +234,31 @@ def conversation_chain(
     """
     settings = get_settings()
     if chat_params.docs_num is None:
-        default_num = settings.search_docs_num
-        chat_params.docs_num = int(collection.cmetadata.get('docs_num', default_num))
-
-    strategy = DISTANCE_MAP.get(
-        chat_params.distance_strategy_name,
-        DistanceStrategy.COSINE
-    )
+        chat_params.docs_num = int(
+            collection.cmetadata.get('docs_num', settings.search_docs_num)
+        )
 
     prompts = collection.cmetadata.get('prompts')
+
+    # Main LLM configuration
     qa_llm_conf = collection.cmetadata.get(
         'qa_completion_llm',
         settings.qa_completion_llm.copy()
     )
+    chatllm = load_chatmodel(qa_llm_conf)
+
+    # Create Retriever
+    retriever = create_conversation_retriever(
+        collection=collection,
+        chat_params=chat_params,
+        llm=chatllm
+    )
+
+    # Chain to rewrite question with history
     fup_llm_conf = collection.cmetadata.get(
         'qa_followup_llm',
         settings.qa_followup_llm.copy()
     )
-
-    # Main LLM configuration
-    chatllm = load_chatmodel(qa_llm_conf)
-
-    # Create Retriever
-    document_search = PGVector(
-        connection_string=connection_string(),
-        embedding_function=load_embeddings(collection.cmetadata.get('embedding', None)),
-        collection_name=collection.name,
-        distance_strategy=strategy,
-        use_jsonb=True,
-    )
-    search_kwargs = {'k': chat_params.docs_num, 'filter': chat_params.filter}
-    retriever_conf = collection.cmetadata.get(
-        'qa_retriever',
-        settings.qa_retriever.copy()
-    )
-    if not retriever_conf:
-        retriever = create_default_retriever(
-            store=document_search,
-            search_kwargs=search_kwargs,
-            llm=chatllm,
-            multiquery=chat_params.multiquery,
-        )
-    else:   # custom retriever
-        retriever = create_custom_retriever(
-            document_search, search_kwargs, retriever_conf)
-
-    # Chain to rewrite question with history
     fup_llm = load_chatmodel(fup_llm_conf)
     history_aware_retriever = create_history_aware_retriever(
         fup_llm, retriever, load_condense_prompt(prompts)

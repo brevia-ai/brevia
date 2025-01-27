@@ -5,11 +5,12 @@ from langchain.chains.base import Chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.history_aware_retriever import create_history_aware_retriever
 from langchain.chains.retrieval import create_retrieval_chain
+from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.retrievers import BaseRetriever
+from langchain_core.vectorstores import VectorStore
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgvector import DistanceStrategy, PGVector
 from langchain_core.language_models import BaseChatModel
-from langchain_core.retrievers import BaseRetriever
-from langchain_core.vectorstores import VectorStore
 from langchain_core.documents import Document
 from langchain_core.prompts import (
     ChatPromptTemplate,
@@ -220,6 +221,7 @@ def create_conversation_retriever(
 def conversation_chain(
     collection: CollectionStore,
     chat_params: ChatParams,
+    answer_callbacks: list[BaseCallbackHandler] | None = None,
 ) -> Chain:
     """
         Return conversation chain for Q/A with embdedded dataset knowledge
@@ -231,6 +233,8 @@ def conversation_chain(
             streaming: activate streaming (default False),
             distance_strategy_name: distance strategy to use (default 'cosine')
             filter: optional dictionary of metadata to use as filter (defailt None)
+        answer_callbacks: callbacks to use in the final LLM answer to enable streaming
+            (default empty list)
     """
     settings = get_settings()
     if chat_params.docs_num is None:
@@ -245,6 +249,8 @@ def conversation_chain(
         'qa_completion_llm',
         settings.qa_completion_llm.copy()
     )
+    qa_llm_conf['callbacks'] = [] if answer_callbacks is None else answer_callbacks
+    qa_llm_conf['streaming'] = chat_params.streaming
     chatllm = load_chatmodel(qa_llm_conf)
 
     # Create Retriever

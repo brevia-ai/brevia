@@ -49,12 +49,9 @@ async def chat_action(
     chain = conversation_chain(
         collection=collection,
         chat_params=ChatParams(**chat_body.model_dump()),
+        answer_callbacks=[stream_handler] if chat_body.streaming else [],
     )
     embeddings = collection.cmetadata.get('embedding', None)
-
-    chain_callbacks = [conversation_handler]
-    if chat_body.streaming:
-        chain_callbacks.append(stream_handler)
 
     with token_usage_callback() as token_callback:
         if not chat_body.streaming or test_models_in_use():
@@ -65,7 +62,7 @@ async def chat_action(
                 token_callback=token_callback,
                 x_chat_session=x_chat_session,
                 embeddings=embeddings,
-                chain_callbacks=chain_callbacks,
+                chain_callbacks=[conversation_handler],
             )
 
         asyncio.create_task(run_chain(
@@ -75,7 +72,7 @@ async def chat_action(
             token_callback=token_callback,
             x_chat_session=x_chat_session,
             embeddings=embeddings,
-            chain_callbacks=chain_callbacks,
+            chain_callbacks=[conversation_handler],
         ))
 
         async def event_generator(

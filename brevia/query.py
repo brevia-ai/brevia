@@ -26,6 +26,7 @@ from brevia.collections import single_collection_by_name
 from brevia.models import load_chatmodel, load_embeddings
 from brevia.settings import get_settings
 from brevia.utilities.types import load_type
+from brevia.base_retriever import BreviaBaseRetriever
 
 # system = load_prompt(f'{prompts_path}/qa/default.system.yaml')
 # jinja2 template from file was disabled by langchain so, for now
@@ -142,6 +143,16 @@ class ChatParams(BaseModel):
     filter: dict[str, str | dict] | None = None
     source_docs: bool = False
     multiquery: bool = False
+    search_type: str = "similarity"
+    score_threshold: float = 0.0
+
+    def get_search_kwargs(self) -> dict:
+        """ Return search kwargs """
+        return {
+            'k': self.docs_num,
+            'filter': self.filter,
+            'score_threshold': self.score_threshold,
+        }
 
 
 def create_custom_retriever(
@@ -166,6 +177,7 @@ def create_default_retriever(
         store: VectorStore,
         search_kwargs: dict,
         llm: BaseChatModel,
+        search_type: str | None = None,
         multiquery: bool = False,
 
 ) -> BaseRetriever:
@@ -173,7 +185,12 @@ def create_default_retriever(
         Create a default retriever.
         Can be a vector store retriever or a multiquery retriever.
     """
-    retriever = store.as_retriever(search_kwargs=search_kwargs)
+    retriever = BreviaBaseRetriever(
+        vectorstore=store,
+        search_type=search_type,
+        search_kwargs=search_kwargs
+    )
+
     if multiquery:
         return MultiQueryRetriever.from_llm(retriever=retriever, llm=llm)
 
@@ -199,8 +216,7 @@ def create_conversation_retriever(
         distance_strategy=strategy,
         use_jsonb=True,
     )
-
-    search_kwargs = {'k': chat_params.docs_num, 'filter': chat_params.filter}
+    search_kwargs = chat_params.get_search_kwargs()
     retriever_conf = collection.cmetadata.get(
         'qa_retriever',
         get_settings().qa_retriever.copy()
@@ -210,6 +226,7 @@ def create_conversation_retriever(
             store=document_search,
             search_kwargs=search_kwargs,
             llm=llm,
+            search_type=chat_params.search_type,
             multiquery=chat_params.multiquery,
         )
 

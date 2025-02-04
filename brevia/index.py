@@ -12,7 +12,7 @@ from langchain_text_splitters.base import TextSplitter
 from requests import HTTPError
 from sqlalchemy.orm import Session
 from brevia import connection, load_file
-from brevia.collections import single_collection_by_name
+from brevia.collections_tools import single_collection_by_name
 from brevia.models import load_embeddings
 from brevia.settings import get_settings
 from brevia.utilities.json_api import query_data_pagination

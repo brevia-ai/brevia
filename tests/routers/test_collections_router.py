@@ -2,7 +2,7 @@
 from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from brevia.routers import collections_router
-from brevia.collections import create_collection
+from brevia.collections_tools import create_collection
 
 app = FastAPI()
 app.include_router(collections_router.router)

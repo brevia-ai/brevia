@@ -22,7 +22,7 @@ from langchain_core.prompts import (
 from langchain_core.prompts.loading import load_prompt_from_config
 from pydantic import BaseModel
 from brevia.connection import connection_string
-from brevia.collections import single_collection_by_name
+from brevia.collections_tools import single_collection_by_name
 from brevia.callback import AsyncLoggingCallbackHandler
 from brevia.models import load_chatmodel, load_embeddings
 from brevia.settings import get_settings

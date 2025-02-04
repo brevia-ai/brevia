@@ -13,7 +13,8 @@ from brevia.dependencies import (
     save_upload_file_tmp,
     check_collection_uuid,
 )
-from brevia import index, collections, load_file
+from brevia.collections_tools import single_collection
+from brevia import index, load_file
 
 router = APIRouter()
 
@@ -49,7 +50,7 @@ def index_document(item: IndexBody):
 
 def load_collection(collection_id: str) -> CollectionStore:
     """ Load collection by ID and throw 404 if not found"""
-    collection = collections.single_collection(collection_id)
+    collection = single_collection(collection_id)
     if collection is None:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,

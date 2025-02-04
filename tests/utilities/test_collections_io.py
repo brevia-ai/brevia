@@ -6,7 +6,7 @@ from brevia.utilities.collections_io import (
     export_collection_data,
     import_collection_data,
 )
-from brevia.collections import create_collection
+from brevia.collections_tools import create_collection
 
 
 def test_export_collection_data():

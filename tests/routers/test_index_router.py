@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from langchain.docstore.document import Document
 from brevia.routers import index_router
-from brevia.collections import create_collection
+from brevia.collections_tools import create_collection
 from brevia.index import add_document, read_document
 from unittest.mock import patch
 

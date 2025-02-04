@@ -3,7 +3,7 @@ from uuid import uuid4
 from json import loads
 from langchain.docstore.document import Document
 from brevia.callback import ConversationCallbackHandler, TokensCallbackHandler
-from brevia.collections import create_collection
+from brevia.collections_tools import create_collection
 
 
 def test_chain_result():

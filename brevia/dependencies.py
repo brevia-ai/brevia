@@ -6,7 +6,12 @@ from jose import JWTError
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from fastapi import HTTPException, status, Header, Depends, UploadFile
 from fastapi.security import OAuth2PasswordBearer
-from brevia import collections, tokens
+from brevia.tokens import verify_token
+from brevia.collections_tools import (
+    collection_exists,
+    single_collection_by_name,
+    collection_name_exists,
+)
 from brevia.settings import get_settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')  # use token authentication
@@ -39,7 +44,7 @@ def application_json(content_type: str = Header(...)):
 def token_auth(token: str = Depends(oauth2_scheme)):
     """Check authorization header bearer token"""
     try:
-        tokens.verify_token(token)
+        verify_token(token)
     except JWTError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -49,7 +54,7 @@ def token_auth(token: str = Depends(oauth2_scheme)):
 
 def check_collection_name(name: str) -> CollectionStore:
     """Raise a 404 response if a collection name does not exist"""
-    collection = collections.single_collection_by_name(name)
+    collection = single_collection_by_name(name)
     if not collection:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
@@ -61,7 +66,7 @@ def check_collection_name(name: str) -> CollectionStore:
 
 def check_collection_uuid(uuid: str):
     """Raise a 404 response if a collection uuid does not exist"""
-    if not collections.collection_exists(uuid=uuid):
+    if not collection_exists(uuid=uuid):
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             f"Collection id '{uuid}' was not found",
@@ -70,7 +75,7 @@ def check_collection_uuid(uuid: str):
 
 def check_collection_name_absent(name: str):
     """Raise a 409 conflict if a collection name already exists"""
-    if collections.collection_name_exists(name=name):
+    if collection_name_exists(name=name):
         raise HTTPException(
             status.HTTP_409_CONFLICT,
             f"Collection '{name}' exists",

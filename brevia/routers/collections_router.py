@@ -6,7 +6,13 @@ from brevia.dependencies import (
     check_collection_name_absent,
     check_collection_uuid
 )
-from brevia import collections
+from brevia.collections_tools import (
+    collections_info,
+    create_collection,
+    update_collection,
+    delete_collection,
+    single_collection,
+)
 
 router = APIRouter()
 
@@ -18,7 +24,7 @@ router = APIRouter()
 )
 async def collections_index(name: str | None = None):
     """ GET /collections endpoint, information on available collections """
-    return collections.collections_info(collection=name)
+    return collections_info(collection=name)
 
 
 @router.get(
@@ -30,7 +36,7 @@ async def read_collection(uuid: str):
     """ GET /collections/{uuid} endpoint"""
     check_collection_uuid(uuid)
 
-    return collections.single_collection(uuid)
+    return single_collection(uuid)
 
 
 class CollectionBody(BaseModel):
@@ -45,11 +51,11 @@ class CollectionBody(BaseModel):
     dependencies=get_dependencies(),
     tags=['Collections'],
 )
-def create_collection(body: CollectionBody):
+def add_collection(body: CollectionBody):
     """ POST /collections endpoint"""
     check_collection_name_absent(body.name)
 
-    return collections.create_collection(
+    return create_collection(
         name=body.name,
         cmetadata=body.cmetadata,
     )
@@ -61,15 +67,15 @@ def create_collection(body: CollectionBody):
     dependencies=get_dependencies(),
     tags=['Collections'],
 )
-def update_collection(uuid: str, body: CollectionBody):
+def change_collection(uuid: str, body: CollectionBody):
     """ PATCH /collections endpoint"""
     check_collection_uuid(uuid)
-    current = collections.single_collection(uuid)
+    current = single_collection(uuid)
     if current.name != body.name:
         # if name is changed check that it's not in use
         check_collection_name_absent(body.name)
 
-    collections.update_collection(uuid=uuid, name=body.name, cmetadata=body.cmetadata)
+    update_collection(uuid=uuid, name=body.name, cmetadata=body.cmetadata)
 
 
 @router.delete(
@@ -78,7 +84,7 @@ def update_collection(uuid: str, body: CollectionBody):
     dependencies=get_dependencies(json_content_type=False),
     tags=['Collections'],
 )
-def delete_collection(uuid: str):
+def remove_collection(uuid: str):
     """ DELETE /collections endpoint"""
     check_collection_uuid(uuid)
-    collections.delete_collection(uuid)
+    delete_collection(uuid)

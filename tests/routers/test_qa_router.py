@@ -6,7 +6,7 @@ from langchain.docstore.document import Document
 from brevia.routers.qa_router import (
     router, ChatBody, chat_language, retrieve_chat_history, extract_content_score
 )
-from brevia.collections import create_collection
+from brevia.collections_tools import create_collection
 from brevia.index import add_document
 from brevia.settings import get_settings
 

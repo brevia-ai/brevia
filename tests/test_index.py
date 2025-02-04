@@ -12,7 +12,7 @@ from brevia.index import (
     add_document, document_has_changed, select_load_link_options,
     documents_metadata, create_splitter,
 )
-from brevia.collections import create_collection
+from brevia.collections_tools import create_collection
 from brevia.settings import get_settings
 
 

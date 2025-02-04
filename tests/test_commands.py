@@ -16,7 +16,7 @@ from brevia.commands import (
     create_openapi,
     update_collection_links,
 )
-from brevia.collections import create_collection, collection_name_exists
+from brevia.collections_tools import create_collection, collection_name_exists
 from brevia.settings import get_settings
 from brevia.index import add_document
 

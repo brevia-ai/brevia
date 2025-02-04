@@ -1,6 +1,7 @@
 """Utility functions to import/export collections using CSV postgres files."""
 from os import path
-from brevia import connection, collections
+from brevia.collections_tools import collection_name_exists
+from brevia import connection
 
 
 def export_collection_data(
@@ -8,7 +9,7 @@ def export_collection_data(
     collection: str,
 ):
     """Export collection data using `psql`"""
-    if not collections.collection_name_exists(collection):
+    if not collection_name_exists(collection):
         raise ValueError(f"Collection '{collection}' was not found")
 
     csv_file_collection = f"{folder_path}/{collection}-collection.csv"
@@ -41,7 +42,7 @@ def import_collection_data(
     collection: str,
 ):
     """Import collection data using `psql`"""
-    if collections.collection_name_exists(collection):
+    if collection_name_exists(collection):
         raise ValueError(f"Collection '{collection}' already exists, exiting")
 
     csv_file_collection = f"{folder_path}/{collection}-collection.csv"

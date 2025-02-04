@@ -13,7 +13,7 @@ from brevia.query import (
     ChatParams,
     SearchQuery,
 )
-from brevia.collections import create_collection
+from brevia.collections_tools import create_collection
 from brevia.index import add_document
 from brevia.settings import get_settings
 

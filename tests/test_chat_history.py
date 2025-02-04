@@ -9,7 +9,7 @@ from brevia.chat_history import (
     get_history,
     ChatHistoryFilter,
 )
-from brevia.collections import create_collection
+from brevia.collections_tools import create_collection
 
 
 def test_history():

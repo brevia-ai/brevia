@@ -2,7 +2,7 @@
 from pathlib import Path
 import pytest
 from brevia.utilities.files_import import index_file_folder
-from brevia.collections import create_collection
+from brevia.collections_tools import create_collection
 
 
 def test_index_file_folder():

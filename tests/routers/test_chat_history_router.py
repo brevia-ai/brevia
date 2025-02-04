@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from fastapi import FastAPI
 from sqlalchemy.orm import Session
 from brevia.routers import chat_history_router
-from brevia.collections import create_collection
+from brevia.collections_tools import create_collection
 from brevia.connection import db_connection
 from brevia.chat_history import add_history, ChatHistoryStore
 

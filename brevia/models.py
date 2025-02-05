@@ -51,8 +51,8 @@ def load_chatmodel(config: dict) -> BaseChatModel:
         'openai-chat': ChatOpenAI,
         'fake-list-chat-model': FakeListChatModel,
     }
-    model_type = config.pop('_type')
-    if not model_type:
+    model_type = config.pop('_type', None)
+    if model_type is None:
         return init_chat_model(**config)
 
     if model_type in chatmodel_aliases:

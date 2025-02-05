@@ -61,7 +61,7 @@ def test_load_init_chat_model():
     assert result.max_tokens == 1000
     # load with class path name
     result = load_chatmodel(
-        {'model': 'llama3.2', 'model_provider': 'ollame', 'temperature': 0.1}
+        {'model': 'llama3.2', 'model_provider': 'ollama', 'temperature': 0.1}
     )
     assert isinstance(result, ChatOllama)
     assert result.temperature == 0.1

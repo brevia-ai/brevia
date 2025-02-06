@@ -63,22 +63,20 @@ class Settings(BaseSettings):
 
     # LLM settings
     qa_completion_llm: Json[dict[str, Any]] = """{
-        "_type": "openai-chat",
-        "model_name": "gpt-4o-mini",
+        "model": "gpt-4o-mini",
+        "model_provider": "openai",
         "temperature": 0,
-        "max_tokens": 1000,
-        "verbose": true
+        "max_tokens": 2000
     }"""
     qa_followup_llm: Json[dict[str, Any]] = """{
-        "_type": "openai-chat",
-        "model_name": "gpt-4o-mini",
+        "model": "gpt-4o-mini",
+        "model_provider": "openai",
         "temperature": 0,
-        "max_tokens": 200,
-        "verbose": true
+        "max_tokens": 500
     }"""
     summarize_llm: Json[dict[str, Any]] = """{
-        "_type": "openai-chat",
-        "model_name": "gpt-4o",
+        "model": "gpt-4o-mini",
+        "model_provider": "openai",
         "temperature": 0,
         "max_tokens": 2000
     }"""

@@ -3,13 +3,13 @@ from os import path
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.chains.base import Chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains.history_aware_retriever import create_history_aware_retriever
-from langchain.chains.retrieval import create_retrieval_chain
-from langchain_core.callbacks import BaseCallbackHandler
-from langchain_core.retrievers import BaseRetriever
-from langchain_core.vectorstores import VectorStore
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgvector import DistanceStrategy, PGVector
+from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.retrievers import BaseRetriever
+from langchain_core.vectorstores import VectorStore
 from langchain_core.language_models import BaseChatModel
 from langchain_core.documents import Document
 from langchain_core.prompts import (
@@ -108,6 +108,26 @@ class SearchQuery(BaseModel):
     filter: dict[str, str | dict | list] | None = None
 
 
+class ChatParams(BaseModel):
+    """ Q&A basic conversation chain params"""
+    docs_num: int | None = None
+    streaming: bool = False
+    distance_strategy_name: str | None = None
+    filter: dict[str, str | dict] | None = None
+    source_docs: bool = False
+    multiquery: bool = False
+    search_type: str = "similarity"
+    score_threshold: float = 0.0
+
+    def get_search_kwargs(self) -> dict:
+        """ Return search kwargs """
+        return {
+            'k': self.docs_num,
+            'filter': self.filter,
+            'score_threshold': self.score_threshold,
+        }
+
+
 def search_vector_qa(
     search: SearchQuery,
 ) -> list[tuple[Document, float]]:
@@ -133,26 +153,6 @@ def search_vector_qa(
         k=search.docs_num,
         filter=search.filter,
     )
-
-
-class ChatParams(BaseModel):
-    """ Q&A basic conversation chain params"""
-    docs_num: int | None = None
-    streaming: bool = False
-    distance_strategy_name: str | None = None
-    filter: dict[str, str | dict] | None = None
-    source_docs: bool = False
-    multiquery: bool = False
-    search_type: str = "similarity"
-    score_threshold: float = 0.0
-
-    def get_search_kwargs(self) -> dict:
-        """ Return search kwargs """
-        return {
-            'k': self.docs_num,
-            'filter': self.filter,
-            'score_threshold': self.score_threshold,
-        }
 
 
 def create_custom_retriever(
@@ -283,16 +283,25 @@ def conversation_chain(
         settings.qa_followup_llm.copy()
     )
     fup_llm = load_chatmodel(fup_llm_conf)
-    history_aware_retriever = create_history_aware_retriever(
-        fup_llm, retriever, load_condense_prompt(prompts)
-    )
+    fup_chain = load_condense_prompt(prompts) | fup_llm | StrOutputParser()
 
     # Chain with "stuff document" type
-    doc_stuff_chain = create_stuff_documents_chain(
+    document_chain = create_stuff_documents_chain(
         llm=chatllm,
         prompt=load_qa_prompt(prompts)
     )
 
-    # Create Main chain with all the stuff
-    rag_chain = create_retrieval_chain(history_aware_retriever, doc_stuff_chain)
-    return rag_chain
+    retrieval_docs = (lambda x: x["question"]) | retriever
+    retrivial_chain = (
+        RunnablePassthrough.assign(
+            context=retrieval_docs.with_config(run_name="retrieve_documents"),
+        ).assign(answer=document_chain)
+    ).with_config(run_name="retrieval_chain")
+
+    # Final retrieval chain with proper input handling
+    return (
+        RunnablePassthrough.assign(
+            question=fup_chain
+        )
+        | retrivial_chain
+    )

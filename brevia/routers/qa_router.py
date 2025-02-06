@@ -136,7 +136,7 @@ async def run_chain(
 ):
     """Run chain usign async methods and return result"""
     result = await chain.ainvoke({
-        'input': chat_body.question,
+        'question': chat_body.question,
         'chat_history': retrieve_chat_history(
             history=chat_body.chat_history,
             question=chat_body.question,

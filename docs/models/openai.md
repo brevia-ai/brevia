@@ -26,15 +26,15 @@ Conversational LLMs are configured using the variables [`QA_COMPLETION_LLM` and 
 An example JSON configuration might look like this:
 
 ```json
-{"_type": "openai-chat", "model_name": "gpt-4o-mini", "temperature": 0, "max_tokens": 1000}
+{"model": "gpt-4o-mini", "model_provider": "openai", "temperature": 0, "max_tokens": 1000}
 ```
-
-Here, `openai-chat` is an alias for `langchain_openai.chat_models.base.ChatOpenAI`, which can also be used interchangeably.
 
 The primary variables you can add to this configuration include:
 
-- `model` or `model_name`: name of the OpenAI model to use (string)
+- `model`: name of the OpenAI model to use (string)
 - `temperature`: sampling temperature (float, between 0 and 1)
 - `max_tokens`: maximum number of tokens to generate (int)
+
+See [here](../config.md#model-configuration-formats) for more details on the configuration format.
 
 For further configuration options, refer to the [LangChain API reference](https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html#langchain_openai.chat_models.base.ChatOpenAI).

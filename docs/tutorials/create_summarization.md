@@ -11,8 +11,8 @@ Define the summarization model and parameters using the following JSON snippet a
 
 ```JSON
 SUMMARIZE_LLM='{
-    "_type": "openai-chat",
-    "model_name": "gpt-4o-mini",
+    "model_provider": "openai",
+    "model": "gpt-4o-mini",
     "temperature": 0,
     "max_tokens": 2000
 }'

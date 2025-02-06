@@ -122,8 +122,8 @@ def run_chain(pages: list[Document], prompts: dict) -> dict[str, str]:
     prompts = load_analysis_prompts(prompts)
     logging_handler = LoggingCallbackHandler()
     llm_text = load_chatmodel({
-        '_type': 'openai-chat',
-        'model_name': 'gpt-4o',
+        'model_provider': 'openai',
+        'model': 'gpt-4o',
         'temperature': 0.0,
         'callbacks': [logging_handler],
     })

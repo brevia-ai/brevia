@@ -138,8 +138,8 @@ Where:
 
 Under the hood of Q&A and Chat actions (see [Chat and Search](chat_search.md) section) you can configure models and behaviors via these variables:
 
-* `QA_COMPLETION_LLM`: configuration for the main conversational model, used by `/chat` and `/completion` endpoints; a JSON string is used to configure the corresponding LangChain chat model class; an OpenAI instance is used as default: `'{"_type": "openai-chat", "model_name": "gpt-4o-mini", "temperature": 0, "max_tokens": 1000, "verbose": true}'` where for instance `model_name` and other attributes can be adjusted to meet your needs
-* `QA_FOLLOWUP_LLM`: configuration for the follow-up question model, used by `/chat` endpoint defining a follow up question for a conversation usgin chat history; a JSON string; an OpenAI instance used as default `'{"_type": "openai-chat", "model_name": "gpt-4o-mini", "temperature": 0, "max_tokens": 200, "verbose": true}'`
+* `QA_COMPLETION_LLM`: configuration for the main conversational model, used by `/chat` and `/completion` endpoints; a JSON string is used to configure the corresponding LangChain chat model class; an OpenAI instance is used as default: `'{"model_provider": "openai", "model": "gpt-4o-mini", "temperature": 0, "max_tokens": 2000}'` where for instance `model_name` and other attributes can be adjusted to meet your needs
+* `QA_FOLLOWUP_LLM`: configuration for the follow-up question model, used by `/chat` endpoint defining a follow up question for a conversation usgin chat history; a JSON string; an OpenAI instance used as default `'{"model_provider": "openai", "model": "gpt-4o-mini", "temperature": 0, "max_tokens": 500}'`
 * `QA_FOLLOWUP_SIM_THRESHOLD`: a numeric value between 0 and 1 indicating similarity threshold between questions to determine if chat history should be used, defaults to `0.735`
 * `QA_NO_CHAT_HISTORY`: disables chat history entirely if set to `True` or any other value
 * `SEARCH_DOCS_NUM`: default number of documents used to search for answers, defaults to `4`
@@ -149,7 +149,7 @@ Under the hood of Q&A and Chat actions (see [Chat and Search](chat_search.md) se
 
 To configure summarize related actions in `/summarize` or `/upload_summarize` endpoints the related environment variables are:
 
-* `SUMMARIZE_LLM`: the LLM to be used, a JSON string using the same format of `QA_COMPLETION_LLM` in the above paragraph; defatults to an OpenAI instance `'{"_type": "openai-chat", "model_name": "gpt-4o", "temperature": 0, "max_tokens": 2000}'`
+* `SUMMARIZE_LLM`: the LLM to be used, a JSON string using the same format of `QA_COMPLETION_LLM` in the above paragraph; defatults to an OpenAI instance `'{"model_provider": "openai", "model": "gpt-4o-mini" "temperature": 0, "max_tokens": 2000}'`
 * `SUMM_TOKEN_SPLITTER`: the maximum size of individual text chunks processed during summarization, defaults to `4000` - see `TEXT_CHUNK_SIZE` in [Text Segmentation](#text-segmentation) paragraph
 * `SUMM_TOKEN_OVERLAP`: the amount of overlap between consecutive text chunks, defaults to `500` - see `TEXT_CHUNK_OVERLAP` in [Text Segmentation](#text-segmentation) paragraph
 * `SUMM_DEFAULT_CHAIN`: chain type to be used if not specified, defaults to `stuff`

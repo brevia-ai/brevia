@@ -27,8 +27,7 @@ Conversational LLMs are configured using the variables [`QA_COMPLETION_LLM` and 
 An example JSON configuration using Meta's Llama 3.2 might look like this:
 
 ```json
-{"_type": "langchain_ollama.chat_models.ChatOllama", "model": "llama3.2",
-"base_url":"http://localhost:11434", "temperature": 0}
+{"model": "llama3.2", "model_provider": "ollama", "base_url":"http://localhost:11434", "temperature": 0}
 ```
 
 The primary variables you can add to this configuration include:
@@ -37,5 +36,7 @@ The primary variables you can add to this configuration include:
 * `base_url`: base url the model is hosted under, defaults to `http://127.0.0.1:11434`
 * `temperature`: sampling temperature, ranges from 0.0 to 1.0. (float)
 * `num_predict`: max number of tokens to generate (int)
+
+See [here](../config.md#model-configuration-formats) for more details on the configuration format.
 
 For further configuration options, refer to the [LangChain API reference](https://python.langchain.com/api_reference/ollama/chat_models/langchain_ollama.chat_models.ChatOllama.html#langchain_ollama.chat_models.ChatOllama).

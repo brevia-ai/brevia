@@ -80,10 +80,50 @@ Initiates a natural conversation with the model.
 }
 ```
 
-`source_docs`: Set to true to return source documents.
-`docs_num`: Specify the number of documents to return.
-`token_data`: Set to true to return token-level data like part-of-speech tags.
-`multiquery`: Set to true to use MultiQueryRetriever from langchain.
+**Additional Optional Parameters**:
+
+`docs_num`: The number of documents to retrieve for context. If not specified, the default from settings or collection metadata is used.
+
+`streaming`: A boolean flag to enable or disable streaming responses. Default is `False`.
+
+`distance_strategy_name`: The name of the distance strategy to use for vector similarity. Options include `euclidean`, `cosine`, and `max`. Default is `cosine`.
+
+`filter`: An optional dictionary of metadata to use as a filter for document retrieval.
+
+`source_docs`: A boolean flag to specify if the retrieved source documents should be included in the response. Default is `False`.
+
+`multiquery`: A boolean flag indicating whether multiple queries should be executed for retrieval. Default is `False`.
+
+`search_type`: The type of search algorithm to use. Options include:
+
+- `similarity`: Standard similarity search.
+- `similarity_score_threshold`: Similarity search with a score threshold.
+- `mmr`: Maximal Marginal Relevance search.
+Default is `similarity`.
+
+`score_threshold`: A numeric threshold for filtering documents based on relevance scores. Default is `0.0` (This applies only when `search_type` is set to `similarity_score_threshold`.).
+
+**Example Payload**:
+
+```JSON
+{
+    "question": "What is the capital of France?",
+    "collection": "geography",
+    "chat_history": [
+        {
+            "query": "What is the largest country in Europe?",
+            "answer": "The largest country in Europe by land area is Russia."
+        }
+    ],
+    "docs_num": 5,
+    "streaming": true,
+    "distance_strategy_name": "cosine",
+    "source_docs": true,
+    "multiquery": false,
+    "search_type": "similarity_score_threshold",
+    "score_threshold": 0.5
+}
+```
 
 ### POST `/completion`
 

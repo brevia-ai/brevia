@@ -78,70 +78,56 @@ To manually create a project instead follow these steps:
 * install brevia and its dependencies by running `poetry add brevia`, a virtualenv will automatically be created
 * create a new `main.py` starting with a [copy](https://raw.githubusercontent.com/brevia-ai/brevia-cookiecutter/main/%7B%7Bcookiecutter.project_slug%7D%7D/main.py)
 * activate the virtualenv by running the `poetry shell` command
-* copy the file `.env.sample` to `.env` and value the environment variables, especially `OPENAI_API_KEY` with the secret key of OpenAI and `PGVECTOR_*` see the [Database](#database) section
+* copy the file `.env.sample` to `.env` and value the environment variables, especially secrets like API keys for LLM API services (e.g. `OPENAI_API_KEY` for OpenAI or `COHERE_API_KEY` for Cohere) and database connection via `PGVECTOR_*`.  see the [Database](#database) section
 
-## Custom Model
+## Model configuration
 
-In addition to using the default OpenAI models, you have the option to integrate other Large Language Models, such as the Cohere model or any other model of your choice. Follow the steps below to set up and use a custom model in your Brevia project.
+With Brevia you can configure any Large Language Model supported by LangChain, virtually all major models currently available.
+Please have a look at the model configuration in the [Brevia documentation](https://docs.brevia.app/models/overview/) for more details.
+Follow the steps below to set up and use a custom model in your Brevia project.
 
-### Cohere Model Integration
+### Ollama Model Integration
 
-Once you have the Cohere API key and model name, update your Brevia project to include these credentials.
-
-0. Prerequisites: install cohere lib:
-
-    ```bash
-    poetry add cohere
-    ```
+Suppose you want to use a local Llama 3.2 model via [Ollama](https://ollama.com) you can update your Brevia project like this:
 
 1. Open the `.env` file in your project directory.
 
-2. Set the `COHERE_API_KEY` variable with your Cohere API key:
+2. For QA/RAG application, set in `QA_COMPLETION_LLM` and `QA_FOLLOWUP_LLM` the json as follow:
 
-    ```bash
-    COHERE_API_KEY=your-cohere-api-key
-    ```
+```bash
+QA_COMPLETION_LLM='{
+    "model_provider": "ollama",
+    "model": "llama3.2",
+    "temperature": 0,
+    "max_tokens": 1000
+}'
+QA_FOLLOWUP_LLM='{
+    "model_provider": "ollama",
+    "model": "llama3.2",
+    "temperature": 0,
+    "max_tokens": 200
+}'
+```
 
-3. Set the cohere variables with the desired Cohere parameter:
+3. You may want to configure the embeddings engine as well, in this case you can use another model like `nomic-embed-text` this way:
 
-For QA/RAG application, set in `QA_COMPLETION_LLM` and `QA_FOLLOWUP_LLM` the json as follow:
+```bash
+EMBEDDINGS='{
+    "_type": "langchain_ollama.embeddings.OllamaEmbeddings",
+    "model": "nomic-embed-text"
+}'
+```
 
-    ```bash
-    QA_COMPLETION_LLM='{
-        "_type": "cohere-chat",
-        "model_name": "command",
-        "temperature": 0,
-        "max_tokens": 200,
-        "verbose": true
-    }'
+4. For the summarization functions, you can set the `SUMMARIZE_LLM` var:
 
-    QA_FOLLOWUP_LLM='{
-        "_type": "cohere-chat",
-        "model_name": "command",
-        "temperature": 0,
-        "max_tokens": 200,
-        "verbose": true
-    }'
-    ```
-
-With relatives embeddings:
-
-    ```bash
-    EMBEDDINGS='{
-        "_type": "cohere-embeddings"
-    }'
-    ```
-
-4. For Summarization module, set  the `SUMMARIZE_LLM` var:
-
-    ```bash
-    SUMMARIZE_LLM='{
-        "_type": "cohere-chat",
-        "model_name": "command",
-        "temperature": 0,
-        "max_tokens": 2000
-    }'
-    ```
+```bash
+SUMMARIZE_LLM='{
+    "model_provider": "ollama",
+    "model": "llama3.2",
+    "temperature": 0,
+    "max_tokens": 2000
+}'
+```
 
 ## Database
 

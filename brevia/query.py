@@ -101,14 +101,14 @@ DISTANCE_MAP = {
 
 class SearchQuery(BaseModel):
     """
-    Model representing the parameters for a vector-based search query.
+    Parameters for a vector-based search query.
 
     Attributes:
-        query (str): The text of the search query.
-        collection (str): The identifier or name of the collection in which to perform the search.
-        docs_num (int | None): Optional maximum number of documents to retrieve.
-        distance_strategy_name (str): Identifier of the distance strategy to use; defaults to 'cosine'.
-        filter (dict[str, str | dict | list] | None): Optional filter criteria to narrow down search results.
+        query (str): The search query text.
+        collection (str): The collection name or identifier.
+        docs_num (int | None): Max number of documents to retrieve.
+        distance_strategy_name (str): Distance strategy, defaults to 'cosine'.
+        filter (dict[str, str | dict | list] | None): Optional filter criteria.
     """
     query: str
     collection: str
@@ -119,17 +119,17 @@ class SearchQuery(BaseModel):
 
 class ChatParams(BaseModel):
     """
-    Model encapsulating parameters necessary for initiating a Q&A conversation chain.
+    Parameters for initiating a Q&A conversation chain.
 
     Attributes:
         docs_num (int | None): Optional number of documents to retrieve.
-        streaming (bool): Flag to determine whether the response should be streamed.
-        distance_strategy_name (str | None): Optional strategy name for calculating distance in vector searches.
-        filter (dict[str, str | dict] | None): Optional filter parameters to refine document retrieval.
-        source_docs (bool): Flag to specify if the retrieved source documents should be included in the response.
-        multiquery (bool): Flag indicating whether multiple queries should be executed for retrieval.
-        search_type (str): Type of search algorithm to be used (defaults to "similarity").
-        score_threshold (float): Numeric threshold for filtering documents based on relevance scores.
+        streaming (bool): Flag to determine if the response should be streamed.
+        distance_strategy_name (str | None): Optional strategy for distance calculation.
+        filter (dict[str, str | dict] | None): Optional filter parameters for retrieval.
+        source_docs (bool): Flag to include retrieved source documents in the response.
+        multiquery (bool): Flag for executing multiple queries for retrieval.
+        search_type (str): Type of search algorithm (default is "similarity").
+        score_threshold (float): Threshold for filtering documents by relevance scores.
     """
     docs_num: int | None = None
     streaming: bool = False
@@ -270,16 +270,25 @@ def conversation_chain(
 
     Args:
         collection (CollectionStore): The collection store item containing the dataset.
-        chat_params (ChatParams): Parameters for configuring the conversation chain, including:
-            - docs_num (int | None): Number of documents to retrieve for context (default is from settings or collection metadata).
-            - streaming (bool): Flag to enable or disable streaming responses (default is False).
-            - distance_strategy_name (str | None): Name of the distance strategy to use (default is 'cosine').
-            - filter (dict[str, str | dict] | None): Optional dictionary of metadata to use as a filter (default is None).
-            - source_docs (bool): Flag to include source documents in the response (default is False).
-            - multiquery (bool): Flag to enable multiple queries for retrieval (default is False).
-            - search_type (str): Type of search algorithm to use (default is 'similarity').
-            - score_threshold (float): Threshold for filtering documents based on relevance scores (default is 0.0).
-        answer_callbacks (list[BaseCallbackHandler] | None): List of callback handlers for the final LLM answer to enable streaming (default is None).
+        chat_params (ChatParams): Parameters for configuring the conversation chain,
+            including:
+            - docs_num (int | None): Number of documents to retrieve for context
+              (default is from settings or collection metadata).
+            - streaming (bool): Flag to enable or disable streaming responses
+              (default is False).
+            - distance_strategy_name (str | None): Name of the distance strategy to use
+              (default is 'cosine').
+            - filter (dict[str, str | dict] | None): Optional dictionary of metadata to
+              use as a filter (default is None).
+            - source_docs (bool): Flag to include source documents in the response
+              (default is False).
+            - multiquery (bool): Flag to enable multiple queries for retrieval
+              (default is False).
+            - search_type (str): Type of search algorithm to use (def is 'similarity').
+            - score_threshold (float): Threshold for filtering documents based on
+              relevance scores (default is 0.0).
+        answer_callbacks (list[BaseCallbackHandler] | None): List of callback handlers
+            for the final LLM answer to enable streaming (default is None).
 
     Returns:
         Chain: A configured conversation chain for Q&A tasks.

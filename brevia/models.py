@@ -1,6 +1,7 @@
 """Utilities to create langchain LLM and Chat Model instances."""
 from abc import ABC, abstractmethod
 from typing import Any
+from langchain.chat_models.base import init_chat_model
 from langchain_core.embeddings import Embeddings
 from langchain_core.language_models import BaseChatModel, BaseLLM
 from langchain_community.chat_models.fake import FakeListChatModel
@@ -50,7 +51,10 @@ def load_chatmodel(config: dict) -> BaseChatModel:
         'openai-chat': ChatOpenAI,
         'fake-list-chat-model': FakeListChatModel,
     }
-    model_type = config.pop('_type')
+    model_type = config.pop('_type', None)
+    if model_type is None:
+        return init_chat_model(**config)
+
     if model_type in chatmodel_aliases:
         llm_cls = chatmodel_aliases[model_type]
     else:

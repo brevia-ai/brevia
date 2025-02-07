@@ -26,21 +26,21 @@ Involves rewriting the question based on chat history, ensuring contextual coher
 
 ```JSON
 QA_COMPLETION_LLM='{
-    "_type": "your_llm_type",
-    "model_name": "your_llm_model",
+    "model_provider": "your_llm_provider",
+    "model": "your_llm_model",
     "temperature": 0.7,
     "max_tokens": 1000
 }'
 
 QA_FOLLOWUP_LLM='{
-    "_type": "your_llm_type",
-    "model_name": "your_llm_model",
+    "model_provider": "your_llm_provider",
+    "model": "your_llm_model",
     "temperature": 0.7,
     "max_tokens": 200
 }'
 ```
 
-Replace `your_llm_type` and `your_llm_model` with your chosen LLM provider and specific model (e.g., "openai-chat", "gpt-4o-mini").
+Replace `your_llm_provider` and `your_llm_model` with your chosen LLM provider and specific model (e.g., "openai" and "gpt-4o-mini").
 Adjust `temperature` and `max_tokens` parameters as needed.
 
 ## Database

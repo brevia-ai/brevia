@@ -3,6 +3,7 @@ import pytest
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_community.embeddings.fake import FakeEmbeddings
 from langchain_community.llms.openai import OpenAI
+from langchain_ollama.chat_models import ChatOllama
 from brevia.settings import get_settings
 from brevia.models import (
     load_llm,
@@ -44,6 +45,26 @@ def test_load_chatmodel():
     # load with class path name
     result = load_chatmodel({'_type': 'langchain_openai.chat_models.ChatOpenAI'})
     assert isinstance(result, ChatOpenAI)
+
+    settings.use_test_models = True
+
+
+def test_load_init_chat_model():
+    """ Test load_chatmodel with `init_chat_model` structure"""
+    settings = get_settings()
+    settings.use_test_models = False
+    # load openai chat model
+    result = load_chatmodel(
+        {'model': 'gpt-4o', 'model_provider': 'openai', 'max_tokens': 1000}
+    )
+    assert isinstance(result, ChatOpenAI)
+    assert result.max_tokens == 1000
+    # load with class path name
+    result = load_chatmodel(
+        {'model': 'llama3.2', 'model_provider': 'ollama', 'temperature': 0.1}
+    )
+    assert isinstance(result, ChatOllama)
+    assert result.temperature == 0.1
 
     settings.use_test_models = True
 

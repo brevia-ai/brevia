@@ -3,6 +3,7 @@ from typing import Annotated
 import asyncio
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain.chains.base import Chain
+from langchain_core.callbacks import BaseCallbackHandler
 from fastapi import APIRouter, Header
 from fastapi.responses import StreamingResponse
 from brevia import chat_history
@@ -49,7 +50,6 @@ async def chat_action(
         collection=collection,
         chat_params=ChatParams(**chat_body.model_dump()),
         answer_callbacks=[stream_handler] if chat_body.streaming else [],
-        conversation_callbacks=[conversation_handler]
     )
     embeddings = collection.cmetadata.get('embedding', None)
 
@@ -62,6 +62,7 @@ async def chat_action(
                 token_callback=token_callback,
                 x_chat_session=x_chat_session,
                 embeddings=embeddings,
+                chain_callbacks=[conversation_handler],
             )
 
         asyncio.create_task(run_chain(
@@ -71,6 +72,7 @@ async def chat_action(
             token_callback=token_callback,
             x_chat_session=x_chat_session,
             embeddings=embeddings,
+            chain_callbacks=[conversation_handler],
         ))
 
         async def event_generator(
@@ -130,6 +132,7 @@ async def run_chain(
     token_callback: TokensCallbackHandler,
     x_chat_session: str,
     embeddings: dict | None = None,
+    chain_callbacks: list[BaseCallbackHandler] | None = None,
 ):
     """Run chain usign async methods and return result"""
     result = await chain.ainvoke({
@@ -141,8 +144,10 @@ async def run_chain(
             embeddings=embeddings,
         ),
         'lang': lang,
-    }, return_only_outputs=True)
-    print(result)
+    },
+        config={'callbacks': chain_callbacks},
+        return_only_outputs=True,
+    )
     return chat_result(
         result=result,
         callb=token_callback,
@@ -173,7 +178,7 @@ def chat_result(
 
     return {
         'bot': answer,
-        'docs': None if not chat_body.source_docs else result['source_documents'],
+        'docs': None if not chat_body.source_docs else result['context'],
         'chat_history_id': chat_history_id,
         'token_data': None if not chat_body.token_data else token_usage(callb)
     }

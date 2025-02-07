@@ -9,10 +9,9 @@ from brevia.collections import create_collection
 def test_chain_result():
     """Test chain_result method"""
     callback = ConversationCallbackHandler()
-    callback.result = {
-        'answer': 'I don\'t know',
-        'source_documents': [Document(page_content='', metadata={})],
-    }
+    callback.answer = 'I don\'t know'
+    callback.documents = [Document(page_content='', metadata={})]
+
     create_collection('new_collection', {})
     result = callback.chain_result(
         callb=TokensCallbackHandler(),

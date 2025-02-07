@@ -2,15 +2,15 @@
 from os import path
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.chains.base import Chain
-from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
-from langchain.chains.question_answering import load_qa_chain
-from langchain_core.language_models import BaseLanguageModel
-from langchain_core.retrievers import BaseRetriever
-from langchain_core.vectorstores import VectorStore
-from langchain.chains.llm import LLMChain
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgvector import DistanceStrategy, PGVector
 from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.retrievers import BaseRetriever
+from langchain_core.vectorstores import VectorStore
+from langchain_core.language_models import BaseChatModel
 from langchain_core.documents import Document
 from langchain_core.prompts import (
     ChatPromptTemplate,
@@ -23,10 +23,10 @@ from langchain_core.prompts.loading import load_prompt_from_config
 from pydantic import BaseModel
 from brevia.connection import connection_string
 from brevia.collections import single_collection_by_name
-from brevia.callback import AsyncLoggingCallbackHandler
 from brevia.models import load_chatmodel, load_embeddings
 from brevia.settings import get_settings
 from brevia.utilities.types import load_type
+from brevia.base_retriever import BreviaBaseRetriever
 
 # system = load_prompt(f'{prompts_path}/qa/default.system.yaml')
 # jinja2 template from file was disabled by langchain so, for now
@@ -100,7 +100,16 @@ DISTANCE_MAP = {
 
 
 class SearchQuery(BaseModel):
-    """ Search query items """
+    """
+    Parameters for a vector-based search query.
+
+    Attributes:
+        query (str): The search query text.
+        collection (str): The collection name or identifier.
+        docs_num (int | None): Max number of documents to retrieve.
+        distance_strategy_name (str): Distance strategy, defaults to 'cosine'.
+        filter (dict[str, str | dict | list] | None): Optional filter criteria.
+    """
     query: str
     collection: str
     docs_num: int | None = None
@@ -108,10 +117,48 @@ class SearchQuery(BaseModel):
     filter: dict[str, str | dict | list] | None = None
 
 
+class ChatParams(BaseModel):
+    """
+    Parameters for initiating a Q&A conversation chain.
+
+    Attributes:
+        docs_num (int | None): Optional number of documents to retrieve.
+        streaming (bool): Flag to determine if the response should be streamed.
+        distance_strategy_name (str | None): Optional strategy for distance calculation.
+        filter (dict[str, str | dict] | None): Optional filter parameters for retrieval.
+        source_docs (bool): Flag to include retrieved source documents in the response.
+        multiquery (bool): Flag for executing multiple queries for retrieval.
+        search_type (str): Type of search algorithm (default is "similarity").
+        score_threshold (float): Threshold for filtering documents by relevance scores.
+    """
+    docs_num: int | None = None
+    streaming: bool = False
+    distance_strategy_name: str | None = None
+    filter: dict[str, str | dict] | None = None
+    source_docs: bool = False
+    multiquery: bool = False
+    search_type: str = "similarity"
+    score_threshold: float = 0.0
+
+    def get_search_kwargs(self) -> dict:
+        """ Construct and return keyword arguments needed for search methods. """
+        return {
+            'k': self.docs_num,
+            'filter': self.filter,
+            'score_threshold': self.score_threshold,
+        }
+
+
 def search_vector_qa(
     search: SearchQuery,
 ) -> list[tuple[Document, float]]:
-    """ Perform a similarity search on vector index """
+    """
+    Execute a vector search for Q&A tasks and return matching documents with scores.
+
+    This function uses the provided search parameters to perform a similarity search
+    on the designated collection's vector index. It retrieves a list of document-score
+    tuples that best match the input query.
+    """
     collection_store = single_collection_by_name(search.collection)
     if not collection_store:
         raise ValueError(f'Collection not found: {search.collection}')
@@ -135,24 +182,12 @@ def search_vector_qa(
     )
 
 
-class ChatParams(BaseModel):
-    """ Q&A basic conversation chain params"""
-    docs_num: int | None = None
-    streaming: bool = False
-    distance_strategy_name: str | None = None
-    filter: dict[str, str | dict] | None = None
-    source_docs: bool = False
-    multiquery: bool = False
-
-
 def create_custom_retriever(
         store: VectorStore,
         search_kwargs: dict,
         retriever_conf: dict,
 ) -> BaseRetriever:
-    """
-        Create a custom retriever from a configuration.
-    """
+    """Create sda custom retriever from a configuration."""
     retriever_name = retriever_conf.pop('retriever', '')
     retriever_class = load_type(retriever_name, BaseRetriever)
 
@@ -166,7 +201,8 @@ def create_custom_retriever(
 def create_default_retriever(
         store: VectorStore,
         search_kwargs: dict,
-        llm: BaseLanguageModel,
+        llm: BaseChatModel,
+        search_type: str | None = None,
         multiquery: bool = False,
 
 ) -> BaseRetriever:
@@ -174,124 +210,138 @@ def create_default_retriever(
         Create a default retriever.
         Can be a vector store retriever or a multiquery retriever.
     """
-    retriever = store.as_retriever(search_kwargs=search_kwargs)
+    retriever = BreviaBaseRetriever(
+        vectorstore=store,
+        search_type=search_type,
+        search_kwargs=search_kwargs
+    )
+
     if multiquery:
         return MultiQueryRetriever.from_llm(retriever=retriever, llm=llm)
 
     return retriever
 
 
-def conversation_chain(
+def create_conversation_retriever(
     collection: CollectionStore,
     chat_params: ChatParams,
-    answer_callbacks: list[BaseCallbackHandler] | None = None,
-    conversation_callbacks: list[BaseCallbackHandler] | None = None,
-) -> Chain:
-    """
-        Return conversation chain for Q/A with embdedded dataset knowledge
-
-        collection: collection store item
-        chat_params: basic conversation chain parameters, including:
-            docs_num: number of docs to retrieve to create context
-                (default 'SEARCH_DOCS_NUM' env var or '4')
-            streaming: activate streaming (default False),
-            distance_strategy_name: distance strategy to use (default 'cosine')
-            filter: optional dictionary of metadata to use as filter (defailt None)
-            source_docs: flag to retrieve source docs in response (default True)
-        answer_callbacks: callbacks to use in the final LLM answer to enable streaming
-            (default empty list)
-        conversation_callbacks: callback to handle conversation results
-            (default empty list)
-        multiquery: flag for activate langchain's multiquery retriver
-
-        can implement "vectordbkwargs" into quest_dict:
-            {
-                "search_distance": 0.9
-            }
-    """
-    settings = get_settings()
-    if chat_params.docs_num is None:
-        default_num = settings.search_docs_num
-        chat_params.docs_num = int(collection.cmetadata.get('docs_num', default_num))
-    if answer_callbacks is None:
-        answer_callbacks = []
-    if conversation_callbacks is None:
-        conversation_callbacks = []
-
+    llm: BaseChatModel,
+) -> BaseRetriever:
+    """ Create a retriever for a collection with chat parameters """
     strategy = DISTANCE_MAP.get(
         chat_params.distance_strategy_name,
         DistanceStrategy.COSINE
     )
-    docsearch = PGVector(
+
+    embeddings_conf = collection.cmetadata.get('embedding', None)
+    document_search = PGVector(
         connection_string=connection_string(),
-        embedding_function=load_embeddings(collection.cmetadata.get('embedding', None)),
+        embedding_function=load_embeddings(embeddings_conf),
         collection_name=collection.name,
         distance_strategy=strategy,
         use_jsonb=True,
     )
+    search_kwargs = chat_params.get_search_kwargs()
+    retriever_conf = collection.cmetadata.get(
+        'qa_retriever',
+        get_settings().qa_retriever.copy()
+    )
+    if not retriever_conf:
+        return create_default_retriever(
+            store=document_search,
+            search_kwargs=search_kwargs,
+            llm=llm,
+            search_type=chat_params.search_type,
+            multiquery=chat_params.multiquery,
+        )
+
+    # custom retriever
+    return create_custom_retriever(
+        document_search, search_kwargs, retriever_conf)
+
+
+def conversation_chain(
+    collection: CollectionStore,
+    chat_params: ChatParams,
+    answer_callbacks: list[BaseCallbackHandler] | None = None,
+) -> Chain:
+    """
+    Create and return a conversation chain for Q&A with embedded dataset knowledge.
+
+    Args:
+        collection (CollectionStore): The collection store item containing the dataset.
+        chat_params (ChatParams): Parameters for configuring the conversation chain,
+            including:
+            - docs_num (int | None): Number of documents to retrieve for context
+              (default is from settings or collection metadata).
+            - streaming (bool): Flag to enable or disable streaming responses
+              (default is False).
+            - distance_strategy_name (str | None): Name of the distance strategy to use
+              (default is 'cosine').
+            - filter (dict[str, str | dict] | None): Optional dictionary of metadata to
+              use as a filter (default is None).
+            - source_docs (bool): Flag to include source documents in the response
+              (default is False).
+            - multiquery (bool): Flag to enable multiple queries for retrieval
+              (default is False).
+            - search_type (str): Type of search algorithm to use (def is 'similarity').
+            - score_threshold (float): Threshold for filtering documents based on
+              relevance scores (default is 0.0).
+        answer_callbacks (list[BaseCallbackHandler] | None): List of callback handlers
+            for the final LLM answer to enable streaming (default is None).
+
+    Returns:
+        Chain: A configured conversation chain for Q&A tasks.
+    """
+    settings = get_settings()
+    if chat_params.docs_num is None:
+        chat_params.docs_num = int(
+            collection.cmetadata.get('docs_num', settings.search_docs_num)
+        )
 
     prompts = collection.cmetadata.get('prompts')
+
+    # Main LLM configuration
     qa_llm_conf = collection.cmetadata.get(
         'qa_completion_llm',
         settings.qa_completion_llm.copy()
     )
+    qa_llm_conf['callbacks'] = [] if answer_callbacks is None else answer_callbacks
+    qa_llm_conf['streaming'] = chat_params.streaming
+    chatllm = load_chatmodel(qa_llm_conf)
+
+    # Create Retriever
+    retriever = create_conversation_retriever(
+        collection=collection,
+        chat_params=chat_params,
+        llm=chatllm
+    )
+
+    # Chain to rewrite question with history
     fup_llm_conf = collection.cmetadata.get(
         'qa_followup_llm',
         settings.qa_followup_llm.copy()
     )
-
-    verbose = settings.verbose_mode
-
-    # LLM to rewrite follow-up question
     fup_llm = load_chatmodel(fup_llm_conf)
+    fup_chain = load_condense_prompt(prompts) | fup_llm | StrOutputParser()
 
-    logging_handler = AsyncLoggingCallbackHandler()
-    # Create chain for follow-up question using chat history (if present)
-    question_generator = LLMChain(
-        llm=fup_llm,
-        prompt=load_condense_prompt(prompts),
-        verbose=verbose,
-        callbacks=[logging_handler],
-    )
-
-    # Model to use in final prompt
-    answer_callbacks.append(logging_handler)
-    qa_llm_conf['callbacks'] = answer_callbacks
-    qa_llm_conf['streaming'] = chat_params.streaming
-    chatllm = load_chatmodel(qa_llm_conf)
-
-    # this chain use "stuff" to elaborate context
-    doc_chain = load_qa_chain(
+    # Chain with "stuff document" type
+    document_chain = create_stuff_documents_chain(
         llm=chatllm,
-        prompt=load_qa_prompt(prompts),
-        chain_type="stuff",
-        verbose=verbose,
-        callbacks=[logging_handler],
+        prompt=load_qa_prompt(prompts)
     )
 
-    # main chain, do all the jobs
-    search_kwargs = {'k': chat_params.docs_num, 'filter': chat_params.filter}
-    retriever_conf = collection.cmetadata.get(
-        'qa_retriever',
-        settings.qa_retriever.copy()
-    )
-    if not retriever_conf:
-        retriever = create_default_retriever(
-            store=docsearch,
-            search_kwargs=search_kwargs,
-            llm=chatllm,
-            multiquery=chat_params.multiquery,
+    retrieval_docs = (lambda x: x["question"]) | retriever
+    retrivial_chain = (
+        RunnablePassthrough.assign(
+            context=retrieval_docs.with_config(run_name="retrieve_documents"),
+        ).assign(answer=document_chain)
+    ).with_config(run_name="retrieval_chain")
+
+    # Final retrieval chain with proper input handling
+    return (
+        RunnablePassthrough.assign(
+            question=fup_chain
         )
-    else:   # custom retriever
-        retriever = create_custom_retriever(docsearch, search_kwargs, retriever_conf)
-
-    conversation_callbacks.append(logging_handler)
-
-    return ConversationalRetrievalChain(
-        retriever=retriever,
-        combine_docs_chain=doc_chain,
-        return_source_documents=chat_params.source_docs,
-        question_generator=question_generator,
-        callbacks=conversation_callbacks,
-        verbose=verbose,
+        | retrivial_chain
     )

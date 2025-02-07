@@ -1,12 +1,14 @@
 """Query module tests"""
 import pytest
 from langchain.prompts import BasePromptTemplate
-from langchain.chains.conversational_retrieval.base import ConversationalRetrievalChain
 from langchain.docstore.document import Document
 from langchain_core.vectorstores import VectorStoreRetriever
 from langchain.retrievers.multi_query import MultiQueryRetriever
+from langchain_core.runnables import Runnable
+from brevia.models import load_chatmodel
 from brevia.query import (
     conversation_chain,
+    create_conversation_retriever,
     load_qa_prompt,
     load_condense_prompt,
     search_vector_qa,
@@ -123,37 +125,45 @@ def test_conversation_chain():
     chain = conversation_chain(collection=collection, chat_params=ChatParams())
 
     assert chain is not None
-    assert isinstance(chain, ConversationalRetrievalChain)
+    assert isinstance(chain, Runnable)
 
 
-def test_conversation_chain_multiquery():
-    """Test conversation_chain function with multiquery"""
+def test_conversation_retriever():
+    """Test create_conversation_retriever function with multiquery"""
     collection = create_collection('test', {})
-    chain = conversation_chain(
+    retriever = create_conversation_retriever(
         collection=collection,
-        chat_params=ChatParams(multiquery=True)
+        chat_params=ChatParams(multiquery=True),
+        llm=load_chatmodel({}),
     )
 
-    assert chain is not None
-    assert isinstance(chain, ConversationalRetrievalChain)
-    assert isinstance(chain.retriever, MultiQueryRetriever)
+    assert retriever is not None
+    assert isinstance(retriever, MultiQueryRetriever)
 
 
-def test_conversation_chain_custom_retriever():
-    """Test conversation_chain with custom retriever"""
+def test_conversation_custom_retriever():
+    """Test create_conversation_retriever with custom retriever"""
     collection = create_collection('test', {})
     settings = get_settings()
     current_retriever = settings.qa_retriever
     conf = {'retriever': 'langchain_core.vectorstores.VectorStoreRetriever'}
     settings.qa_retriever = conf
-    chain = conversation_chain(collection=collection, chat_params=ChatParams())
+    retriever = create_conversation_retriever(
+        collection=collection,
+        chat_params=ChatParams(multiquery=True),
+        llm=load_chatmodel({}),
+    )
 
-    assert chain is not None
-    assert isinstance(chain.retriever, VectorStoreRetriever)
+    assert retriever is not None
+    assert isinstance(retriever, VectorStoreRetriever)
     settings.qa_retriever = current_retriever
 
     collection = create_collection('test', {'qa_retriever': conf})
-    chain = conversation_chain(collection=collection, chat_params=ChatParams())
+    retriever = create_conversation_retriever(
+        collection=collection,
+        chat_params=ChatParams(multiquery=True),
+        llm=load_chatmodel({}),
+    )
 
-    assert chain is not None
-    assert isinstance(chain.retriever, VectorStoreRetriever)
+    assert retriever is not None
+    assert isinstance(retriever, VectorStoreRetriever)

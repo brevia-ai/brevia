@@ -9,6 +9,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Session
 from langchain_community.vectorstores.pgembedding import BaseModel
+from langchain.globals import set_verbose
 from pydantic import Field, Json, PrivateAttr, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -129,8 +130,8 @@ class Settings(BaseSettings):
     def setup_environment(self):
         """Setup some useful environment variables from `brevia_env_secrets`"""
         log = logging.getLogger(__name__)
-        for key in self.brevia_env_secrets.keys():
-            environ[key] = self.brevia_env_secrets.get(key)
+        for key, value in self.brevia_env_secrets.items():
+            environ[key] = value
             log.info('"%s" env var set', key)
 
     def connection_string(self) -> str:
@@ -156,7 +157,7 @@ class Settings(BaseSettings):
                 db_conf = read_db_conf(engine.connect())
                 self.update(db_conf)
             engine.dispose()
-        except Exception as exc:  # pylint: disable=broad-excepttion-caught
+        except Exception as exc:  # pylint: disable=broad-exception-caught
             logging.getLogger(__name__).error('Failed to read config from db: %s', exc)
 
     def setup_defaults(self):
@@ -263,5 +264,7 @@ def get_settings():
     settings.setup_defaults()
     settings.update_from_db()
     settings.setup_environment()
+
+    set_verbose(settings.verbose_mode)
 
     return settings

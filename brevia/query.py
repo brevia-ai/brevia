@@ -228,7 +228,8 @@ def conversation_chain(
             collection.cmetadata.get('docs_num', settings.search_docs_num)
         )
 
-    prompts = collection.cmetadata.get('prompts')
+    prompts = collection.cmetadata.get('prompts', {})
+    prompts = prompts if prompts else {}
 
     # Main LLM configuration
     qa_llm_conf = collection.cmetadata.get(
@@ -252,7 +253,11 @@ def conversation_chain(
         settings.qa_followup_llm.copy()
     )
     fup_llm = load_chatmodel(fup_llm_conf)
-    fup_chain = load_condense_prompt(prompts) | fup_llm | StrOutputParser()
+    fup_chain = (
+        load_condense_prompt(prompts.get('condense'))
+        | fup_llm
+        | StrOutputParser()
+    )
 
     # Chain with "stuff document" type
     document_chain = create_stuff_documents_chain(

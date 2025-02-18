@@ -4,11 +4,12 @@ from langchain_core.callbacks import Callbacks
 from langchain.chains.combine_documents.refine import RefineDocumentsChain
 from langchain.chains.llm import LLMChain
 from langchain_core.language_models import BaseLanguageModel
-from langchain_core.prompts.loading import load_prompt, load_prompt_from_config
+from langchain_core.prompts.loading import load_prompt_from_config
 from brevia.callback import LoggingCallbackHandler
 from brevia.load_file import read
 from brevia.index import split_document
 from brevia.models import load_chatmodel
+from brevia.prompts import load_prompt_from_yaml
 from brevia.settings import get_settings
 from brevia.tasks.base import BaseAnalysisTask
 
@@ -70,7 +71,7 @@ class RefineTextAnalysisTask(BaseTextAnalysisTask):
             if isinstance(value, dict):
                 prompts[key] = load_prompt_from_config(value)
             else:
-                prompts[key] = load_prompt(self.prompt_path(value))
+                prompts[key] = load_prompt_from_yaml(value)
 
         self.prompts = prompts
 

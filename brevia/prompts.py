@@ -27,7 +27,7 @@ def load_prompt_from_yaml(relative_path: str) -> PromptTemplate:
         config = yaml.safe_load(f)
     if not config:
         raise ValueError(f'Failed to load prompt from {file_path}')
-    type = config.get('_type')
+    type = config.pop('_type', 'prompt')
     if type == 'few_shot':
         return _load_few_shot_prompt(config)
 
@@ -39,11 +39,11 @@ def load_qa_prompt(prompts: dict | None = None) -> ChatPromptTemplate:
         Load prompt for RAG-Q/A, following system/human/ai pattern.
         If prompts are provided, they will overwrite the default prompts.
         Otherwise, the default prompts will be loaded from the default path:
-            - rag/human.yaml: human prompt, the user input
-            - rag/system.yaml: system prompt, base instruction for the model behavior
+            - rag/human.yml: human prompt, the user input
+            - rag/system.yml: system prompt, base instruction for the model behavior
     """
-    human = load_prompt_from_yaml('rag/human.yaml')
-    system = load_prompt_from_yaml('rag/system.yaml')
+    human = load_prompt_from_yaml('rag/human.yml')
+    system = load_prompt_from_yaml('rag/system.yml')
 
     if prompts:
         if prompts.get('system'):
@@ -64,9 +64,9 @@ def load_condense_prompt(config: dict | None = None) -> BasePromptTemplate:
         Load prompt for RAG-Condense, to create the follow-up question
         in a conversation.
         Prompt config is loaded if provided, otherwise, it will load
-        the default 'rag/condense.yaml' prompt.
+        the default 'rag/condense.yml' prompt.
     """
     if config:
         return load_prompt_from_config(config=config)
 
-    return load_prompt_from_yaml('rag/condense.yaml')
+    return load_prompt_from_yaml('rag/condense.yml')

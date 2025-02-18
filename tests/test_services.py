@@ -6,6 +6,7 @@ from brevia.services import (
     SummarizeTextService,
     RefineTextAnalysisService,
 )
+from brevia.settings import get_settings
 
 
 def test_summarize_failures():
@@ -30,8 +31,12 @@ def test_summarize_failures():
 
 def test_refine_text_analysis():
     """Test refine text analysis service"""
+    files_path = f'{Path(__file__).parent}/files'
+    settings = get_settings()
+    current_path = settings.prompts_base_path
+    settings.prompts_base_path = f'{files_path}/prompts'
     payload = {
-        'file_path': f'{Path(__file__).parent}/files/docs/test.txt',
+        'file_path': f'{files_path}/docs/test.txt',
         'prompts': {
             'initial_prompt': 'initial_prompt.yml',
             'refine_prompt': 'refine_prompt.yml'
@@ -41,6 +46,7 @@ def test_refine_text_analysis():
     result = service.run(payload)
     assert 'output' in result
     assert 'token_data' in result
+    settings.prompts_base_path = current_path
 
 
 def test_refine_text_analysis_fail():

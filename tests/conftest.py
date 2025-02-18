@@ -33,7 +33,7 @@ def update_settings():
     settings.update(test_settings)
     settings.setup_environment()
     # Force tokens and test models vars
-    settings.prompts_base_path = f'{Path(__file__).parent}/files/prompts'
+    # settings.prompts_base_path = f'{Path(__file__).parent}/files/prompts'
     settings.tokens_secret = ''
     settings.tokens_users = ''
     settings.status_token = ''

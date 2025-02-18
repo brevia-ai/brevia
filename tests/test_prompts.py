@@ -1,10 +1,15 @@
 """Prompts module tests"""
+from pathlib import Path
+import pytest
 from langchain_core.prompts import (
     ChatPromptTemplate,
     BasePromptTemplate,
     PromptTemplate,
+    FewShotPromptTemplate,
 )
-from brevia.prompts import load_condense_prompt, load_qa_prompt
+from brevia.prompts import load_condense_prompt, load_prompt_from_yaml, load_qa_prompt
+from brevia.settings import get_settings
+from tests.tasks.test_text_analysys import FILES_PATH
 
 
 def test_load_qa_prompt():
@@ -59,3 +64,34 @@ def test_load_condense_prompt():
     result = load_condense_prompt(config=config)
     assert result is not None
     assert isinstance(result, BasePromptTemplate)
+
+
+FILES_PATH = f'{Path(__file__).parent}/files'
+
+
+def test_load_prompt_from_yaml_fail():
+    """Test load_prompt_from_yaml failure"""
+    with pytest.raises(FileNotFoundError) as exc:
+        load_prompt_from_yaml('not.found')
+    assert 'No such file or directory' in str(exc.value)
+
+    settings = get_settings()
+    current_path = settings.prompts_base_path
+    settings.prompts_base_path = f'{FILES_PATH}/prompts'
+    with pytest.raises(ValueError) as exc:
+        load_prompt_from_yaml('empty.yml')
+    assert str(exc.value).startswith('Failed to load prompt from')
+
+    settings.prompts_base_path = current_path
+
+
+def test_load_prompt_from_yaml_few_shot():
+    """Test load_prompt_from_yaml of a 'few_shot' prompt"""
+    settings = get_settings()
+    current_path = settings.prompts_base_path
+    settings.prompts_base_path = f'{FILES_PATH}/prompts'
+    result = load_prompt_from_yaml('few_shot.yml')
+    assert result is not None
+    assert isinstance(result, FewShotPromptTemplate)
+
+    settings.prompts_base_path = current_path

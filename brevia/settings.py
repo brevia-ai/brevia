@@ -109,6 +109,9 @@ class Settings(BaseSettings):
     # Prompt files base path - local file system or remote URL
     prompts_base_path: str = Field(default=f'{getcwd()}/prompts', exclude=True)
 
+    # Providers: list of available providers and models
+    providers: Json = '[]'
+
     # App metadata
     block_openapi_urls: bool = False
 

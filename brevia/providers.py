@@ -13,7 +13,7 @@ from brevia.settings import get_settings, update_db_conf
 def list_providers():
     """ List available providers and models """
     providers = []
-    for provider in PROVIDER_MODELS_MAP:
+    for provider in PROVIDER_MODELS_MAP.items():
         models = PROVIDER_MODELS_MAP[provider]()
         item = {'model_provider': provider, 'models': models}
         providers.append(item)
@@ -37,11 +37,11 @@ def load_openai_models() -> list | None:
     """ Load OpenAI models """
     try:
         client = OpenAI()
-        list = client.models.list().model_dump()
+        list_models = client.models.list().model_dump()
     except OpenAIError:
         return None
     models = []
-    for item in list['data']:
+    for item in list_models['data']:
         name = item['id']
         if name.startswith('gpt-') or name.startswith('o1') or name.startswith('o3'):
             models.append({'name': name})
@@ -56,11 +56,11 @@ def load_deepseek_models() -> list | None:
             base_url='https://api.deepseek.com/v1',
             api_key=environ.get('DEEPSEEK_API_KEY'),
         )
-        list = client.models.list().model_dump()
+        list_models = client.models.list().model_dump()
     except OpenAIError:
         return None
     models = []
-    for item in list['data']:
+    for item in list_models['data']:
         name = item['id']
         models.append({'name': name})
 
@@ -71,11 +71,11 @@ def load_anthropic_models() -> list | None:
     """ Load Anthropic models """
     try:
         client = AnthropicClient()
-        list = client.models.list().model_dump()
-    except Exception:
+        list_models = client.models.list().model_dump()
+    except Exception:  # pylint: disable=broad-exception-caught
         return None
     models = []
-    for item in list['data']:
+    for item in list_models['data']:
         name = item['id']
         models.append({'name': name})
 
@@ -86,11 +86,11 @@ def load_cohere_models():
     """ Load Cohere models """
     try:
         co = CohereClient()
-        list = co.models.list(page_size=100).model_dump()
-    except Exception:
+        list_models = co.models.list(page_size=100).model_dump()
+    except Exception:  # pylint: disable=broad-exception-caught
         return None
     models = []
-    for item in list['models']:
+    for item in list_models['models']:
         name = item['name']
         if 'chat' in item['endpoints']:
             models.append({'name': name, 'tokens_limit': int(item['context_length'])})
@@ -102,11 +102,11 @@ def load_ollama_models():
     """ Load Ollama models """
     try:
         ol = OllamaClient()
-        list = ol.list()
-    except Exception:
+        list_models = ol.list()
+    except Exception:  # pylint: disable=broad-exception-caught
         return None
     models = []
-    for item in list['models']:
+    for item in list_models['models']:
         name = item['name']
         fam = item['details']['family']
         if fam not in ['bert', 'nomic-bert']:

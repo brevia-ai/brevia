@@ -138,7 +138,7 @@ Where:
 
 Under the hood of Q&A and Chat actions (see [Chat and Search](chat_search.md) section) you can configure models and behaviors via these variables:
 
-* `QA_COMPLETION_LLM`: configuration for the main conversational model, used by `/chat` and `/completion` endpoints; a JSON string is used to configure the corresponding LangChain chat model class; an OpenAI instance is used as default: `'{"model_provider": "openai", "model": "gpt-4o-mini", "temperature": 0, "max_tokens": 2000}'` where for instance `model_name` and other attributes can be adjusted to meet your needs
+* `QA_COMPLETION_LLM`: configuration for the main conversational model, used by `/chat` and `/completion` endpoints; a JSON string is used to configure the corresponding LangChain chat model class; an OpenAI instance is used as default: `'{"model_provider": "openai", "model": "gpt-4o-mini", "temperature": 0, "max_tokens": 2000}'` where for instance `model` and other attributes can be adjusted to meet your needs
 * `QA_FOLLOWUP_LLM`: configuration for the follow-up question model, used by `/chat` endpoint defining a follow up question for a conversation usgin chat history; a JSON string; an OpenAI instance used as default `'{"model_provider": "openai", "model": "gpt-4o-mini", "temperature": 0, "max_tokens": 500}'`
 * `QA_FOLLOWUP_SIM_THRESHOLD`: a numeric value between 0 and 1 indicating similarity threshold between questions to determine if chat history should be used, defaults to `0.735`
 * `QA_NO_CHAT_HISTORY`: disables chat history entirely if set to `True` or any other value

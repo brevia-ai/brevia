@@ -14,7 +14,7 @@ def list_providers():
     """ List available providers and models """
     providers = []
     for provider in PROVIDER_MODELS_MAP.items():
-        models = PROVIDER_MODELS_MAP[provider]()
+        models = PROVIDER_MODELS_MAP.get(provider)()
         item = {'model_provider': provider, 'models': models}
         providers.append(item)
 

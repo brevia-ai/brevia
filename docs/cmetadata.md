@@ -10,9 +10,11 @@ By organizing metadata into these two levels, the system ensures that both broad
 
 ## Prompt Management
 
-This section provides a detailed explanation of the different prompt types used in this configuration, divided into two main categories:
+This section provides a detailed explanation of the different prompt types used in this configuration:
 
 ### Conversational Chat Prompts for RAG Systems
+
+The prompts in the prompts/rag directory offer specialized configurations for efficient retrieval-augmented generation, ensuring streamlined query handling and precise system responses.
 
 - **Human Prompt:**
     This prompt type is designed to handle user queries. It accepts a single variable ("question") and formats it in a straightforward manner suitable for a conversational AI. When queries are processed through a Retrieval-Augmented Generation (RAG) system, the Human prompt is responsible for capturing the user's input as is.
@@ -21,6 +23,8 @@ This section provides a detailed explanation of the different prompt types used 
     The System prompt is specialized for generating context-aware responses. It requires additional input variables (such as "context" and "lang") and is used to produce answers that reference explicit sources from the provided context. This ensures that the assistant responds accurately within the constraints of the given document segments.
 
 ### Memory Management Prompts
+
+These mechanisms ensure the dialogue remains coherent and contextually relevant throughout the interaction.
 
 - **Condense Prompt (Default):**
     The condense prompt plays a crucial role in managing the dialogue history. It formats the conversation and the follow-up question into a standalone query, thereby condensing previous interactions into a succinct context. If specific prompt names (e.g., few_shot) are not used during configuration, the system automatically falls back to the condense prompt as the default for memory management.
@@ -88,4 +92,40 @@ Below is an example configuration:
         "template": "You are an AI assistant. You are provided with extracted parts of a document along with a question. Provide a conversational answer using only the sources explicitly listed in the context. If the question does not relate to the provided content, state that you are limited to addressing the given information. If you do not know the answer, simply indicate that you don't know.\n\n=========\n{context}\n=========\n\nAnswer in {lang}:"
     }
 }
+```
+
+### Text Analysis Prompts
+
+The prompts in the prompts/text_analysis directory are designed to assist with generating and refining questions based on provided text. These prompts ensure that the questions are relevant, understandable, and contextually accurate.
+
+```yaml
+# Reference initial prompt to generate questions from a given text.
+_type: prompt
+input_variables:
+    ["text"]
+template: |
+    Analyze the following text and generate 1-2 multiple choice questions, each with four options
+    (A, B, C, D), of which only one is correct.
+    Highlight the correct answer and make sure that the questions are relevant and understandable.
+
+    Reference text:
+    -------------------
+    {text}
+```
+
+```yaml
+# Reference refine prompt to generate questions from a given text.
+_type: prompt
+input_variables:
+    ["existing_answer", "text"]
+template: |
+    You are given the following partial document containing a list of multiple choice questions:
+    Partial Document:
+    -------------------
+    {existing_answer}
+    -------------------
+    Rewrite the list of questions by adding 1-2 more questions at the bottom from the context provided below:
+    -------------
+    {text}
+    -------------------
 ```

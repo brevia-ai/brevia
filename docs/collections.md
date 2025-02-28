@@ -5,7 +5,7 @@
 Collections are a fundamental component of a RAG system, serving as containers for storing and managing documents.
 The Brevia library provides a robust and flexible framework for working with collections, enabling efficient indexing, querying, and retrieval of documents.
 
-## Key Features:
+## Key Features
 
 **Flexible Data Model**: BrevIA utilizes a JSON-based metadata schema, allowing for flexible storage of collection-specific information and document-level metadata.
 This schema can be easily extended to accommodate custom requirements.
@@ -31,7 +31,7 @@ The cmetadata field in both tables plays a crucial role, allowing for the storag
 
 Brevia provides a RESTful API for managing collections, empowering developers to perform CRUD operations and access collection information programmatically.
 
-### Endpoints:
+### Endpoints
 
 `GET /collections`
 Retrieves a list of all existing collections.
@@ -96,7 +96,6 @@ Updates an existing collection.
   }
 }
 ```
-
 
 In this example, we update the collection metadata to include additional information about the documents, such as their validity period, integration status, and category.
 

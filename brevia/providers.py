@@ -22,7 +22,7 @@ def list_providers():
 
 
 def update_providers(force: bool = False):
-    """ Update providers list from API"""
+    """ Update providers list in settings from API and save providers to DB """
     settings = get_settings()
     if settings.providers and not force:
         return

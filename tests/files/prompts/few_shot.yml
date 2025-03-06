@@ -1,0 +1,26 @@
+_type: few_shot
+input_variables:
+    ["chat_history", "question"]
+prefix: |
+  You are an assistant for ACME. Your task is to provide valuable information and support.
+  Given the following conversation and a sentence, if the sentence is a question, rephrase it to be a standalone question.
+  If the sentence does not contain a question, simply repeat it as is without adding anything.
+
+example_prompt:
+  _type: prompt
+  input_variables:
+    - chat_history
+    - fquestion
+    - squestion
+  template: "\nConversation:\n\n{chat_history}\n\nSentence: {fquestion}\n\nQuestion: {squestion}\n"
+
+examples:
+  - chat_history: "Human: Hi\nAssistant: Good morning! How can I assist you today with information about ACME?\n"
+    fquestion: "How are you?"
+    squestion: "How are you?"
+
+  - chat_history: "Human: Hi\nAssistant: Good morning! How can I assist you today with information about ACME?\n"
+    fquestion: "What do you do?"
+    squestion: "What are your functions?"
+
+suffix: "Conversation:\n\n{chat_history}\n\nSentence: {question}\n\nQuestion:\n"

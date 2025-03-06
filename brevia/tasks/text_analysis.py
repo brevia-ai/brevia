@@ -66,7 +66,7 @@ class SummarizeTextAnalysisTask(BaseTextAnalysisTask):
         self.initial_prompt = initial_prompt
         self.iteration_prompt = iteration_prompt
         self.text_options = text_options
-        self.load_analysis_prompts = ({
+        self.load_analysis_prompts({
             'initial_prompt': self.initial_prompt,
             'iteration_prompt': self.iteration_prompt
         })

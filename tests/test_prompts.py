@@ -9,7 +9,6 @@ from langchain_core.prompts import (
 )
 from brevia.prompts import load_condense_prompt, load_prompt_from_yaml, load_qa_prompt
 from brevia.settings import get_settings
-from tests.tasks.test_text_analysys import FILES_PATH
 
 
 def test_load_qa_prompt():

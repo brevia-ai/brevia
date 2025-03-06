@@ -1,19 +1,27 @@
 """Analysis module tests"""
 import pytest
-from brevia.analysis import (
+from brevia.tasks.text_analysis import SummarizeTextAnalysisTask
+from brevia.prompts import (
     load_stuff_prompts,
     load_map_prompts,
-    load_refine_prompts,
-    summarize
+    load_refine_prompts
 )
 from brevia.models import LOREM_IPSUM
 
 FAKE_INITIAL_PROMPT = {
-    'initial_prompt': {
-        '_type': 'prompt',
-        'input_variables': [],
-        'template': 'Fake',
-    }
+    '_type': 'prompt',
+    'input_variables': [
+        "text"
+    ],
+    'template': 'Fake {text}',
+}
+
+FAKE_ITERATION_PROMPT = {
+    '_type': 'prompt',
+    'input_variables': [
+        "text"
+    ],
+    'template': 'Fake {text}',
 }
 
 FAKE_COMPLEX_PROMPT = {
@@ -67,14 +75,26 @@ def test_load_refine_prompts_both():
 
 def test_summarize():
     """Test summarize function"""
-    result = summarize(text='A very long text')
+    analysis = SummarizeTextAnalysisTask(
+            text='A very long text',
+            chain_type='stuff',
+            initial_prompt=FAKE_INITIAL_PROMPT,
+            iteration_prompt=FAKE_ITERATION_PROMPT,
+
+        )
+    result = analysis.perform_task()
     assert result['output_text'] == LOREM_IPSUM
 
 
 def test_summarize_fail():
     """Test summarize failure"""
     with pytest.raises(ValueError) as exc:
-        summarize(text='A very long text', chain_type='wrong-chain')
+        SummarizeTextAnalysisTask(
+            text='A very long text',
+            chain_type='wrong-chain',
+            initial_prompt=FAKE_INITIAL_PROMPT,
+            iteration_prompt=FAKE_ITERATION_PROMPT,
+        )
     msg = 'Got unsupported chain type: wrong-chain. Should be one of '
     print(exc.value)
     assert str(exc.value) == msg + "['stuff', 'map_reduce', 'refine']"

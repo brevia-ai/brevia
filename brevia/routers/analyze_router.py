@@ -113,8 +113,8 @@ def upload_summarize(
             as a base64-encoded string
         - token_data (bool, optional): A boolean indicating whether to include
             token-level data in the summary
-        - payload (str, optional): Optional payload in JSON format to use in the async job
-            service to add custom options and custom fields
+        - payload (str, optional): Optional payload in JSON format to use
+            in the async job service to add custom options and custom fields
 
     Returns:
         A JSON object representing the job UUID for the asynchronous summarization task

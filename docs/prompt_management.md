@@ -1,18 +1,8 @@
-# Cmetadata Field
+# Prompt Management
 
-In our database, the "cmetadata" field is vital because it provides a flexible space to store a variety of metadata. This field is structured into two distinct levels:
+This section provides a detailed explanation of the different prompt types used in Brevia.
 
-**Collection-level metadata:** This category captures overarching details about the entire collection. It may include information such as the collection’s purpose, who created it, the creation date, and other general attributes that describe the collection as a whole.
-
-**Document-level metadata:** This category focuses on information specific to each individual document. It can record details like the author, title, publication date, or any custom attributes that are relevant to the particular document.
-
-By organizing metadata into these two levels, the system ensures that both broad, collection-wide information and detailed, document-specific data are effectively managed and accessible.
-
-## Prompt Management
-
-This section provides a detailed explanation of the different prompt types used in this configuration:
-
-### Conversational Chat Prompts for RAG Systems
+## Conversational Chat Prompts for RAG Systems
 
 The prompts in the prompts/rag directory offer specialized configurations for efficient retrieval-augmented generation, ensuring streamlined query handling and precise system responses.
 
@@ -22,7 +12,7 @@ The prompts in the prompts/rag directory offer specialized configurations for ef
 - **System Prompt:**
     The System prompt is specialized for generating context-aware responses. It requires additional input variables (such as "context" and "lang") and is used to produce answers that reference explicit sources from the provided context. This ensures that the assistant responds accurately within the constraints of the given document segments.
 
-### Memory Management Prompts
+## Memory Management Prompts
 
 These mechanisms ensure the dialogue remains coherent and contextually relevant throughout the interaction.
 
@@ -32,9 +22,9 @@ These mechanisms ensure the dialogue remains coherent and contextually relevant 
 - **Few Shot Prompt:**
     This prompt type includes a set of predefined examples that guide the assistant in reformatting or rephrasing questions. It employs examples to illustrate the desired transformation from a conversational sentence to a clear, standalone question. However, if explicit naming is not applied for memory-related interactions, the default behavior reverts to using the condense prompt instead of the few shot configuration.
 
-This split ensures that the system handles both direct conversational interactions (via the Human and System prompts) and more complex memory management tasks (via the condense or few shot prompts) with clarity and consistency.
+This split ensures that the system handles both direct conversational interactions (via the Human and System prompts) and more complex memory management tasks (via the condense or few shot prompts) with clarity and consistency. You have to specify either a `condense` or a `few_shot` prompt. In case both prompts are present the `few_shot` prompt will be used.
 
-Below is an example configuration:
+Below is an example configuration with a **condense** prompt:
 
 ```json
 {
@@ -46,6 +36,28 @@ Below is an example configuration:
         ],
         "template": "You are an AI assistant. Your task is to provide valuable information and support to users. Given the following conversation and a follow-up question, rephrase the follow-up question as a standalone question. Write in the same language as the follow-up question.\nconversation:\n\n{chat_history}\n\nfollow-up question: {question}\n\nStandalone question:"
     },
+    "human": {
+        "_type": "prompt",
+        "input_variables": [
+            "question"
+        ],
+        "template": "Question: {question}\n"
+    },
+    "system": {
+        "_type": "prompt",
+        "input_variables": [
+            "context",
+            "lang"
+        ],
+        "template": "You are an AI assistant. You are provided with extracted parts of a document along with a question. Provide a conversational answer using only the sources explicitly listed in the context. If the question does not relate to the provided content, state that you are limited to addressing the given information. If you do not know the answer, simply indicate that you don't know.\n\n=========\n{context}\n=========\n\nAnswer in {lang}:"
+    }
+}
+```
+
+Below another example with a **few_shot** prompt:
+
+```json
+{
     "few_shot": {
         "_type": "few_shot",
         "input_variables": [
@@ -94,38 +106,44 @@ Below is an example configuration:
 }
 ```
 
-### Text Analysis Prompts
+## Text Analysis Prompts
 
-The prompts in the prompts/text_analysis directory are designed to assist with generating and refining questions based on provided text. These prompts ensure that the questions are relevant, understandable, and contextually accurate.
+You can define a folder with prompts in YAML format for text analysis tasks.
+This folder can be configured in `settings.prompts_base_path`.
+You can then use the relative paths of these prompt files in the `prompts` field of the analysis task configuration.
+For instance you can configure `RefineTextAnalysisService` with the following configuration, specifying relative paths:
 
-```yaml
-# Reference initial prompt to generate questions from a given text.
-_type: prompt
-input_variables:
-    ["text"]
-template: |
-    Analyze the following text and generate 1-2 multiple choice questions, each with four options
-    (A, B, C, D), of which only one is correct.
-    Highlight the correct answer and make sure that the questions are relevant and understandable.
-
-    Reference text:
-    -------------------
-    {text}
+```json
+{
+    "prompts": {
+        "initial_prompt": "text_analysis/initial_prompt.yml",
+        "refine_prompt": "text_analysis/refine_prompt.yml"
+    }
+}
 ```
 
-```yaml
-# Reference refine prompt to generate questions from a given text.
-_type: prompt
-input_variables:
-    ["existing_answer", "text"]
-template: |
-    You are given the following partial document containing a list of multiple choice questions:
-    Partial Document:
-    -------------------
-    {existing_answer}
-    -------------------
-    Rewrite the list of questions by adding 1-2 more questions at the bottom from the context provided below:
-    -------------
-    {text}
-    -------------------
+Alternatively you can use the `prompts` field in the analysis task configuration to specify the prompt directly in the task configuratio, like this:
+
+```json
+{
+    "prompts": {
+        "initial_prompt": {
+            "_type": "prompt",
+            "input_variables": [
+                "text"
+            ],
+            "template": "Analyze the following text and generate 1-2 multiple choice questions, each with four options (A, B, C, D), of which only one is correct. Highlight the correct answer and make sure that the questions are relevant and understandable.\n\nReference text:\n-------------------\n{text}"
+        },
+        "refine_prompt": {
+            "_type": "prompt",
+            "input_variables": [
+                "existing_answer",
+                "text"
+            ],
+            "template": "You are given the following partial document containing a list of multiple choice questions:\nPartial Document:\n-------------------\n{existing_answer}\n-------------------\nRewrite the list of questions by adding 1-2 more questions at the bottom from the context provided below:\n-------------\n{text}\n-------------------"
+        }
+    }
+}
 ```
+
+As a reference you can find some prompts in the `prompts/text_analysis` directory. designed to assist with generating and refining questions based on provided text. These prompts ensure that the questions are relevant, understandable, and contextually accurate.

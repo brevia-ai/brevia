@@ -8,7 +8,7 @@ All configuration items described here below can be set as keys in `cmetadata` J
 
 ## Prompt
 
-- `prompts` (JSON) configuration of the custom prompts used in the [Q&A & chat](chat_search.md) actions
+- `prompts` (JSON) configuration of the custom prompts used in the [Q&A & chat](chat_search.md) actions, see [Prompt Management](prompt_management.md) for more details.
 
 ## Index and search
 

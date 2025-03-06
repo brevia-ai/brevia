@@ -1,5 +1,7 @@
 """Providers module tests"""
 from unittest.mock import patch, MagicMock
+from openai import OpenAIError
+from brevia.settings import get_settings
 from brevia.providers import (
     list_providers,
     update_providers,
@@ -49,6 +51,24 @@ def test_update_providers(mock_list_providers, mock_db_connection,
     mock_update_db_conf.assert_called_once_with(mock_db_connection(), {
         'providers': fake,
     })
+
+
+def test_update_providers_skip():
+    """ Test update_providers function when providers data already in settings """
+    fake_providers = [{
+        'model_provider': 'mock_provider',
+        'models': [{'name': 'mock_model'}],
+    }]
+    settings = get_settings()
+    current = settings.providers
+    settings.providers = fake_providers
+
+    update_providers()
+
+    assert settings.providers == fake_providers
+
+    settings.providers = current
+
 
 
 @patch('brevia.providers.OpenAI')
@@ -115,3 +135,25 @@ def test_load_ollama_models(mock_ollama):
 
     models = load_ollama_models()
     assert models == [{'name': 'ollama-model'}]
+
+
+@patch('brevia.providers.OpenAI')
+@patch('brevia.providers.OllamaClient')
+@patch('brevia.providers.AnthropicClient')
+@patch('brevia.providers.CohereClient')
+def test_load_models_exceptions(mock_openai, mock_ollama, mock_anthropic, mock_cohere):
+    """ Test load models exceptions """
+
+    mock_client = MagicMock()
+    mock_client.models.list.side_effect = OpenAIError('API error')
+    mock_client.list.side_effect = Exception('API error')
+    mock_openai.return_value = mock_client
+    mock_ollama.return_value = mock_client
+    mock_anthropic.return_value = mock_client
+    mock_cohere.return_value = mock_client
+
+    assert load_openai_models() is None
+    assert load_deepseek_models() is None
+    assert load_anthropic_models() is None
+    assert load_cohere_models() is None
+    assert load_ollama_models() is None

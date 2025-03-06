@@ -1,6 +1,5 @@
 """Query module tests"""
 import pytest
-from langchain.prompts import BasePromptTemplate
 from langchain.docstore.document import Document
 from langchain_core.vectorstores import VectorStoreRetriever
 from langchain.retrievers.multi_query import MultiQueryRetriever
@@ -9,8 +8,6 @@ from brevia.models import load_chatmodel
 from brevia.query import (
     conversation_chain,
     create_conversation_retriever,
-    load_qa_prompt,
-    load_condense_prompt,
     search_vector_qa,
     ChatParams,
     SearchQuery,
@@ -18,42 +15,6 @@ from brevia.query import (
 from brevia.collections import create_collection
 from brevia.index import add_document
 from brevia.settings import get_settings
-
-FAKE_PROMPT = {
-    '_type': 'prompt',
-    'input_variables': [],
-    'template': 'Fake',
-}
-
-
-def test_load_qa_prompt():
-    """Test load_qa_prompt method"""
-    result = load_qa_prompt({
-        'system': FAKE_PROMPT,
-    })
-    assert result is not None
-    assert isinstance(result, BasePromptTemplate)
-
-    result = load_qa_prompt({
-        'human': FAKE_PROMPT,
-    })
-    assert result is not None
-    assert isinstance(result, BasePromptTemplate)
-
-
-def test_load_condense_prompt():
-    """Test load_condense_prompt method"""
-    result = load_condense_prompt({
-        'few': FAKE_PROMPT,
-    })
-    assert result is not None
-    assert isinstance(result, BasePromptTemplate)
-
-    result = load_condense_prompt({
-        'condense': FAKE_PROMPT,
-    })
-    assert result is not None
-    assert isinstance(result, BasePromptTemplate)
 
 
 def test_search_vector_qa():

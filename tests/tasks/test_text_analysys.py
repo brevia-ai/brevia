@@ -1,6 +1,7 @@
 """Test text analysis tasks"""
 from pathlib import Path
 import pytest
+from brevia.settings import get_settings
 from brevia.tasks.text_analysis import RefineTextAnalysisTask
 import yaml
 
@@ -9,6 +10,10 @@ FILES_PATH = f'{Path(__file__).parent.parent}/files'
 
 def test_refine_text_analysis():
     """Test refine text analysis task"""
+    settings = get_settings()
+    current_path = settings.prompts_base_path
+    settings.prompts_base_path = f'{FILES_PATH}/prompts'
+
     file_path = f'{FILES_PATH}/docs/test.txt'
     prompts = {
         'initial_prompt': 'initial_prompt.yml',
@@ -18,6 +23,9 @@ def test_refine_text_analysis():
     result = task.perform_task()
     assert 'input_documents' in result
     assert 'output_text' in result
+    # Restore `prompts_base_path` settings
+    settings.prompts_base_path = current_path
+
     with open(f'{FILES_PATH}/prompts/initial_prompt.yml', 'r') as file:
         initial_prompt_dict = yaml.safe_load(file)
     with open(f'{FILES_PATH}/prompts/refine_prompt.yml', 'r') as file:

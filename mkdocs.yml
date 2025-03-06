@@ -40,6 +40,7 @@ nav:
   - Configuration:
      - Global configuration: config.md
      - Collection configuration: collection_config.md
+     - Prompt management: prompt_management.md
   - Models:
     - Overview: models/overview.md
     - OpenAI: models/openai.md

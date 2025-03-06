@@ -106,8 +106,8 @@ class Settings(BaseSettings):
     summ_token_splitter: int = 4000
     summ_token_overlap: int = 500
 
-    # Prompt files base path - local file system or remote URL
-    prompts_base_path: str = Field(default=f'{getcwd()}/prompts', exclude=True)
+    # Prompt files base path - local or shared file system
+    prompts_base_path: str = Field(default=f'{getcwd()}/brevia/prompts', exclude=True)
 
     # Providers: list of available providers and models
     providers: Json = '[]'

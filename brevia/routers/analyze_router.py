@@ -38,27 +38,31 @@ def summarize_text(summarize: SummarizeBody):
     and custom prompt options.
 
     Args:
-        summarize (SummarizeBody): An object representing the request data
-        It contains the following parameters:
-            text (str): The text to be summarized
-            chain_type: The main langchain summarization chain type should be one of
-                "stuff", "map_reduce", and "refine".
-                if not providerd stuff is used by default
-            initial_prompt: Optional custom prompt to be used in the selected langchain
-                chain type to replace the main chain prompt defaults
-            iteration_prompt: Optional custom prompts to be used in the selected
-                langchain chain type to replace the second chain promopt defaults
-            token_data (bool): A boolean indicating whether to include
-                token-level data in the summary
+        summarize (SummarizeBody): An object representing the request data.
+            It contains the following parameters:
+            - text (str): The text to be summarized.
+            - chain_type (str, optional): The main Langchain summarization chain type.
+                Should be one of "stuff", "map_reduce", or "refine".
+                If not provided, "stuff" is used by default.
+            - initial_prompt (dict, optional): Optional custom prompt as a JSON object
+                to be used in the selected Langchain chain type to replace
+                the main chain prompt defaults.
+            - iteration_prompt (dict, optional): Optional custom prompts to be used
+                in the selected algorithm. This prompt will serve as the iterative
+                prompt for various summarization algorithms. For instance, if the user
+                selects the "map_reduce" algorithm, the iteration prompt is used
+                as the "combine_prompt".
+            - token_data (bool): A boolean indicating whether to include
+                token-level data in the summary.
 
     Returns:
-        JSON object representing the summary of the provided text
+        dict: A JSON object representing the summary of the provided text.
 
     Raises:
-        - HTTPException with status code 400 if the 'text' field is empty
+        HTTPException: If the 'text' field is empty, with status code 400.
 
-    With this endpoint, you can choose the summarization algorithm from those available
-    in the Langchain library and customize the prompts according on the chosen algorithm
+    This endpoint allows you to choose the summarization algorithm from those available
+    in the Langchain library and customize the prompts based on the chosen algorithm.
     """
     summarize.text = load_file.cleanup_text(summarize.text).strip()
     if not summarize.text:
@@ -91,24 +95,26 @@ def upload_summarize(
     selection and custom prompt options.
 
     Args:
-        background_tasks (BackgroundTasks): A background task manager
+        - background_tasks (BackgroundTasks): A background task manager
             for handling asynchronous tasks
-        chain_type (str, optional): The main Langchain summarization chain type
+        - chain_type (str, optional): The main Langchain summarization chain type
             Should be one of "stuff", "map_reduce", or "refine"
             If not provided, 'stuff' is used by default
-        initial_prompt (str, optional): Optional custom prompt as json string to be
-            used in the selected Langchain chain type to replace the main chain
-            prompt defaults
-        iteration_prompt (str, optional): Optional custom prompt as json string
-            to be used in the selected Langchain chain type to replace the second
-            chain prompt defaults
-        file (UploadFile | None): An uploaded PDF file to be summarized
-        file_content (str, optional): Content of the PDF file provided
+        - initial_prompt (dict, optional): Optional custom prompt as a JSON object
+                to be used in the selected Langchain chain type to replace
+                the main chain prompt defaults.
+        - iteration_prompt (dict, optional): Optional custom prompts to be used
+            in the selected algorithm. This prompt will serve as the iterative
+            prompt for various summarization algorithms. For instance, if the user
+            selects the "map_reduce" algorithm, the iteration prompt is used
+            as the "combine_prompt".
+        - file (UploadFile | None): An uploaded PDF file to be summarized
+        - file_content (str, optional): Content of the PDF file provided
             as a base64-encoded string
-        token_data (bool, optional): A boolean indicating whether to include
+        - token_data (bool, optional): A boolean indicating whether to include
             token-level data in the summary
-        payload (str, optional): Optional payload in JSON format to use in the async job
-            service to add custom options and custom fields
+        - payload (str, optional): Optional payload in JSON format to use
+            in the async job service to add custom options and custom fields
 
     Returns:
         A JSON object representing the job UUID for the asynchronous summarization task

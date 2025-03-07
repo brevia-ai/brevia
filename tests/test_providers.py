@@ -21,7 +21,7 @@ def load_mock_provider_models_map():
 @patch('brevia.providers.PROVIDER_MODELS_MAP')
 def test_list_providers(mock_provider_models_map):
     """ Test list_providers function """
-    mock_provider_models_map.items.return_value = ['mock_provider']
+    mock_provider_models_map.keys.return_value = ['mock_provider']
     mock_provider_models_map.get.return_value = load_mock_provider_models_map
 
     providers = list_providers()
@@ -128,7 +128,7 @@ def test_load_ollama_models(mock_ollama):
     """ Test load_ollama_models function """
     mock_client = MagicMock()
     mock_client.list.return_value = {
-        'models': [{'name': 'ollama-model', 'details': {'family': 'not-bert'}}]
+        'models': [{'model': 'ollama-model', 'details': {'family': 'not-bert'}}]
     }
     mock_ollama.return_value = mock_client
 

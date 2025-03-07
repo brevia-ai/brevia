@@ -70,7 +70,6 @@ def test_update_providers_skip():
     settings.providers = current
 
 
-
 @patch('brevia.providers.OpenAI')
 def test_load_openai_models(mock_openai):
     """ Test load_openai_models function """

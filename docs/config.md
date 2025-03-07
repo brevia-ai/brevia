@@ -41,17 +41,18 @@ An example of such uri using Brevia defaults can look like `postgresql+psycopg2:
 
 ## External services
 
-As example of external services here we include OpenAI, Cohere and LangSmith but it may include any LLM supported by LangChain. Those services usually need some specific env variables like API keys or tokens. If you don't set these variables, the services that depend on them may not work properly.
+As example of external services here we include OpenAI, Cohere, Anthropic, DeepSeek and LangSmith but it may include any LLM supported by LangChain. Those services usually need some specific env variables like API keys or tokens. If you don't set these variables, the services that depend on them may not work properly.
 
 By using [`BREVIA_ENV_SECRETS` var as explained below](#brevia-env-secrets) you make sure that these secrets will be available as environment variables.
 
-### OpenAI
+### Model providers
 
-To use OpenAI model via API you need to have a valid API KEY and define an `OPENAI_API_KEY` env var with its value. Please refer to [OpenAI model](models/openai.md) page for further details on using OpenAI.
+Brevia supports vistually any LLM provider, each with its own configuration. The following environment variables are necessary to configure them:
 
-### Cohere
-
-Similarly to use Cohere model via API you need a valid API KEY that must be defined in `COHERE_API_KEY` env var. Have a look at [Cohere model](models/cohere.md) for more integration details.
+* to use OpenAI models via API you need to have a valid API KEY and define an `OPENAI_API_KEY` env var with its value. Please refer to [OpenAI model](models/openai.md) page for further details on using OpenAI.
+* similarly to use Cohere model via API you need a valid API KEY that must be defined in `COHERE_API_KEY` env var. Have a look at [Cohere model](models/cohere.md) for more integration details.
+* to use Anthropic models via API you need a valid API KEY that must be defined in `ANTHROPIC_API_KEY` env var. Have a look at [Anthropic model](models/anthropic.md) for more details.
+* to use DeepSeek models via API you need a valid API KEY that must be defined in `DEEPSEEK_API_KEY` env var. Have a look at [DeepSeek model](models/deepseek.md) for more details.
 
 ### LangSmith
 
@@ -153,3 +154,74 @@ To configure summarize related actions in `/summarize` or `/upload_summarize` en
 * `SUMM_TOKEN_SPLITTER`: the maximum size of individual text chunks processed during summarization, defaults to `4000` - see `TEXT_CHUNK_SIZE` in [Text Segmentation](#text-segmentation) paragraph
 * `SUMM_TOKEN_OVERLAP`: the amount of overlap between consecutive text chunks, defaults to `500` - see `TEXT_CHUNK_OVERLAP` in [Text Segmentation](#text-segmentation) paragraph
 * `SUMM_DEFAULT_CHAIN`: chain type to be used if not specified, defaults to `stuff`
+
+## Providers
+
+A list of supported providers and its models can be defined via `PROVIDERS` variable. This variable is a JSON string with the following format:
+
+```JSON
+[
+    {
+        "model_provider": "openai",
+        "models": [
+            {
+                "name": "o1-mini"
+            },
+            {
+                "name": "o3-mini"
+            },
+            {
+                "name": "gpt-4o"
+            },
+            {
+                "name": "gpt-4o-mini"
+            }
+        ]
+    },
+    {
+        "model_provider": "cohere",
+        "models": [
+            {
+                "name": "command-r",
+                "tokens_limit": 128000
+            },
+            {
+                "name": "command-r-plus",
+                "tokens_limit": 128000
+            }
+        ]
+    },
+    {
+        "model_provider": "anthropic",
+        "models": [
+            {
+                "name": "claude-3-7-sonnet-20250219"
+            },
+            {
+                "name": "claude-3-5-sonnet-20241022"
+            }
+        ]
+    },
+    {
+        "model_provider": "ollama",
+        "models": [
+            {
+                "name": "llama3.2:latest"
+            }
+        ]
+    },
+    {
+        "model_provider": "deepseek",
+        "models": [
+            {
+                "name": "deepseek-chat"
+            },
+            {
+                "name": "deepseek-reasoner"
+            }
+        ]
+    }
+]
+```
+
+If not set this variable will be automatically populated with the current available providers and models at Brevia startup with the content of [the `/providers` endpoint response](endpoints_overview.md#providers-endpoints).

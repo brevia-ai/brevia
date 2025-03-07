@@ -13,8 +13,8 @@ from brevia.settings import get_settings, update_db_conf
 def list_providers():
     """ List available providers and models """
     providers = []
-    for provider in PROVIDER_MODELS_MAP.items():
-        models = PROVIDER_MODELS_MAP.get(provider)()
+    for provider in PROVIDER_MODELS_MAP.keys():
+        models = PROVIDER_MODELS_MAP[provider]()
         item = {'model_provider': provider, 'models': models}
         providers.append(item)
 
@@ -107,7 +107,7 @@ def load_ollama_models():
         return None
     models = []
     for item in list_models['models']:
-        name = item['name']
+        name = item['model']
         fam = item['details']['family']
         if fam not in ['bert', 'nomic-bert']:
             models.append({'name': name})

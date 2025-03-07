@@ -37,6 +37,6 @@ The primary variables you can add to this configuration include:
 * `temperature`: sampling temperature, ranges from 0.0 to 1.0. (float)
 * `num_predict`: max number of tokens to generate (int)
 
-See [here](../config.md#model-configuration-formats) for more details on the configuration format.
+See [here](overview.md#model-configuration-formats) for more details on the configuration format.
 
 For further configuration options, refer to the [LangChain API reference](https://python.langchain.com/api_reference/ollama/chat_models/langchain_ollama.chat_models.ChatOllama.html#langchain_ollama.chat_models.ChatOllama).

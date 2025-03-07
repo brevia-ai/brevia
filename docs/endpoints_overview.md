@@ -401,3 +401,84 @@ Example payload:
     "search_docs_num"
 ]
 ```
+
+## Providers endpoints
+
+### GET `/providers`
+
+Retrieve a list of all available providers with their models.
+
+A JSON objects list with provider names and their models is returned.
+A small example excerpt could look like this (there are usually many more items):
+
+```JSON
+[
+    {
+        "model_provider": "openai",
+        "models": [
+            {
+                "name": "gpt-4.5-preview"
+            },
+            {
+                "name": "o1-mini"
+            },
+            {
+                "name": "gpt-4"
+            },
+            {
+                "name": "o3-mini"
+            },
+            {
+                "name": "gpt-4o"
+            },
+            {
+                "name": "gpt-4o-mini"
+            }
+        ]
+    },
+    {
+        "model_provider": "cohere",
+        "models": [
+            {
+                "name": "command-r",
+                "tokens_limit": 128000
+            },
+            {
+                "name": "command-r-plus",
+                "tokens_limit": 128000
+            }
+        ]
+    },
+    {
+        "model_provider": "anthropic",
+        "models": [
+            {
+                "name": "claude-3-7-sonnet-20250219"
+            },
+            {
+                "name": "claude-3-5-sonnet-20241022"
+            }
+        ]
+    },
+    {
+        "model_provider": "ollama",
+        "models": [
+            {
+                "name": "llama3.2:latest"
+            }
+        ]
+    },
+    {
+        "model_provider": "deepseek",
+        "models": [
+            {
+                "name": "deepseek-chat"
+            },
+            {
+                "name": "deepseek-reasoner"
+            }
+        ]
+    }
+]
+
+```

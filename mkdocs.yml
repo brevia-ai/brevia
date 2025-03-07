@@ -46,6 +46,8 @@ nav:
     - OpenAI: models/openai.md
     - Cohere: models/cohere.md
     - Ollama: models/ollama.md
+    - Anthropic: models/anthropic.md
+    - DeepSeek: models/deepseek.md
     - Other Models: models/other_models.md
   - Security: security.md
   - Tutorials:

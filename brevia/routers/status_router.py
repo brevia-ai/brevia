@@ -1,4 +1,4 @@
-"""API endpoints definitions to handle audio input"""
+"""API endpoints definitions to get status information"""
 from typing import Annotated
 from fastapi import APIRouter, Response, status, Header
 from brevia.dependencies import token_auth

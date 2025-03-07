@@ -1,6 +1,6 @@
 {
     "info": {
-        "_postman_id": "75445fbb-2a26-4142-9786-52f2a7b230bf",
+        "_postman_id": "b4246865-3453-4df6-ae6b-c0b93e256bc3",
         "name": "Brevia API",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
         "_exporter_id": "234034"
@@ -2108,6 +2108,40 @@
                     "path": [
                         "jobs",
                         "{{job_id}}"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "providers - List available providers and models",
+            "request": {
+                "auth": {
+                    "type": "bearer",
+                    "bearer": [
+                        {
+                            "key": "token",
+                            "value": "{{access_token}}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text",
+                        "disabled": true
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/providers",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "providers"
                     ]
                 }
             },

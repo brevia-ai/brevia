@@ -31,6 +31,6 @@ The primary variables you can add to this configuration include:
 - `model`: name of the Cohere model to use (string)
 - `temperature`: a non-negative float that tunes the degree of randomness in generation (float)
 
-See [here](../config.md#model-configuration-formats) for more details on the configuration format.
+See [here](overview.md#model-configuration-formats) for more details on the configuration format.
 
 For further configuration options, refer to the [LangChain API reference](https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html#langchain_openai.chat_models.base.ChatOpenAI).

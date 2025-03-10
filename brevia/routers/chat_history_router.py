@@ -1,4 +1,4 @@
-"""API endpoints definitions to handle audio input"""
+"""API endpoints definitions to handle chat history items"""
 from typing_extensions import Annotated
 from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel

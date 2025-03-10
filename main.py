@@ -6,7 +6,7 @@ import uvicorn
 from brevia.middleware import VersionHeaderMiddleware
 from brevia.routers.app_routers import add_routers
 from brevia.utilities.openapi import metadata
-
+from brevia.events import app_events
 
 meta = metadata(f'{Path(__file__).parent}/pyproject.toml')
 app = FastAPI(**meta)
@@ -18,6 +18,7 @@ app.add_middleware(
 )
 app.add_middleware(VersionHeaderMiddleware)
 add_routers(app)
+app_events(app)
 
 
 if __name__ == '__main__':

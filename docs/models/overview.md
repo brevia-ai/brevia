@@ -19,9 +19,9 @@ Custom configurations can also be applied on a case-by-case basis for specific i
 
 ## Key Points for Integrating a Specific Model
 
-- The APIs supported out of the box include **OpenAI, Cohere, and Ollama**. If using one of these services, no additional library installation is required. For other APIs, you'll need to install a library in your Brevia project. For example, see [Anthropic](https://python.langchain.com/docs/integrations/chat/anthropic/) or [Gemini](https://python.langchain.com/docs/integrations/chat/google_generative_ai/).
+- The APIs supported out of the box include **OpenAI, Cohere, Anthropic, DeepSeek and Ollama**. If using one of these services, no additional library installation is required. For other APIs, you'll need to install a library in your Brevia project. For example, see [Gemini](https://python.langchain.com/docs/integrations/chat/google_generative_ai/).
 
-- Almost always, a token or API key from the service will be needed, made available as an environment variable; this is required for OpenAI and Cohere, but not for Ollama.
+- Almost always, a token or API key from the service will be needed, made available as an environment variable; this is required for OpenAI, Cohere, Anthropic and DeepSeek but not for Ollama.
 
 - The configuration of a specific model is handled through a JSON object with key-value pairs; two possible formats are supported, explained below.
 
@@ -51,4 +51,4 @@ Alternatively you can explicitly specify the ChatModel class using `_type` with 
 {"_type": "langchain_openai.chat_models.base.ChatOpenAI", "model": "gpt-4o-mini", "temperature": 0, "max_tokens": 1000}
 ```
 
-In the next paragraphs we will demonstrate how to configure the use of **[OpenAI](openai.md), [Cohere](cohere.md), and [Ollama](ollama.md)**, as well as **[examples for other models](other_models.md)**.
+In the next paragraphs we will demonstrate how to configure the use of **[OpenAI](openai.md), [Cohere](cohere.md), [Ollama](ollama.md), [Anthropic](anthropic.md) and [DeepSeek](deepseek.md)**, as well as **[examples for other models](other_models.md)**.

@@ -35,6 +35,6 @@ The primary variables you can add to this configuration include:
 - `temperature`: sampling temperature (float, between 0 and 1)
 - `max_tokens`: maximum number of tokens to generate (int)
 
-See [here](../config.md#model-configuration-formats) for more details on the configuration format.
+See [here](overview.md#model-configuration-formats) for more details on the configuration format.
 
 For further configuration options, refer to the [LangChain API reference](https://python.langchain.com/api_reference/openai/chat_models/langchain_openai.chat_models.base.ChatOpenAI.html#langchain_openai.chat_models.base.ChatOpenAI).

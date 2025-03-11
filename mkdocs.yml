@@ -55,9 +55,7 @@ nav:
     - Create Summarization Analysis: tutorials/create_summarization.md
     - Create Custom Services: tutorials/create_custom_services.md
   - Database: database.md
-  - Collections:
-    - Overview: collections.md
-    - Cmetadata: cmetadata.md
+  - Collections: collections.md
   # /index/... endpoints
   - Document Index: document_index.md
   # /chat, /search, /chat_history

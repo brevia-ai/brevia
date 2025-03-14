@@ -10,15 +10,26 @@ from brevia.connection import db_connection
 from brevia.settings import get_settings, update_db_conf
 
 
-def list_providers():
+def list_providers(list_models: bool = True) -> list:
     """ List available providers and models """
     providers = []
     for provider in PROVIDER_MODELS_MAP.keys():
-        models = PROVIDER_MODELS_MAP.get(provider)()
-        item = {'model_provider': provider, 'models': models}
+        item = {'model_provider': provider}
+        if list_models:
+            models = PROVIDER_MODELS_MAP.get(provider)()
+            item['models'] = models
         providers.append(item)
 
     return providers
+
+
+def single_provider(provider: str) -> dict | None:
+    """ List available models for a provider """
+    if provider not in PROVIDER_MODELS_MAP:
+        return None
+
+    models = PROVIDER_MODELS_MAP.get(provider)()
+    return {'model_provider': provider, 'models': models}
 
 
 def update_providers(force: bool = False):

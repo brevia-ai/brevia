@@ -148,10 +148,11 @@ class Settings(BaseSettings):
         for key, value in self.brevia_env_secrets.items():
             environ[key] = value
             log.info('"%s" env var set', key)
-        for key in self.known_env_vars:
-            if key in environ and key not in self.brevia_env_secrets.keys():
-                self.brevia_env_secrets[key] = environ[key]
-                log.info('"%s" added to env secrets', key)
+        for provider in self.known_env_vars:
+            for key in self.known_env_vars[provider]:
+                if key in environ and key not in self.brevia_env_secrets.keys():
+                    self.brevia_env_secrets[key] = environ[key]
+                    log.info('"%s" added to env secrets', key)
 
     def connection_string(self) -> str:
         """ Db connection string from Settings """

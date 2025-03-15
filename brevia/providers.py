@@ -34,14 +34,16 @@ def single_provider(provider: str) -> dict | None:
 
 def update_providers(force: bool = False):
     """ Update providers list in settings from API and save providers to DB """
+    log = logging.getLogger(__name__)
     settings = get_settings()
     if settings.providers and not force:
         return
     try:
         providers = list_providers()
+        log.info('Adding "providers" to brevia configuration DB')
         update_db_conf(db_connection(), {'providers': json.dumps(providers)})
     except Exception as exc:  # pylint: disable=broad-exception-caught
-        logging.getLogger(__name__).error('Failed to update providers: %s', exc)
+        log.error('Failed to update providers: %s', exc)
 
 
 def load_openai_models() -> list | None:

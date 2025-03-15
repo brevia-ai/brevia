@@ -1,6 +1,6 @@
 """API endpoints to Brevia configuration"""
-from typing import Any
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated, Any
+from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import ValidationError
 from brevia.settings import (
     Settings,
@@ -21,9 +21,13 @@ router = APIRouter()
     dependencies=get_dependencies(json_content_type=False),
     tags=['Config'],
 )
-def get_config():
+def get_config(key: Annotated[list[str] | None, Query()] = None):
     """ /config endpoint, read Brevia configuration """
-    return get_settings().model_dump()
+    config = get_settings().model_dump()
+    if key is not None:
+        check_keys(key)
+        return {k: config[k] for k in key}
+    return config
 
 
 @router.api_route(

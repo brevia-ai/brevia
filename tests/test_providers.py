@@ -4,6 +4,7 @@ from openai import OpenAIError
 from brevia.settings import get_settings
 from brevia.providers import (
     list_providers,
+    single_provider,
     update_providers,
     load_openai_models,
     load_deepseek_models,
@@ -68,6 +69,38 @@ def test_update_providers_skip():
     assert settings.providers == fake_providers
 
     settings.providers = current
+
+
+@patch('brevia.providers.list_providers')
+def test_update_providers_exception(mock_list_providers):
+    """ Test update_providers function exception """
+    mock_list_providers.side_effect = RuntimeError('API error')
+
+    current = get_settings().providers
+    update_providers(force=True)
+
+    assert get_settings().providers == current
+
+@patch('brevia.providers.OllamaClient')
+def test_single_provider(mock_ollama):
+    """ Test single_provider function """
+    mock_client = MagicMock()
+    mock_client.list.return_value = {
+        'models': [{'model': 'ollama-model', 'details': {'family': 'not-bert'}}]
+    }
+    mock_ollama.return_value = mock_client
+
+    provider = single_provider('ollama')
+
+    assert provider == {
+        'model_provider': 'ollama',
+        'models': [{'name': 'ollama-model'}],
+    }
+
+
+def test_single_provider_not_available():
+    """ Test single_provider function """
+    assert single_provider('mock_provider') is None
 
 
 @patch('brevia.providers.OpenAI')

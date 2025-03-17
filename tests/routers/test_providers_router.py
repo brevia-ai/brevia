@@ -33,6 +33,7 @@ def test_provider_models(mock_single_provider):
     assert response.json() is not None
     assert response.json() == fake_single
 
+    mock_single_provider.return_value = None
     response = client.get('/providers/unknown_provider')
     assert response.status_code == 404
     assert response.json() is not None

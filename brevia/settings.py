@@ -112,9 +112,9 @@ class Settings(BaseSettings):
     # Providers: list of available providers and models
     providers: Json = '[]'
 
-    # List of known environment variables that could be used by
+    # List of known providers environment variables that could be used by
     # external services (mainly LLM providers)
-    known_env_vars: Json[dict[str, list[str]]] = """{
+    providers_env_vars: Json[dict[str, list[str]]] = """{
         "openai": ["OPENAI_API_KEY","OPENAI_ORG_ID","OPENAI_API_BASE"],
         "anthropic": ["ANTHROPIC_API_KEY"],
         "cohere": ["COHERE_API_KEY"],
@@ -148,8 +148,8 @@ class Settings(BaseSettings):
         for key, value in self.brevia_env_secrets.items():
             environ[key] = value
             log.info('"%s" env var set', key)
-        for provider in self.known_env_vars:
-            for key in self.known_env_vars[provider]:
+        for provider in self.providers_env_vars:
+            for key in self.providers_env_vars[provider]:
                 if key in environ and key not in self.brevia_env_secrets.keys():
                     self.brevia_env_secrets[key] = environ[key]
                     log.info('"%s" added to env secrets', key)

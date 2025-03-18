@@ -130,10 +130,10 @@ def test_setup_environment():
     """Test setup_environment method"""
     environ.pop('TEST', None)
     current_secrets = get_settings().brevia_env_secrets
-    current_known_vars = get_settings().known_env_vars
+    current_known_vars = get_settings().providers_env_vars
 
     get_settings().brevia_env_secrets = {'BREVIA_TEST1': 'test1'}
-    get_settings().known_env_vars = {'test': ['BREVIA_TEST2']}
+    get_settings().providers_env_vars = {'test': ['BREVIA_TEST2']}
     environ['BREVIA_TEST2'] = 'test2'
 
     get_settings().setup_environment()
@@ -142,4 +142,4 @@ def test_setup_environment():
 
     # Restore previous settings
     get_settings().brevia_env_secrets = current_secrets
-    get_settings().known_env_vars = current_known_vars
+    get_settings().providers_env_vars = current_known_vars

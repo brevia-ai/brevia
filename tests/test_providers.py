@@ -81,6 +81,7 @@ def test_update_providers_exception(mock_list_providers):
 
     assert get_settings().providers == current
 
+
 @patch('brevia.providers.OllamaClient')
 def test_single_provider(mock_ollama):
     """ Test single_provider function """

@@ -138,7 +138,10 @@ def test_setup_environment():
 
     get_settings().setup_environment()
     assert environ.get('BREVIA_TEST1') == 'test1'
-    assert get_settings().brevia_env_secrets == {'BREVIA_TEST1': 'test1', 'BREVIA_TEST2': 'test2'}
+    assert get_settings().brevia_env_secrets == {
+        'BREVIA_TEST1': 'test1',
+        'BREVIA_TEST2': 'test2'
+    }
 
     # Restore previous settings
     get_settings().brevia_env_secrets = current_secrets

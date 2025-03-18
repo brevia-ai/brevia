@@ -341,6 +341,19 @@ A small example excerpt could look like this (there are many more items):
     "verbose_mode": true,
     "text_chunk_size": 4555,
     "text_chunk_overlap": 550,
+    "search_docs_num": 7,
+    "qa_completion_llm": {...}
+    ...
+}
+```
+
+Using a `key` query parameter you may filter only specific keys.
+For instance calling `GET /config?key=text_chunk_size&key=search_docs_num` with the configuration above will result in:
+
+```JSON
+{
+    "text_chunk_size": 4555,
+    "search_docs_num": 7
 }
 ```
 
@@ -480,5 +493,44 @@ A small example excerpt could look like this (there are usually many more items)
         ]
     }
 ]
+```
 
+A boolean query parameter `list_models`, with a defaults value `true`, can be used to simply list providers without models.
+Calling `GET /providers?list_models=false` will return as result:
+
+```JSON
+[
+    {
+        "model_provider": "openai"
+    },
+    {
+        "model_provider": "cohere"
+    },
+    {
+        "model_provider": "anthropic"
+    },
+    {
+        "model_provider": "ollama"
+    },
+    {
+        "model_provider": "deepseek"
+    }
+]
+```
+
+### GET `/providers/{provider_name}`
+
+Retrieve a list of all available models for a specific provider.
+
+A small example excerpt could look like this:
+
+```JSON
+{
+    "model_provider": "ollama",
+    "models": [
+        {
+            "name": "llama3.2:latest"
+        }
+    ]
+}
 ```

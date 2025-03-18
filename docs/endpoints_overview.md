@@ -347,7 +347,7 @@ A small example excerpt could look like this (there are many more items):
 }
 ```
 
-Using a `key` query parameter you may filter only specific keys.
+Using the `key` query parameter you may filter only specific keys.
 For instance calling `GET /config?key=text_chunk_size&key=search_docs_num` with the configuration above will result in:
 
 ```JSON

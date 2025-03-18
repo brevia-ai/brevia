@@ -1,4 +1,5 @@
 """Settings module tests"""
+import json
 from os import environ
 import pytest
 from sqlalchemy.orm import Session
@@ -61,6 +62,25 @@ def test_update_db_conf():
     assert conf['search_docs_num'] == '7'
 
 
+def test_update_db_conf_brevia_env():
+    """Test update_db_conf method with brevia_env_secrets"""
+    current = get_settings().brevia_env_secrets
+    get_settings().brevia_env_secrets = {'BREVIA_ENV_SECRET': 'test'}
+    environ['BREVIA_ENV_SECRET'] = 'test'
+
+    new_conf = {'brevia_env_secrets': '{"TEST": "test"}'}
+    conf = update_db_conf(db_connection(), new_conf)
+
+    assert conf['brevia_env_secrets'] == '{"TEST": "test"}'
+    assert environ.get('BREVIA_ENV_SECRET', None) is None
+
+    # update test settings since get_settings.cache_clear() was called
+    conftest.update_settings()
+
+    # Restore previous settings
+    get_settings().brevia_env_secrets = current
+
+
 def test_update_db_conf_failure():
     """Test update_db_conf failure"""
     new_conf = {'search_docs_num': 'wrong value'}
@@ -95,3 +115,34 @@ def test_get_settings_db():
     # restore defaults
     settings.search_docs_num = current_doc_num
     settings.text_chunk_size = current_chunk_size
+
+
+def test_update_brevia_env_secrets():
+    """Test update method on `brevia_env_secrets`"""
+    current = get_settings().brevia_env_secrets
+    get_settings().update({'brevia_env_secrets': json.dumps({'BREVIA_TEST': 'test'})})
+
+    new_secrets = {**current, **{'BREVIA_TEST': 'test'}}
+    assert get_settings().brevia_env_secrets == new_secrets
+
+
+def test_setup_environment():
+    """Test setup_environment method"""
+    environ.pop('TEST', None)
+    current_secrets = get_settings().brevia_env_secrets
+    current_known_vars = get_settings().providers_env_vars
+
+    get_settings().brevia_env_secrets = {'BREVIA_TEST1': 'test1'}
+    get_settings().providers_env_vars = {'test': ['BREVIA_TEST2']}
+    environ['BREVIA_TEST2'] = 'test2'
+
+    get_settings().setup_environment()
+    assert environ.get('BREVIA_TEST1') == 'test1'
+    assert get_settings().brevia_env_secrets == {
+        'BREVIA_TEST1': 'test1',
+        'BREVIA_TEST2': 'test2'
+    }
+
+    # Restore previous settings
+    get_settings().brevia_env_secrets = current_secrets
+    get_settings().providers_env_vars = current_known_vars

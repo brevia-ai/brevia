@@ -1806,6 +1806,50 @@
                     "response": []
                 },
                 {
+                    "name": "Read configuration with key filter",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{access_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text",
+                                "disabled": true
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/config?key=providers&key=brevia_env_secrets",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "config"
+                            ],
+                            "query": [
+                                {
+                                    "key": "key",
+                                    "value": "providers"
+                                },
+                                {
+                                    "key": "key",
+                                    "value": "brevia_env_secrets"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
                     "name": "Read configuration schema",
                     "request": {
                         "auth": {
@@ -1964,6 +2008,120 @@
             ]
         },
         {
+            "name": "Providers",
+            "item": [
+                {
+                    "name": "providers - List available providers and models",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{access_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text",
+                                "disabled": true
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/providers",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "providers"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "providers - List available providers without models",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{access_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text",
+                                "disabled": true
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/providers?list_models=false",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "providers"
+                            ],
+                            "query": [
+                                {
+                                    "key": "list_models",
+                                    "value": "false"
+                                }
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "providers/{{provider}} - List available models for a single provider",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{access_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text",
+                                "disabled": true
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/providers/{{provider}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "providers",
+                                "{{provider}}"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
             "name": "upload_analyze - Upload file and analyze using extension",
             "event": [
                 {
@@ -2108,40 +2266,6 @@
                     "path": [
                         "jobs",
                         "{{job_id}}"
-                    ]
-                }
-            },
-            "response": []
-        },
-        {
-            "name": "providers - List available providers and models",
-            "request": {
-                "auth": {
-                    "type": "bearer",
-                    "bearer": [
-                        {
-                            "key": "token",
-                            "value": "{{access_token}}",
-                            "type": "string"
-                        }
-                    ]
-                },
-                "method": "GET",
-                "header": [
-                    {
-                        "key": "Content-Type",
-                        "value": "application/json",
-                        "type": "text",
-                        "disabled": true
-                    }
-                ],
-                "url": {
-                    "raw": "{{baseUrl}}/providers",
-                    "host": [
-                        "{{baseUrl}}"
-                    ],
-                    "path": [
-                        "providers"
                     ]
                 }
             },

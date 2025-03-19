@@ -27,10 +27,9 @@ repository = "https://github.com/brevia-ai/brevia"
   jinja2 = "^3.1.4"
   langchain-cohere = "^0.4.2"
   langchain-ollama = "^0.2.3"
-  langsmith = "^0.1.147"
-  pydantic-core = "^2.31.1"
   langchain-anthropic = "^0.3.9"
   langchain-deepseek = "^0.1.2"
+  python-multipart = "^0.0.20"
 
     [tool.poetry.dependencies.uvicorn]
     extras = [ "standard" ]

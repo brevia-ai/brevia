@@ -20,7 +20,7 @@ Here a simple ERD diagram of Brevia database schema
 
 ## Migrations
 
-Schema migrations are handled by [Alembic](https://alembic.sqlalchemy.org). You can create or update the database schema to the latest version using this command, after activating the virtual env (with `poetry shell` for instance)
+Schema migrations are handled by [Alembic](https://alembic.sqlalchemy.org). You can create or update the database schema to the latest version using this command, after activating the virtual env (with `poetry env activate` for instance)
 
 ```bash
 db_upgrade

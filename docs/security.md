@@ -17,7 +17,7 @@ Additionally you can define in `TOKENS_USERS` an optional comma separated list o
 
 ### Token creation
 
-To create a new token there is a command to launch after activating the virtualenv (using `poetry shell` for instance)
+To create a new token there is a command to launch after activating the virtualenv (using `poetry env activate` for instance)
 
 ```bash
 create_token -u {username} -d {duration}

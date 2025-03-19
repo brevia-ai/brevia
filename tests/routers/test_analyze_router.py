@@ -27,7 +27,7 @@ def test_summarize():
     assert data is not None
     assert data == {
         'output': models.LOREM_IPSUM,
-        'token_data': None
+        'token_data': {}
     }
 
 

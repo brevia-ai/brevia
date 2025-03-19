@@ -59,12 +59,14 @@ class SummarizeTextAnalysisTask(BaseTextAnalysisTask):
         chain_type: str | None = None,
         initial_prompt: dict | None = None,
         iteration_prompt: dict | None = None,
+        llm_conf: dict | None = None,
         text_options: dict | None = None,
     ):
         self.text = text
         self.chain_type = chain_type
         self.initial_prompt = initial_prompt
         self.iteration_prompt = iteration_prompt
+        self.llm_conf = llm_conf
         self.text_options = text_options
         self.load_analysis_prompts({
             'initial_prompt': self.initial_prompt,
@@ -121,15 +123,15 @@ class SummarizeTextAnalysisTask(BaseTextAnalysisTask):
         """Run summarization chain"""
 
         logging_handler = LoggingCallbackHandler()
-        settings = get_settings()
-        llm_conf = settings.summarize_llm.copy()  # pylint: disable=no-member
+        llm_conf = self.llm_conf or get_settings().summarize_llm.copy() \
+            # pylint: disable=no-member
         llm_conf['callbacks'] = [logging_handler]
         llm_text = load_chatmodel(llm_conf)
 
         kwargs = {
             'llm': llm_text,
             'chain_type': self.chain_type,
-            'verbose': settings.verbose_mode,
+            'verbose': get_settings().verbose_mode,
             'callbacks': [logging_handler],
         }
 

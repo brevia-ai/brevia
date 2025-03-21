@@ -2,8 +2,8 @@
 from abc import ABC, abstractmethod
 from os import unlink
 from brevia.callback import token_usage_callback
-from brevia.tasks.text_analysis import RefineTextAnalysisTask
-from brevia.analysis import summarize
+from brevia.tasks.text_analysis import RefineTextAnalysisTask, SummarizeTextAnalysisTask
+
 from brevia.load_file import read
 
 
@@ -30,13 +30,21 @@ class SummarizeTextService(BaseService):
 
     def execute(self, payload: dict):
         """Service logic"""
-        token_data = payload.pop('token_data')
+        analysis = SummarizeTextAnalysisTask(
+            text=payload['text'],
+            chain_type=payload['chain_type'],
+            initial_prompt=payload.get('initial_prompt'),
+            iteration_prompt=payload.get('iteration_prompt'),
+            text_options=payload.get('text_options')
+        )
         with token_usage_callback() as callb:
-            result = summarize(**payload)
+            result = analysis.perform_task()
+        token_data = callb.__dict__
+        token_data.pop('_lock', None)
 
         return {
             'output': result['output_text'],
-            'token_data': None if not token_data else callb.__dict__
+            'token_data': token_data
         }
 
     def validate(self, payload: dict):
@@ -83,13 +91,15 @@ class SummarizeFileService(BaseService):
         if not text:
             raise ValueError('Empty text')
 
+        analysis = SummarizeTextAnalysisTask(
+            text=text,
+            chain_type=chain_type,
+            initial_prompt=initial_prompt,
+            iteration_prompt=iteration_prompt
+        )
+
         with token_usage_callback() as callb:
-            result = summarize(
-                text,
-                chain_type=chain_type,
-                initial_prompt=initial_prompt,
-                iteration_prompt=iteration_prompt
-            )
+            result = analysis.perform_task()
 
         return {
             'output': result['output_text'],

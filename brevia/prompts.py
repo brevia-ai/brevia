@@ -124,20 +124,24 @@ def load_map_prompts(prompts: dict | None) -> dict:
 def load_refine_prompts(prompts: dict | None) -> dict:
     """Load custom prompts for the 'refine' summarization chain.
 
-    The 'refine' summarization chain breaks the document into chunks pieces, then
+    The 'refine' summarization chain breaks the document into chunk pieces, then
     concentrates on making the summary better by refining it.
-    Starts using the initial prompt for the first chunk then uses the iteration prompt
-    over the remaining chunks to further enhance the summary.
+    It starts using the initial prompt for the first chunk and then uses the
+    iteration prompt over the remaining chunks to further enhance the summary.
+
+    In LangChain, the default prompt names for the refine algorithm are:
+    - question_prompt: The prompt used for summarizing the first chunk.
+    - refine_prompt: The prompt used for refining the summary over the remaining chunks.
 
     Args:
         prompts (dict | None): Optional prompts for customization.
         It should be a dictionary with the following keys:
         - 'initial_prompt' (dict): The prompt to use for the first chunk summarization.
-        - 'iteration_prompt' (dict | None): (Optional) The prompt to use for increase
-        information over the chunk pieces.
+        - 'iteration_prompt' (dict | None): (Optional) The prompt to use for increasing
+          information over the chunk pieces.
 
     Returns:
-        dict: Custom prompts for 'refine' summarization chain.
+        dict: Custom prompts for the 'refine' summarization chain.
     """
 
     prompts_data = {}

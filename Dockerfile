@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM python:3.12-alpine as builder
+FROM python:3.12-alpine AS builder
 
 RUN apk add g++
 
@@ -26,7 +26,7 @@ RUN poetry install
 RUN apk del g++
 
 # Runtime image
-FROM python:3.12-alpine as runtime
+FROM python:3.12-alpine AS runtime
 
 WORKDIR /python-docker
 
@@ -39,4 +39,4 @@ COPY . /python-docker/
 
 EXPOSE 8000
 
-CMD db_upgrade && uvicorn --host 0.0.0.0 --port 8000 main:app
+CMD ["sh", "-c", "db_upgrade && uvicorn --host 0.0.0.0 --port 8000 main:app"]

@@ -1,4 +1,3 @@
-version: '3.9'
 services:
   pgdatabase:
     image: pgvector/pgvector:0.7.4-pg16
@@ -12,7 +11,7 @@ services:
       - ${PGVECTOR_PORT:-5432}:5432
   pgadmin:
     image: dpage/pgadmin4
-    profiles: ["admin"]
+    profiles: ["admin", "fullstack"]
     environment:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@admin.com}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-admin}

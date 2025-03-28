@@ -83,7 +83,7 @@ To manually create a project instead follow these steps:
 * create a new project with `poetry new {your-brevia-project}`
 * install brevia and its dependencies by running `poetry add brevia`, a virtualenv will automatically be created
 * create a new `main.py` starting with a [copy](https://raw.githubusercontent.com/brevia-ai/brevia-cookiecutter/main/%7B%7Bcookiecutter.project_slug%7D%7D/main.py)
-* activate the virtualenv by running the `poetry shell` command
+* activate the virtualenv by running the `poetry env activate` command
 * copy the file `.env.sample` to `.env` and value the environment variables, especially secrets like API keys for LLM API services (e.g. `OPENAI_API_KEY` for OpenAI or `COHERE_API_KEY` for Cohere) and database connection via `PGVECTOR_*`.  see the [Database](#database) section
 
 ## Model configuration

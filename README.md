@@ -45,6 +45,10 @@ A PostgreSQL database version 14 or higher with [`pg_vector`](https://github.com
 The easiest and fastest way to try Brevia is through Docker. By launching docker compose with the following command you will have a working Brevia system without any setup or configuration:
 
 ```bash
+# download docker-compose.yml and .env files - not necessary if you are in the brevia repo
+curl -o docker-compose.yml https://raw.githubusercontent.com/brevia-ai/brevia/refs/heads/main/docker-compose.yml
+curl -o .env https://raw.githubusercontent.com/brevia-ai/brevia/refs/heads/main/.env.sample
+
 docker compose --profile fullstack up
 ```
 
@@ -52,8 +56,10 @@ At this point you will have:
 
 * Brevia API on http://localhost:8000
 * Brevia App UI on http://localhost:3000
+* [PgAdmin UI](https://www.pgadmin.org) on http://localhost:4000
+* [PostgreSQL](https://www.postgresql.org) with [`pg_vector`](https://github.com/pgvector/pgvector) extension running on `localhost:5432`
 
-To use ports other than 8000 or 3000 just uncomment the variables `BREVIA_API_PORT` or `BREVIA_APP_PORT` in the .env file.
+To use ports other than 8000, 3000, 4000 or 5432 you may use the environment variables `BREVIA_API_PORT`, `BREVIA_APP_PORT`, `PGVECTOR_PORT` or `PGADMIN_PORT` either in the .env file or setting them before the `docker compose up` command.
 
 You can also use `--profile api` option to just start Brevia API and not Brevia App.
 

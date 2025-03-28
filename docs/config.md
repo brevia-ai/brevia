@@ -54,6 +54,7 @@ Brevia supports vistually any LLM provider, each with its own configuration. The
 * to use Anthropic models via API you need a valid API KEY that must be defined in `ANTHROPIC_API_KEY` env var. Have a look at [Anthropic model](models/anthropic.md) for more details.
 * to use DeepSeek models via API you need a valid API KEY that must be defined in `DEEPSEEK_API_KEY` env var. Have a look at [DeepSeek model](models/deepseek.md) for more details.
 
+See [Providers](#providers) paragraph below on available providers, models and related environment variables.
 ### LangSmith
 
 If you want to use [LangSmith](https://www.langchain.com/langsmith) to monitor your LLM application with Brevia you need to set these variables:
@@ -225,3 +226,16 @@ A list of supported providers and its models can be defined via `PROVIDERS` vari
 ```
 
 If not set this variable will be automatically populated with the current available providers and models at Brevia startup with the content of [the `/providers` endpoint response](endpoints_overview.md#providers-endpoints).
+
+To help with setup of external providers via UI a `PROVIDERS_ENV_VARS` JSON configuration can be used to list knwon environment variable that con be used for every provider.
+An example of this configuration is:
+
+```JSON
+{
+    "openai": ["OPENAI_API_KEY","OPENAI_ORG_ID","OPENAI_API_BASE"],
+    "anthropic": ["ANTHROPIC_API_KEY"],
+    "cohere": ["COHERE_API_KEY"],
+    "deepseek": ["DEEPSEEK_API_KEY"],
+    "ollama": ["OLLAMA_HOST"]
+}
+```

@@ -112,6 +112,16 @@ class Settings(BaseSettings):
     # Providers: list of available providers and models
     providers: Json = '[]'
 
+    # List of known providers environment variables that could be used by
+    # external services (mainly LLM providers)
+    providers_env_vars: Json[dict[str, list[str]]] = """{
+        "openai": ["OPENAI_API_KEY","OPENAI_ORG_ID","OPENAI_API_BASE"],
+        "anthropic": ["ANTHROPIC_API_KEY"],
+        "cohere": ["COHERE_API_KEY"],
+        "deepseek": ["DEEPSEEK_API_KEY"],
+        "ollama": ["OLLAMA_HOST"]
+    }"""
+
     # App metadata
     block_openapi_urls: bool = False
 
@@ -126,7 +136,11 @@ class Settings(BaseSettings):
             keys = other.keys()
             other = Settings(**other)
         for key in keys:
-            setattr(self, key, getattr(other, key))
+            newattr = getattr(other, key)
+            if key == 'brevia_env_secrets':
+                current_secrets = getattr(self, key)
+                newattr = {**current_secrets, **newattr}
+            setattr(self, key, newattr)
 
     def setup_environment(self):
         """Setup some useful environment variables from `brevia_env_secrets`"""
@@ -134,6 +148,11 @@ class Settings(BaseSettings):
         for key, value in self.brevia_env_secrets.items():
             environ[key] = value
             log.info('"%s" env var set', key)
+        for provider in self.providers_env_vars:
+            for key in self.providers_env_vars[provider]:
+                if key in environ and key not in self.brevia_env_secrets.keys():
+                    self.brevia_env_secrets[key] = environ[key]
+                    log.info('"%s" added to env secrets', key)
 
     def connection_string(self) -> str:
         """ Db connection string from Settings """
@@ -233,6 +252,12 @@ def update_db_conf(connection: Connection, items: dict[str, str]) -> dict[str, s
                 session.add(current_conf[key])
 
         session.commit()
+    # Remove from environment variables not in the new brevia_env_secrets
+    if 'brevia_env_secrets' in items:
+        new_secrets = items['brevia_env_secrets']
+        for key in get_settings().brevia_env_secrets:
+            if key not in new_secrets:
+                del environ[key]
     # Clear settings cache, force settings reload
     get_settings.cache_clear()
 

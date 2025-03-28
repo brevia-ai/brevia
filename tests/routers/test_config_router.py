@@ -19,6 +19,25 @@ def test_get_config():
     assert response.json() == get_settings().model_dump()
 
 
+def test_get_config_key():
+    """Test /config endpoint with key query parameter"""
+    response = client.get('/config?key=search_docs_num&key=text_chunk_size', headers={})
+    assert response.status_code == 200
+    assert response.json() == {
+        'search_docs_num': get_settings().search_docs_num,
+        'text_chunk_size': get_settings().text_chunk_size,
+    }
+
+
+def test_get_config_key_failure():
+    """Test /config endpoint with key query parameter failure"""
+    response = client.get('/config?key=invalid_key', headers={})
+    assert response.status_code == 400
+    assert response.json() == {
+        'detail': 'There are not configurable settings: invalid_key'
+    }
+
+
 def test_get_config_schema():
     """Test /config/schema endpoint"""
     response = client.get('/config/schema', headers={})

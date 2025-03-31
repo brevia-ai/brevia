@@ -1,9 +1,8 @@
 """Settings module"""
 import logging
 from functools import lru_cache
-from os.path import dirname
 from typing import Annotated, Any
-from os import environ
+from os import environ, path
 from urllib import parse
 from sqlalchemy import NullPool, create_engine, Column, String, func, inspect
 from sqlalchemy.engine import Connection
@@ -108,7 +107,7 @@ class Settings(BaseSettings):
     summ_token_overlap: int = 500
 
     # Prompt files base path - local or shared file system
-    prompts_base_path: str = Field(default=f'{dirname(__file__)}/prompts', exclude=True)
+    prompts_base_path: str = Field(default=f'{path.dirname(__file__)}/prompts', exclude=True)
 
     # Providers: list of available providers and models
     providers: Json = '[]'

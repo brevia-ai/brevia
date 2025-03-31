@@ -107,7 +107,10 @@ class Settings(BaseSettings):
     summ_token_overlap: int = 500
 
     # Prompt files base path - local or shared file system
-    prompts_base_path: str = Field(default=f'{path.dirname(__file__)}/prompts', exclude=True)
+    prompts_base_path: str = Field(
+        default=f'{path.dirname(__file__)}/prompts',
+        exclude=True,
+    )
 
     # Providers: list of available providers and models
     providers: Json = '[]'

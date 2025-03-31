@@ -1,7 +1,7 @@
 """Settings module"""
 import logging
 from functools import lru_cache
-from posixpath import dirname
+from os.path import dirname
 from typing import Annotated, Any
 from os import environ
 from urllib import parse

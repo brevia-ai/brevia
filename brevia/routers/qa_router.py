@@ -51,7 +51,7 @@ async def chat_action(
         chat_params=ChatParams(**chat_body.model_dump()),
         answer_callbacks=[stream_handler] if chat_body.streaming else [],
     )
-    embeddings = collection.cmetadata.get('embedding', None)
+    embeddings = collection.cmetadata.get('embeddings', None)
 
     with token_usage_callback() as token_callback:
         if not chat_body.streaming or test_models_in_use():

@@ -2,7 +2,7 @@
 import logging
 from functools import lru_cache
 from typing import Annotated, Any
-from os import environ, path
+from os import environ, path, getcwd
 from urllib import parse
 from sqlalchemy import NullPool, create_engine, Column, String, func, inspect
 from sqlalchemy.engine import Connection
@@ -127,6 +127,16 @@ class Settings(BaseSettings):
 
     # App metadata
     block_openapi_urls: bool = False
+
+    # File output
+    file_output_base_path: str = Field(
+        default=f'{path.abspath(getcwd())}/files',
+        exclude=True
+    )
+    file_output_base_url: str = Field(
+        default='/download',
+        exclude=True
+    )
 
     def update(
         self,

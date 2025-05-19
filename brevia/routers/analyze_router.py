@@ -182,6 +182,7 @@ def upload_analyze(
 
     payload = json.loads(payload)
     payload['file_path'] = tmp_path
+    payload.setdefault('file_name', file.filename)
     job = async_jobs.create_job(
         service=service,
         payload=payload,

@@ -160,7 +160,6 @@ class RefineTextAnalysisToTxtService(RefineTextAnalysisService):
         return result
 
 
-
 class FakeService(BaseService):
     """Fake class for services testing"""
 

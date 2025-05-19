@@ -1,5 +1,4 @@
 """Add brevia app routers."""
-from turtle import down
 from fastapi import FastAPI
 from brevia.routers import (
     analyze_router,

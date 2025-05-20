@@ -27,7 +27,8 @@ class PublicFileOutput:
         """
         out_dir = get_settings().file_output_base_path
         if out_dir.startswith('s3://'):
-            return tempfile.mktemp(prefix="brevia_")
+            with tempfile.NamedTemporaryFile(prefix="brevia_", delete=False) as temp_file:
+                return temp_file.name
         if self.job_id:
             out_dir = f"{out_dir}/{self.job_id}"
             os.makedirs(out_dir, exist_ok=True)

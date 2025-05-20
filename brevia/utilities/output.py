@@ -1,3 +1,4 @@
+"""File output utilities"""
 import tempfile
 import os
 from brevia.settings import get_settings
@@ -24,14 +25,12 @@ class PublicFileOutput:
         :param filename: The name of the file.
         :return: The full path to the file.
         """
-        base_path = get_settings().file_output_base_path
-        if base_path.startswith('s3://'):
-            out_dir = tempfile.mkdtemp()
+        out_dir = get_settings().file_output_base_path
+        if out_dir.startswith('s3://'):
+            return tempfile.mktemp(prefix="brevia_")
         if self.job_id:
-            out_dir = f"{base_path}/{self.job_id}"
+            out_dir = f"{out_dir}/{self.job_id}"
             os.makedirs(out_dir, exist_ok=True)
-        else:
-            out_dir = base_path
 
         return f"{out_dir}/{filename}"
 
@@ -58,8 +57,8 @@ class PublicFileOutput:
             import boto3  # pylint: disable=import-outside-toplevel
             s3 = boto3.client('s3')
             return s3.upload_file(file_path, bucket_name, object_name)
-        except ImportError as exc:
-            raise ImportError('Boto3 is not installed!') from exc
+        except ModuleNotFoundError:
+            raise ImportError('Boto3 is not installed!')
 
     def write(self, content: str, filename: str):
         """
@@ -82,10 +81,7 @@ class PublicFileOutput:
             object_name = '/'.join(base_path.split('/')[3:]).lstrip('/')
             object_name += f"/{filename}"
             self._s3_upload(output_path, bucket_name, object_name.lstrip('/'))
-            # Remove the local file and its parent tmp directory
-            os.remove(output_path)
-            parent_dir = os.path.dirname(output_path)
-            if not os.listdir(parent_dir):
-                os.rmdir(parent_dir)
+            # Remove the local temp file
+            os.unlink(output_path)
 
         return self.file_url(filename)

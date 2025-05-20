@@ -34,9 +34,6 @@ def test_file_path_s3(mock_settings):
     assert file_path is not None
     assert not file_path.startswith(get_settings().file_output_base_path)
 
-    parent_dir = os.path.dirname(file_path)
-    os.rmdir(parent_dir)
-
 
 def test_file_url():
     """Test file_url method."""
@@ -54,22 +51,33 @@ def test_write_local_file():
 
     url = output.write(content, filename)
     assert url == '/download/1234/test2.txt'
-    os.remove(output.file_path(filename))
+    os.unlink(output.file_path(filename))
 
 
 @patch('brevia.utilities.output.PublicFileOutput._s3_upload')
-def test_write_s3_file(mock_s3_upload):
+@patch("brevia.utilities.output.get_settings")
+def test_write_s3_file(mock_settings, mock_s3_upload):
     """Test write method for S3 file writing."""
+    mock_settings.return_value.file_output_base_path = 's3://my-bucket'
+    mock_settings.return_value.file_output_base_url = 'https://my-bucket.s3aws.com'
     mock_s3_upload.return_value = None
     output = PublicFileOutput(job_id='1234')
     filename = 'test2.txt'
     content = 'Hello, S3!'
 
     file_url = output.write(content, filename)
-    assert file_url == '/download/1234/test2.txt'
+    assert file_url == 'https://my-bucket.s3aws.com/1234/test2.txt'
 
 
-# @patch('brevia.utilities.output.get_settings')
+def test_s3_upload_import_error():
+    """Test the _s3_upload method for ImportError."""
+    output = PublicFileOutput(job_id='1234')
+
+    with pytest.raises(ImportError) as exc:
+        output._s3_upload('test.txt', 'my-bucket', '1234/test.txt')
+    assert str(exc.value) == 'Boto3 is not installed!'
+
+
 def test_s3_upload_method():
     """Test the _s3_upload method."""
     output = PublicFileOutput(job_id='1234')

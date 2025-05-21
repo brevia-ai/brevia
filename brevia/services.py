@@ -5,7 +5,7 @@ from brevia.callback import token_usage_callback
 from brevia.tasks.text_analysis import RefineTextAnalysisTask, SummarizeTextAnalysisTask
 
 from brevia.load_file import read
-from brevia.utilities.output import PublicFileOutput
+from brevia.utilities.output import LinkedFileOutput
 
 
 class BaseService(ABC):
@@ -148,7 +148,7 @@ class RefineTextAnalysisToTxtService(RefineTextAnalysisService):
     def execute(self, payload: dict):
         """Service logic"""
         result = super().execute(payload)
-        file_out = PublicFileOutput(job_id=self.job_id)
+        file_out = LinkedFileOutput(job_id=self.job_id)
         file_name = 'summary.txt'
         if payload.get('file_name'):
             file_name = payload['file_name'].rsplit('.', 1)[0] + '.txt'

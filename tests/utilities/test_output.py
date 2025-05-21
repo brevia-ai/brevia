@@ -3,7 +3,7 @@ import os
 import pytest
 from unittest.mock import patch, MagicMock
 from brevia.settings import get_settings
-from brevia.utilities.output import PublicFileOutput
+from brevia.utilities.output import LinkedFileOutput
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def mock_settings():
 
 def test_file_path_local():
     """Test file_path method for local file paths."""
-    output = PublicFileOutput(job_id='1234')
+    output = LinkedFileOutput(job_id='1234')
     filename = 'test.txt'
 
     file_path = output.file_path(filename)
@@ -27,7 +27,7 @@ def test_file_path_local():
 def test_file_path_s3(mock_settings):
     """Test file_path method for S3 paths."""
     mock_settings.return_value.file_output_base_path = 's3://my-bucket'
-    output = PublicFileOutput(job_id='1234')
+    output = LinkedFileOutput(job_id='1234')
     filename = 'test.txt'
 
     file_path = output.file_path(filename)
@@ -37,7 +37,7 @@ def test_file_path_s3(mock_settings):
 
 def test_file_url():
     """Test file_url method."""
-    output = PublicFileOutput()
+    output = LinkedFileOutput()
     file_url = output.file_url('test.txt')
 
     assert file_url == '/download/test.txt'
@@ -45,7 +45,7 @@ def test_file_url():
 
 def test_write_local_file():
     """Test write method for local file writing."""
-    output = PublicFileOutput(job_id='1234')
+    output = LinkedFileOutput(job_id='1234')
     filename = 'test2.txt'
     content = 'Hello, World!'
 
@@ -54,14 +54,14 @@ def test_write_local_file():
     os.unlink(output.file_path(filename))
 
 
-@patch('brevia.utilities.output.PublicFileOutput._s3_upload')
+@patch('brevia.utilities.output.LinkedFileOutput._s3_upload')
 @patch("brevia.utilities.output.get_settings")
 def test_write_s3_file(mock_settings, mock_s3_upload):
     """Test write method for S3 file writing."""
     mock_settings.return_value.file_output_base_path = 's3://my-bucket'
     mock_settings.return_value.file_output_base_url = 'https://my-bucket.s3aws.com'
     mock_s3_upload.return_value = None
-    output = PublicFileOutput(job_id='1234')
+    output = LinkedFileOutput(job_id='1234')
     filename = 'test2.txt'
     content = 'Hello, S3!'
 
@@ -71,7 +71,7 @@ def test_write_s3_file(mock_settings, mock_s3_upload):
 
 def test_s3_upload_import_error():
     """Test the _s3_upload method for ImportError."""
-    output = PublicFileOutput(job_id='1234')
+    output = LinkedFileOutput(job_id='1234')
 
     with pytest.raises(ImportError) as exc:
         output._s3_upload('test.txt', 'my-bucket', '1234/test.txt')
@@ -80,7 +80,7 @@ def test_s3_upload_import_error():
 
 def test_s3_upload_method():
     """Test the _s3_upload method."""
-    output = PublicFileOutput(job_id='1234')
+    output = LinkedFileOutput(job_id='1234')
 
     mock_s3 = MagicMock()
     import sys

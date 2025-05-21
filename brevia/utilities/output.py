@@ -4,9 +4,9 @@ import os
 from brevia.settings import get_settings
 
 
-class PublicFileOutput:
+class LinkedFileOutput:
     """
-    A class to handle file output operations in Brevia that need a public link.
+    A class to handle file output operations in Brevia that need a download link.
     """
     job_id = None
 

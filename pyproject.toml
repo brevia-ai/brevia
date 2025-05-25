@@ -14,7 +14,7 @@ repository = "https://github.com/brevia-ai/brevia"
   python = ">=3.10,<3.14"
   bs4 = "^0.0.1"
   langchain = "^0.3.20"
-  fastapi = "^0.104.1"
+  fastapi = "^0.115.12"
   nltk = "^3.9.1"
   python-dotenv = "^1.0.0"
   alembic = "^1.11.1"
@@ -34,10 +34,7 @@ repository = "https://github.com/brevia-ai/brevia"
   pgvector = "^0.4.0"
   pypdf = "^5.4.0"
   lxml = "^5.3.1"
-
-    [tool.poetry.dependencies.uvicorn]
-    extras = [ "standard" ]
-    version = "^0.22.0"
+  uvicorn = {version = "^0.34.2", extras = ["standard"]}
 
   [tool.poetry.scripts]
   create_token = "brevia.commands:create_access_token"

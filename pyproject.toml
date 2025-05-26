@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Brevia"
-version = "0.9.0"
+version = "0.10.0"
 description = "Extensible API and framework to build your Retrieval Augmented Generation (RAG) and Information Extraction (IE) applications with LLMs"
 authors = [
   "Niki Corradetti <niki.corradetti@atlasconsulting.it>",
@@ -34,7 +34,10 @@ repository = "https://github.com/brevia-ai/brevia"
   pgvector = "^0.4.0"
   pypdf = "^5.4.0"
   lxml = "^5.3.1"
-  uvicorn = {version = "^0.34.2", extras = ["standard"]}
+
+    [tool.poetry.dependencies.uvicorn]
+    version = "^0.34.2"
+    extras = [ "standard" ]
 
   [tool.poetry.scripts]
   create_token = "brevia.commands:create_access_token"

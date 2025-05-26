@@ -5,15 +5,18 @@ from brevia.callback import token_usage_callback
 from brevia.tasks.text_analysis import RefineTextAnalysisTask, SummarizeTextAnalysisTask
 
 from brevia.load_file import read
+from brevia.utilities.output import LinkedFileOutput
 
 
 class BaseService(ABC):
     """Base class for services"""
+    job_id = None
 
     def run(self, payload: dict) -> dict:
         """Run a service using a payload"""
         if not self.validate(payload):
             raise ValueError(f'Invalid service payload - {payload}')
+        self.job_id = payload.get('job_id')
         return self.execute(payload)
 
     @abstractmethod
@@ -108,7 +111,7 @@ class SummarizeFileService(BaseService):
 
 
 class RefineTextAnalysisService(BaseService):
-    """Service to perform summarization from text input"""
+    """Service to perform text analysis from text input"""
 
     def execute(self, payload: dict):
         """Service logic"""
@@ -137,6 +140,24 @@ class RefineTextAnalysisService(BaseService):
             return False
 
         return True
+
+
+class RefineTextAnalysisToTxtService(RefineTextAnalysisService):
+    """Service to perform text analysis from file, creating a txt file as output"""
+
+    def execute(self, payload: dict):
+        """Service logic"""
+        result = super().execute(payload)
+        file_out = LinkedFileOutput(job_id=self.job_id)
+        file_name = 'summary.txt'
+        if payload.get('file_name'):
+            file_name = payload['file_name'].rsplit('.', 1)[0] + '.txt'
+        url = file_out.write(result['output'], file_name)
+        result['artifacts'] = [{
+            'name': file_name,
+            'url': url,
+        }]
+        return result
 
 
 class FakeService(BaseService):

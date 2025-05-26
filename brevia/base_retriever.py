@@ -1,6 +1,6 @@
-from typing import List
-from langchain_core.callbacks import CallbackManagerForRetrieverRun
+"""Base retriever module"""
 from langchain_core.documents import Document
+from langchain_core.callbacks.manager import AsyncCallbackManagerForRetrieverRun
 from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
 
 
@@ -14,8 +14,8 @@ class BreviaBaseRetriever(VectorStoreRetriever):
     """Configuration containing settings for the search from the application"""
 
     async def _aget_relevant_documents(
-        self, query: str, *, run_manager: CallbackManagerForRetrieverRun
-    ) -> List[Document]:
+        self, query: str, *, run_manager: AsyncCallbackManagerForRetrieverRun, **kwargs
+    ) -> list[Document]:
         """
         Asynchronous implementation for retrieving relevant documents with score
         Merges results from multiple custom searches using different filters.

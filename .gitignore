@@ -34,3 +34,6 @@ brevia/extensions/*
 
 # docs site
 site/
+
+# output folder
+files/

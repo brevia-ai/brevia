@@ -12,6 +12,7 @@ from brevia.routers import (
     completion_router,
     config_router,
     providers_router,
+    download_router,
 )
 
 
@@ -28,3 +29,4 @@ def add_routers(app: FastAPI) -> None:
     app.include_router(completion_router.router)
     app.include_router(config_router.router)
     app.include_router(providers_router.router)
+    app.include_router(download_router.router)

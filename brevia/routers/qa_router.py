@@ -1,5 +1,5 @@
 """API endpoints for question answering and search"""
-from typing import Annotated
+from typing import Annotated, Optional
 import asyncio
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain.chains.base import Chain
@@ -17,7 +17,12 @@ from brevia.callback import (
     token_usage,
     TokensCallbackHandler,
 )
-from brevia.query import SearchQuery, ChatParams, conversation_chain, search_vector_qa
+from brevia.query import (
+    SearchQuery,
+    ChatParams,
+    conversation_chain,
+    conversation_rag_chain,
+)
 from brevia.models import test_models_in_use
 
 router = APIRouter()
@@ -26,7 +31,7 @@ router = APIRouter()
 class ChatBody(ChatParams):
     """ /chat request body """
     question: str
-    collection: str
+    collection: Optional[str] = None
     chat_history: list = []
     chat_lang: str | None = None
     token_data: bool = False
@@ -38,20 +43,40 @@ async def chat_action(
     chat_body: ChatBody,
     x_chat_session: Annotated[str | None, Header()] = None,
 ):
-    """ /chat endpoint, ask chatbot about a collection of documents """
-    collection = check_collection_name(chat_body.collection)
-    if not collection.cmetadata:
-        collection.cmetadata = {}
-    lang = chat_language(chat_body=chat_body, cmetadata=collection.cmetadata)
+    """
+    /chat endpoint, ask chatbot about a collection of documents to perform a rag chat.
+    If collection is not provided, it will use a simple completion chain.
+    """
+    # Check if collection is provided and valid
+    collection = None
+    if chat_body.collection:
+        collection = check_collection_name(chat_body.collection)
+        if not collection.cmetadata:
+            collection.cmetadata = {}
 
+    lang = chat_language(
+        chat_body=chat_body,
+        cmetadata=collection.cmetadata if collection else {}
+    )
     conversation_handler = ConversationCallbackHandler()
     stream_handler = AsyncIteratorCallbackHandler()
-    chain = conversation_chain(
-        collection=collection,
-        chat_params=ChatParams(**chat_body.model_dump()),
-        answer_callbacks=[stream_handler] if chat_body.streaming else [],
-    )
-    embeddings = collection.cmetadata.get('embeddings', None)
+
+    # Select the appropriate chain based on collection presence
+    if collection:
+        # Chain for collection-based chat
+        chain = conversation_rag_chain(
+            collection=collection,
+            chat_params=ChatParams(**chat_body.model_dump()),
+            answer_callbacks=[stream_handler] if chat_body.streaming else [],
+        )
+        embeddings = collection.cmetadata.get('embeddings', None)
+    else:
+        # Chain for normal chat (no collection)
+        chain = conversation_chain(
+            chat_params=ChatParams(**chat_body.model_dump()),
+            answer_callbacks=[stream_handler] if chat_body.streaming else [],
+        )
+        embeddings = None
 
     with token_usage_callback() as token_callback:
         if not chat_body.streaming or test_models_in_use():

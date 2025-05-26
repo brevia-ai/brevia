@@ -4,10 +4,14 @@ on:
   pull_request:
     paths:
       - '**/*.py'
+      - 'pyproject.toml'
+      - 'poetry.lock'
       - '.github/workflows/unit.yml'
   push:
     paths:
       - '**/*.py'
+      - 'pyproject.toml'
+      - 'poetry.lock'
       - '.github/workflows/unit.yml'
 
 jobs:

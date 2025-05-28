@@ -7,18 +7,18 @@
 [![Version](https://img.shields.io/pypi/v/brevia.svg?label=brevia)](https://pypi.org/project/brevia/)
 [![License](https://img.shields.io/badge/license-MIT-orange.svg)](https://github.com/brevia-ai/brevia/blob/main/LICENSE)
 
-Brevia is an extensible API and framework to build your Retrieval Augmented Generation (RAG) and Information Extraction (IE) applications with LLMs.
+Brevia is an extensible API and framework for building Retrieval Augmented Generation (RAG) and Information Extraction (IE) applications with LLMs.
 
-Ouf of the box Brevia provides:
+Out of the box, Brevia provides:
 
-* a complete API for RAG applications
-* an API with Information extractions capabilities like summarization, with the possibility to create your own analysis logic with asycnhronous background operations support
+* A complete API for RAG applications
+* An API with information extraction capabilities such as summarization, with the ability to create your own analysis logic and support for asynchronous background operations
 
 Brevia uses:
 
-* the popular [LangChain](https://github.com/langchain-ai/langchain) framework that you can use to create your custom AI tools and logic
-* the [FastAPI](https://github.com/tiangolo/fastapi) framework to easily extend your application with new endpoints
-* [PostgreSQL](https://www.postgresql.org) with [`pg_vector`](https://github.com/pgvector/pgvector) extension as vector database
+* The popular [LangChain](https://github.com/langchain-ai/langchain) framework, which you can use to create custom AI tools and logic
+* The [FastAPI](https://github.com/tiangolo/fastapi) framework to easily extend your application with new endpoints
+* [PostgreSQL](https://www.postgresql.org) with the [`pg_vector`](https://github.com/pgvector/pgvector) extension as a vector database
 
 ## Documentation
 
@@ -27,78 +27,78 @@ Brevia documentation is available at [docs.brevia.app](https://docs.brevia.app).
 ## Admin UI
 
 An official UI is now available via [Brevia App](https://github.com/brevia-ai/brevia-app).
-It is a webapp with which you can:
+It is a web app that allows you to:
 
-* create and configure new RAG collections
-* add files, questions or links to each collection
-* test the collection with a chat UI
-* analyze the chat history for each collection
-* perform some Information Extraction actions like summarization, audio transcription or custom analysis
+* Create and configure new RAG collections
+* Add files, questions, or links to each collection
+* Test collections with a chat UI
+* Analyze the chat history for each collection
+* Perform information extraction actions such as summarization, audio transcription, or custom analysis
 
 ## Requirements
 
-A version of Python 3.10 or higher and [Poetry](https://python-poetry.org/docs/#installation) is required.
-A PostgreSQL database version 14 or higher with [`pg_vector`](https://github.com/pgvector/pgvector), but you can use the provided docker image for a quicker setup.
+You need Python 3.10 or higher and [Poetry](https://python-poetry.org/docs/#installation).
+A PostgreSQL database version 14 or higher with [`pg_vector`](https://github.com/pgvector/pgvector) is required, but you can use the provided Docker image for a quick setup.
 
-## Quick try
+## Quick Try
 
-The easiest and fastest way to try Brevia is through Docker. By launching docker compose with the following command you will have a working Brevia system without any setup or configuration:
+The easiest way to try Brevia is through Docker. By launching Docker Compose with the following command, you will have a working Brevia system without any setup or configuration:
 
 ```bash
-# download docker-compose.yml and .env files - not necessary if you are in the brevia repo
+# Download docker-compose.yml and .env files (not necessary if you are in the brevia repo)
 curl -o docker-compose.yml https://raw.githubusercontent.com/brevia-ai/brevia/refs/heads/main/docker-compose.yml
 curl -o .env https://raw.githubusercontent.com/brevia-ai/brevia/refs/heads/main/.env.sample
 
 docker compose --profile fullstack up
 ```
 
-At this point you will have:
+This will provide:
 
-* Brevia API on http://localhost:8000
-* Brevia App UI on http://localhost:3000
-* [PgAdmin UI](https://www.pgadmin.org) on http://localhost:4000
-* [PostgreSQL](https://www.postgresql.org) with [`pg_vector`](https://github.com/pgvector/pgvector) extension running on `localhost:5432`
+* Brevia API at http://localhost:8000
+* Brevia App UI at http://localhost:3000
+* [PgAdmin UI](https://www.pgadmin.org) at http://localhost:4000
+* [PostgreSQL](https://www.postgresql.org) with [`pg_vector`](https://github.com/pgvector/pgvector) running on `localhost:5432`
 
-To use ports other than 8000, 3000, 4000 or 5432 you may use the environment variables `BREVIA_API_PORT`, `BREVIA_APP_PORT`, `PGVECTOR_PORT` or `PGADMIN_PORT` either in the .env file or setting them before the `docker compose up` command.
+To use ports other than 8000, 3000, 4000, or 5432, set the environment variables `BREVIA_API_PORT`, `BREVIA_APP_PORT`, `PGVECTOR_PORT`, or `PGADMIN_PORT` in the `.env` file or before running `docker compose up`.
 
-You can also use `--profile api` option to just start Brevia API and not Brevia App.
+You can also use the `--profile api` option to start only the Brevia API without the Brevia App.
 
 ## Create a Brevia Project
 
-### Quick start
+### Quick Start
 
-The quickest way to create a new Brevia project is using the [cookiecutter](https://github.com/cookiecutter/cookiecutter) template project like this:
+The fastest way to create a new Brevia project is by using the [cookiecutter](https://github.com/cookiecutter/cookiecutter) template:
 
 ```bash
 pip install cookiecutter
 cookiecutter gh:brevia-ai/brevia-cookiecutter
 ```
 
-Simply answer few simple questions and you're ready to go.
+Simply answer a few questions and you're ready to go.
 
-### Manual setup
+### Manual Setup
 
-To manually create a project instead follow these steps:
+To set up a project manually:
 
-* create a new project with `poetry new {your-brevia-project}`
-* install brevia and its dependencies by running `poetry add brevia`, a virtualenv will automatically be created
-* create a new `main.py` starting with a [copy](https://raw.githubusercontent.com/brevia-ai/brevia-cookiecutter/main/%7B%7Bcookiecutter.project_slug%7D%7D/main.py)
-* activate the virtualenv by running the `poetry env activate` command
-* copy the file `.env.sample` to `.env` and value the environment variables, especially secrets like API keys for LLM API services (e.g. `OPENAI_API_KEY` for OpenAI or `COHERE_API_KEY` for Cohere) and database connection via `PGVECTOR_*`.  see the [Database](#database) section
+* Create a new project with `poetry new {your-brevia-project}`
+* Install Brevia and its dependencies by running `poetry add brevia` (a virtualenv will be created automatically)
+* Create a new `main.py` starting with a [copy](https://raw.githubusercontent.com/brevia-ai/brevia-cookiecutter/main/%7B%7Bcookiecutter.project_slug%7D%7D/main.py)
+* Activate the virtualenv by running `poetry env activate`
+* Copy `.env.sample` to `.env` and set the environment variables, especially secrets like API keys for LLM API services (e.g., `OPENAI_API_KEY` for OpenAI or `COHERE_API_KEY` for Cohere) and database connection via `PGVECTOR_*`. See the [Database](#database) section.
 
-## Model configuration
+## Model Configuration
 
-With Brevia you can configure any Large Language Model supported by LangChain, virtually all major models currently available.
-Please have a look at the model configuration in the [Brevia documentation](https://docs.brevia.app/models/overview/) for more details.
+With Brevia, you can configure any Large Language Model supported by LangChain—virtually all major models currently available.
+See the [Brevia documentation](https://docs.brevia.app/models/overview/) for more details.
 Follow the steps below to set up and use a custom model in your Brevia project.
 
 ### Ollama Model Integration
 
-Suppose you want to use a local Llama 3.2 model via [Ollama](https://ollama.com) you can update your Brevia project like this:
+Suppose you want to use a local Llama 3.2 model via [Ollama](https://ollama.com). Update your Brevia project as follows:
 
 1. Open the `.env` file in your project directory.
 
-2. For QA/RAG application, set in `QA_COMPLETION_LLM` and `QA_FOLLOWUP_LLM` the json as follow:
+2. For QA/RAG applications, set `QA_COMPLETION_LLM` and `QA_FOLLOWUP_LLM` as follows:
 
 ```bash
 QA_COMPLETION_LLM='{
@@ -115,7 +115,7 @@ QA_FOLLOWUP_LLM='{
 }'
 ```
 
-3. You may want to configure the embeddings engine as well, in this case you can use another model like `nomic-embed-text` this way:
+3. To configure the embeddings engine, you can use another model such as `nomic-embed-text`:
 
 ```bash
 EMBEDDINGS='{
@@ -124,7 +124,7 @@ EMBEDDINGS='{
 }'
 ```
 
-4. For the summarization functions, you can set the `SUMMARIZE_LLM` var:
+4. For summarization functions, set the `SUMMARIZE_LLM` variable:
 
 ```bash
 SUMMARIZE_LLM='{
@@ -137,85 +137,86 @@ SUMMARIZE_LLM='{
 
 ## Database
 
-If you have a PostgreSQL instance with `pg_vector` extension available you are ready to go, otherwise you can use the provided docker compose file.
+If you have a PostgreSQL instance with the `pg_vector` extension available, you are ready to go. Otherwise, you can use the provided Docker Compose file.
 
-In this case you can simply run `docker compose` to run a PostgreSQL database with pg_vector.
-You can also run the embedded [`pgAdmin`](https://www.pgadmin.org) admin tool running `docker compose --profile admin up` to run postgres+pgvector and pgadmin docker images at the same time.
-With your browser, open `pgadmin` at http://localhost:4000
+Simply run `docker compose` to start a PostgreSQL database with `pg_vector`.
+You can also run the embedded [`pgAdmin`](https://www.pgadmin.org) admin tool by running `docker compose --profile admin up` to start both the postgres+pgvector and pgadmin Docker images.
+Open `pgadmin` in your browser at http://localhost:4000
 
-The `4000` port is configurable with the `PGADMIN_PORT` environment var in the `.env` file.
+The `4000` port is configurable via the `PGADMIN_PORT` environment variable in the `.env` file.
 
 ## Migrations
 
-Before using Brevia you need to launch the migrations script in order to create or update the initial schema. This is done with [Alembic](https://alembic.sqlalchemy.org) by using this command
+Before using Brevia, you need to run the migrations script to create or update the initial schema. Use the following command from the virtual environment:
 
 ```bash
 db_upgrade
 ```
 
+This will run migrations using [Alembic](https://alembic.sqlalchemy.org/en/latest/) (already installed as a dependency) to create or update the required tables in your database.
+
 ## Launch
 
-You are now ready to go, simply run
+You are now ready to go. Simply run from the virtual environment:
 
 ```bash
-uvicorn --env-file .env main:app`
+uvicorn --env-file .env main:app
 ```
 
 and your [Brevia API](https://github.com/brevia-ai/brevia) project is ready to accept calls!
 
-## Test your API
+## Test Your API
 
-While we are working on a simple reference frontend to test and use Brevia API the simplest way to test your new API is by using the provided OpenAPI Swagger UI and ReDoc UI or by using the official Postman files.
+While we are working on a simple reference frontend for Brevia API, the easiest way to test your new API is by using the provided OpenAPI Swagger UI and ReDoc UI, or by using the official Postman files.
 
-Simply point to `/docs` for your Swagger UI and to `/redoc` for ReDoc.
+Go to `/docs` for Swagger UI and `/redoc` for ReDoc.
 
-If you prefer to use Postman you can start by importing the [collection file](https://raw.githubusercontent.com/brevia-ai/brevia/main/brevia/postman/Brevia%20API.postman_collection.json) and an [environment sample](https://raw.githubusercontent.com/brevia-ai/brevia/main/brevia/postman/Brevia%20API.postman_environment.json)
+If you prefer Postman, you can import the [collection file](https://raw.githubusercontent.com/brevia-ai/brevia/main/brevia/postman/Brevia%20API.postman_collection.json) and an [environment sample](https://raw.githubusercontent.com/brevia-ai/brevia/main/brevia/postman/Brevia%20API.postman_environment.json).
 
-## Add documents via CLI
+## Add Documents via CLI
 
-You can also quickly create collections and add documents via CLI using the `import_file` command.
-
-Just run:
+You can quickly create collections and add documents via CLI using the `import_file` command:
 
 ```bash
 import_file --file-path /path/to/file --collection my-collection
 ```
 
-Where
+Where:
 
-* `/path/to/file` is the path to a local PDF or txt file
-* `my-collection` is the unique name of the collection that will be created if not exists
+* `/path/to/file` is the path to a local PDF or TXT file
+* `my-collection` is the unique name of the collection (it will be created if it does not exist)
 
-## Import/export of collections
+## Import/Export Collections
 
-To import/export collections via CLI we take advantage of the [PostgreSQL COPY command](https://www.postgresql.org/docs/current/sql-copy.html) in the `import_collection` and `export_collection` scripts.
+To import or export collections via CLI, use the [PostgreSQL COPY command](https://www.postgresql.org/docs/current/sql-copy.html) in the `import_collection` and `export_collection` scripts.
 
-A `psql` client is required for these scripts, connection parameters will be read from environment variables (via `.env` file).
+A `psql` client is required for these scripts. Connection parameters are read from environment variables (via the `.env` file).
 
-Two PostgreSQL CSV files will be created during export and imported in the import operation.
-One file, named `{collection-name}-collection.csv`, contains collection data and the other, named `{collection-name}-embedding.csv`, contains documents data and embeddings.
+Two PostgreSQL CSV files will be created during export and imported during import:
+* `{collection-name}-collection.csv` contains collection data
+* `{collection-name}-embedding.csv` contains document data and embeddings
 
-To export a collection use:
+To export a collection:
 
 ```bash
 export_collection --folder-path /path/to/folder --collection collection-name
 ```
 
-To import a collection use:
+To import a collection:
 
 ```bash
 import_collection --folder-path /path/to/folder --collection collection-name
 ```
 
-Where
+Where:
 
-* `/path/to/folder` is the path where the 2 CSV files will be created in export or searched in import
+* `/path/to/folder` is the path where the two CSV files will be created (export) or searched for (import)
 * `collection-name` is the name of the collection
 
-## LangSmith support
+## LangSmith Support
 
-[LangSmith](https://www.langchain.com/langsmith) is a platform to monitor, test and debug LLM apps built with LangChain.
-To use it in Brevia, if you have an account, you should export these environment variables when runnnin Brevia:
+[LangSmith](https://www.langchain.com/langsmith) is a platform to monitor, test, and debug LLM apps built with LangChain.
+To use it in Brevia, if you have an account, export these environment variables when running Brevia:
 
 ```bash
 LANGCHAIN_TRACING_V2=True
@@ -224,89 +225,88 @@ LANGCHAIN_API_KEY="########"
 LANGCHAIN_PROJECT="My Project"
 ```
 
-If you are using a `.env` file you should use `BREVIA_ENV_SECRETS` var like this:
+If you are using a `.env` file, use the `BREVIA_ENV_SECRETS` variable like this:
 
 ```bash
-
 BREVIA_ENV_SECRETS='{
-  "LANGCHAIN_TRACING_V2": "True"
+  "LANGCHAIN_TRACING_V2": "True",
   "LANGCHAIN_ENDPOINT": "https://api.smith.langchain.com",
   "LANGCHAIN_API_KEY": "########",
   "LANGCHAIN_PROJECT": "My Project"
 }'
 ```
 
-This way Brevia will make sure that this variables will be available as environment variables.
+This ensures these variables are available as environment variables.
 
-Edit `LANGCHAIN_API_KEY` with your LangSmith API Key and set your project name in `LANGCHAIN_PROJECT` var.
+Edit `LANGCHAIN_API_KEY` with your LangSmith API Key and set your project name in the `LANGCHAIN_PROJECT` variable.
 
 ## Access Tokens
 
-There is a built-in basic support for access tokens for API security.
+There is basic built-in support for access tokens for API security.
 
-Access tokens are actively checked via `Authoritazion: Bearer <token>` header if a `TOKENS_SECRET` env variable has been set.
-You may then generate a new access token using:
+Access tokens are checked via the `Authorization: Bearer <token>` header if the `TOKENS_SECRET` environment variable is set.
+You can generate a new access token using:
 
 ```bash
 poetry run create_token --user {user} --duration {minutes}
 ```
 
-If the env `TOKENS_SECRET` variable is set token verification is automatically performed on every endpoint using `brevia.dependencies.get_dependencies` in its dependencies.
+If the `TOKENS_SECRET` environment variable is set, token verification is automatically performed on every endpoint using `brevia.dependencies.get_dependencies`.
 
-The recommended way yo generate `TOKENS_SECRET` is by using openssl via cli like
+The recommended way to generate `TOKENS_SECRET` is with openssl:
 
 ```bash
 openssl rand -hex 32
 ```
 
-You can also define a list of valid users as a comma separated string in the `TOKENS_USERS` env variable.
+You can also define a list of valid users as a comma-separated string in the `TOKENS_USERS` environment variable.
 
-Setting it like `TOKENS_USERS="brevia,gustavo"` means that only `brevia` and `gustavo` are considered valid users names. Remember to use double quotes in a `.env` file.
+For example, setting `TOKENS_USERS="brevia,gustavo"` means that only `brevia` and `gustavo` are considered valid user names. Remember to use double quotes in a `.env` file.
 
-## Brevia developer quick reference
+## Brevia Developer Quick Reference
 
-Here some brief notes if you want to help develop Brevia.
+Here are some brief notes if you want to help develop Brevia.
 
-### Unit tests
+### Unit Tests
 
-To launch unit tests make sure to have `dev` dependencies installed. This is done with:
+To run unit tests, make sure you have the `dev` dependencies installed:
 
 ```bash
 poetry install --with dev
 ```
 
-A `tests/.env` file must be present where test environment variables are set, you can start with a copy of `tests/.env.sample`.
-Please make sure that `PGVECTOR_*` variables point to a unit test database that will be continuously dropped and recreated. Also make sure to set `USE_TEST_MODELS=True` in order to use fake LLM instances.
+A `tests/.env` file must be present with test environment variables set. You can start with a copy of `tests/.env.sample`.
+Ensure that `PGVECTOR_*` variables point to a unit test database that will be continuously dropped and recreated. Also, set `USE_TEST_MODELS=True` to use fake LLM instances.
 
-To launch unit tests, type from virtualenv:
+To run unit tests from the virtualenv:
 
 ```bash
 pytest tests/
 ```
 
-To create coverage in HTML format:
+To generate coverage in HTML format:
 
 ```bash
 pytest --cov-report html --cov=brevia tests/
 ```
 
-Covreage report is created using `pytest-cov`
+The coverage report is created using `pytest-cov`.
 
-### Update documentation
+### Update Documentation
 
-Install `mkdocs-material` using `pip` without altering `pyproject.toml`
+Install `mkdocs-material` using `pip` (do not alter `pyproject.toml`):
 
 ```bash
 pip install mkdocs-material
 ```
 
-When working on documentation files you can use a live preview server with:
+When working on documentation files, you can use a live preview server with:
 
 ```bash
 mkdocs serve
 ```
 
-Or you can build the documentation in `site/` folder using
+Or build the documentation in the `site/` folder using:
 
 ```bash
 mkdocs build --clean

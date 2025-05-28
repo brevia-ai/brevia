@@ -139,7 +139,7 @@ SUMMARIZE_LLM='{
 
 If you have a PostgreSQL instance with the `pg_vector` extension available, you are ready to go. Otherwise, you can use the provided Docker Compose file.
 
-Simply run `docker compose` to start a PostgreSQL database with `pg_vector`.
+Simply run `docker compose up` to start a PostgreSQL database with `pg_vector`.
 You can also run the embedded [`pgAdmin`](https://www.pgadmin.org) admin tool by running `docker compose --profile admin up` to start both the postgres+pgvector and pgadmin Docker images.
 Open `pgadmin` in your browser at http://localhost:4000
 

@@ -1,10 +1,12 @@
 """Services module tests"""
+import os
 from pathlib import Path
 import pytest
 from brevia.services import (
     SummarizeFileService,
     SummarizeTextService,
     RefineTextAnalysisService,
+    RefineTextAnalysisToTxtService,
 )
 from brevia.settings import get_settings
 
@@ -62,3 +64,29 @@ def test_refine_text_analysis_fail():
             'prompts': {'a': 'b'}
         })
     assert str(exc.value).startswith('Invalid service payload - ')
+
+
+def test_summarize_file_service_txt():
+    """Test SummarizeFileServiceTxt service"""
+    files_path = f'{Path(__file__).parent}/files'
+    settings = get_settings()
+    current_path = settings.prompts_base_path
+    settings.prompts_base_path = f'{files_path}/prompts'
+    service = RefineTextAnalysisToTxtService()
+    payload = {
+        'file_path': f'{files_path}/docs/test.txt',
+        'file_name': 'example.txt',
+        'job_id': '1234',
+        'prompts': {
+            'initial_prompt': 'initial_prompt.yml',
+            'refine_prompt': 'refine_prompt.yml'
+        }
+    }
+    result = service.run(payload)
+
+    assert 'artifacts' in result
+    assert result['artifacts'][0]['name'] == 'example.txt'
+    assert result["artifacts"][0]['url'] == '/download/1234/example.txt'
+
+    settings.prompts_base_path = current_path
+    os.remove(f'{files_path}/1234/example.txt')

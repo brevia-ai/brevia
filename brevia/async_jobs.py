@@ -128,6 +128,7 @@ def run_job_service(
     try:
         lock_job_service(job_store)
         service = create_service(job_store.service)
+        job_store.payload['job_id'] = str(job_store.uuid)
         result = service.run(job_store.payload)
 
     except Exception as exc:  # pylint: disable=broad-exception-caught

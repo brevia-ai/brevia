@@ -37,6 +37,7 @@ def update_settings():
     settings.tokens_users = ''
     settings.status_token = ''
     settings.use_test_models = True
+    settings.file_output_base_path = f'{Path(__file__).parent}/files'
 
 
 @pytest.fixture(autouse=True)

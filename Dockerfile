@@ -30,13 +30,14 @@ FROM python:3.12-alpine AS runtime
 
 WORKDIR /python-docker
 
-ENV VIRTUAL_ENV=/python-docker/.venv \
+ENV PORT=8000 \
+    VIRTUAL_ENV=/python-docker/.venv \
     PATH="/python-docker/.venv/bin:$PATH"
 
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 COPY . /python-docker/
 
-EXPOSE 8000
+EXPOSE ${PORT}
 
-CMD ["sh", "-c", "db_upgrade && uvicorn --host 0.0.0.0 --port 8000 main:app"]
+CMD ["sh", "-c", "db_upgrade && uvicorn main:app --host '' --port $PORT"]

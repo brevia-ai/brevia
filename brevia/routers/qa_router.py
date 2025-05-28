@@ -1,5 +1,5 @@
 """API endpoints for question answering and search"""
-from typing import Annotated, Optional
+from typing import Annotated
 import asyncio
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain.chains.base import Chain
@@ -22,6 +22,7 @@ from brevia.query import (
     ChatParams,
     conversation_chain,
     conversation_rag_chain,
+    search_vector_qa,
 )
 from brevia.models import test_models_in_use
 
@@ -31,9 +32,10 @@ router = APIRouter()
 class ChatBody(ChatParams):
     """ /chat request body """
     question: str
-    collection: Optional[str] = None
+    collection: str | None = None
     chat_history: list = []
     chat_lang: str | None = None
+    mode: str = 'rag'
     token_data: bool = False
 
 
@@ -61,17 +63,24 @@ async def chat_action(
     conversation_handler = ConversationCallbackHandler()
     stream_handler = AsyncIteratorCallbackHandler()
 
-    # Select the appropriate chain based on collection presence
-    if collection:
-        # Chain for collection-based chat
+    # Select chain based on chat_body.mode
+    if chat_body.mode == 'rag' and collection:
+        # RAG-based conversation chain using collection context
         chain = conversation_rag_chain(
             collection=collection,
             chat_params=ChatParams(**chat_body.model_dump()),
             answer_callbacks=[stream_handler] if chat_body.streaming else [],
         )
         embeddings = collection.cmetadata.get('embeddings', None)
+    elif chat_body.mode == 'test':
+        # Test mode - currently same as simple conversation
+        chain = conversation_chain(
+            chat_params=ChatParams(**chat_body.model_dump()),
+            answer_callbacks=[stream_handler] if chat_body.streaming else [],
+        )
+        embeddings = None
     else:
-        # Chain for normal chat (no collection)
+        # Simple conversation chain (no collection or different mode)
         chain = conversation_chain(
             chat_params=ChatParams(**chat_body.model_dump()),
             answer_callbacks=[stream_handler] if chat_body.streaming else [],

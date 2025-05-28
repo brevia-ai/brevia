@@ -302,7 +302,7 @@ def conversation_chain(
             answer (str): The answer provided in response to the question.
         """
         question: str = Field(description="The question asked in the conversation.")
-        answer: str = Field(description="The answer to the joke question.")
+        answer: str = Field(description="The answer to the question.")
 
     settings = get_settings()
 
@@ -322,7 +322,7 @@ def conversation_chain(
     parser = JsonOutputParser(pydantic_object=Result)
     prompt = PromptTemplate(
         input_variables=["question"],
-        template="\n{format_instructions}\n{question}",
+        template="\n{format_instructions}\n\n question:{question}",
         partial_variables={"format_instructions": parser.get_format_instructions()},
     )
     llm = load_chatmodel(llm_conf)

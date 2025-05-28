@@ -1,7 +1,6 @@
 """chat_history module tests"""
 from datetime import datetime, timedelta
 import uuid
-import pytest
 from brevia.chat_history import (
     history,
     add_history,

@@ -1,6 +1,8 @@
 """API endpoints for question answering and search"""
-from typing import Annotated
 import asyncio
+from typing import Annotated
+from typing_extensions import Self
+from pydantic import Field, model_validator
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain.chains.base import Chain
 from langchain_core.callbacks import BaseCallbackHandler
@@ -35,8 +37,15 @@ class ChatBody(ChatParams):
     collection: str | None = None
     chat_history: list = []
     chat_lang: str | None = None
-    mode: str = 'rag'
+    mode: str = Field(pattern='^(rag|test)$', default='rag')
     token_data: bool = False
+
+    @model_validator(mode='after')
+    def check_collection(self) -> Self:
+        """Validate collection and mode"""
+        if not self.collection and self.mode == 'rag':
+            raise ValueError('Collection required for rag mode')
+        return self
 
 
 @router.post('/prompt', dependencies=get_dependencies(), deprecated=True, tags=['Chat'])
@@ -64,7 +73,7 @@ async def chat_action(
     stream_handler = AsyncIteratorCallbackHandler()
 
     # Select chain based on chat_body.mode
-    if chat_body.mode == 'rag' and collection:
+    if chat_body.mode == 'rag':
         # RAG-based conversation chain using collection context
         chain = conversation_rag_chain(
             collection=collection,
@@ -79,13 +88,7 @@ async def chat_action(
             answer_callbacks=[stream_handler] if chat_body.streaming else [],
         )
         embeddings = None
-    else:
-        # Simple conversation chain (no collection or different mode)
-        chain = conversation_chain(
-            chat_params=ChatParams(**chat_body.model_dump()),
-            answer_callbacks=[stream_handler] if chat_body.streaming else [],
-        )
-        embeddings = None
+
 
     with token_usage_callback() as token_callback:
         if not chat_body.streaming or test_models_in_use():

@@ -3,6 +3,7 @@ import pytest
 from langchain.docstore.document import Document
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain_core.vectorstores import VectorStoreRetriever
+from langchain_core.messages.ai import AIMessage
 from langchain_core.runnables import Runnable
 from brevia.models import load_chatmodel
 from brevia.query import (
@@ -105,11 +106,10 @@ def test_conversation_chain_output():
         'lang': '',
     })
 
-    assert isinstance(result, dict)
-    assert 'question' in result
-    assert 'answer' in result
-    assert isinstance(result['question'], str)
-    assert isinstance(result['answer'], str)
+    assert isinstance(result, AIMessage)
+    assert hasattr(result, 'content')
+    assert isinstance(result.content, str)
+    assert len(result.content) > 0
 
 
 def test_conversation_rag_chain():

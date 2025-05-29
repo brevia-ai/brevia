@@ -39,7 +39,7 @@ class ChatBody(ChatParams):
     collection: str | None = None
     chat_history: list = []
     chat_lang: str | None = None
-    mode: str = Field(pattern='^(rag|test)$', default='rag')
+    mode: str = Field(pattern='^(rag|conversation)$', default='rag')
     token_data: bool = False
 
     @model_validator(mode='after')
@@ -83,7 +83,7 @@ async def chat_action(
             answer_callbacks=[stream_handler] if chat_body.streaming else [],
         )
         embeddings = collection.cmetadata.get('embeddings', None)
-    elif chat_body.mode == 'test':
+    elif chat_body.mode == 'conversation':
         # Test mode - currently same as simple conversation
         chain = conversation_chain(
             chat_params=ChatParams(**chat_body.model_dump()),

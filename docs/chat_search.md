@@ -49,24 +49,29 @@ Initiates a natural conversation with the model.
 
 **Payloads**:
 
-`question`: The query you want to ask the model.
-`collection`: The collection of documents to search for relevant information.
+- `question`: The query you want to ask the model.
+- `collection`: The collection of documents to search for relevant information.
+- `mode` (optional): Specifies the chat mode.
+    - `"rag"`: Retrieval-Augmented Generation mode. The model answers using information retrieved from the specified collection.
+    - `"conversation"`: Pure conversational mode. The model answers based only on the chat history and its own knowledge, without retrieving documents.
+    - If not specified, the default is `"rag"`.
 
-```JSON
+```json
 {
   "question": "{{query}}",
-  "collection": "{{collection}}"
+  "collection": "{{collection}}",
+  "mode": "rag"
 }
 ```
 
 **Optional Parameters**:
 
-`chat_history`: An array of previous questions and answers to provide context for the current query.
+- `chat_history`: An array of previous questions and answers to provide context for the current query.
 
-```JSON
+```json
 {
     "question": "{{query}}",
-    "collection": "{{collection}}",
+    "mode": "conversation",
     "chat_history": [
         {
             "query": "what is artificial intelligence?",
@@ -82,33 +87,26 @@ Initiates a natural conversation with the model.
 
 **Additional Optional Parameters**:
 
-`docs_num`: The number of documents to retrieve for context. If not specified, the default from settings or collection metadata is used.
-
-`streaming`: A boolean flag to enable or disable streaming responses. Default is `False`.
-
-`distance_strategy_name`: The name of the distance strategy to use for vector similarity. Options include `euclidean`, `cosine`, and `max`. Default is `cosine`.
-
-`filter`: An optional dictionary of metadata to use as a filter for document retrieval.
-
-`source_docs`: A boolean flag to specify if the retrieved source documents should be included in the response. Default is `False`.
-
-`multiquery`: A boolean flag indicating whether multiple queries should be executed for retrieval. Default is `False`.
-
-`search_type`: The type of search algorithm to use. Options include:
-
-- `similarity`: Standard similarity search.
-- `similarity_score_threshold`: Similarity search with a score threshold.
-- `mmr`: Maximal Marginal Relevance search.
-Default is `similarity`.
-
-`score_threshold`: A numeric threshold for filtering documents based on relevance scores. Default is `0.0` (This applies only when `search_type` is set to `similarity_score_threshold`.).
+- `docs_num`: The number of documents to retrieve for context. If not specified, the default from settings or collection metadata is used.
+- `streaming`: A boolean flag to enable or disable streaming responses. Default is `False`.
+- `distance_strategy_name`: The name of the distance strategy to use for vector similarity. Options include `euclidean`, `cosine`, and `max`. Default is `cosine`.
+- `filter`: An optional dictionary of metadata to use as a filter for document retrieval.
+- `source_docs`: A boolean flag to specify if the retrieved source documents should be included in the response. Default is `False`.
+- `multiquery`: A boolean flag indicating whether multiple queries should be executed for retrieval. Default is `False`.
+- `search_type`: The type of search algorithm to use. Options include:
+  - `similarity`: Standard similarity search.
+  - `similarity_score_threshold`: Similarity search with a score threshold.
+  - `mmr`: Maximal Marginal Relevance search.
+    Default is `similarity`.
+- `score_threshold`: A numeric threshold for filtering documents based on relevance scores. Default is `0.0` (applies only when `search_type` is set to `similarity_score_threshold`).
 
 **Example Payload**:
 
-```JSON
+```json
 {
     "question": "What is the capital of France?",
     "collection": "geography",
+    "mode": "rag",
     "chat_history": [
         {
             "query": "What is the largest country in Europe?",
@@ -124,6 +122,12 @@ Default is `similarity`.
     "score_threshold": 0.5
 }
 ```
+
+**Notes:**
+
+- If `mode` is not specified, the default behavior is `"rag"`.
+- In `"rag"` mode, the model uses both the provided collection and chat history for context.
+- In `"conversation"` mode, the model ignores the collection and relies solely on chat history and its own knowledge.
 
 ### POST `/completion`
 

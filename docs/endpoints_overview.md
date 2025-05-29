@@ -8,24 +8,30 @@ Initiates a natural conversation with the model.
 
 **Payloads**:
 
-`question`: The query you want to ask the model.
-`collection`: The collection of documents to search for relevant information.
+- `question`: The query you want to ask the model.
+- `collection`: The collection of documents to search for relevant information.
+- `mode` (optional): Specifies the chat mode.
+  - `"rag"`: Retrieval-Augmented Generation mode. The model answers using information retrieved from the specified collection.
+  - `"conversation"`: Pure conversational mode. The model answers based only on the chat history and its own knowledge, without retrieving documents.
+  - If not specified, the default is `"rag"`.
 
-```JSON
+```json
 {
   "question": "{{query}}",
-  "collection": "{{collection}}"
+  "collection": "{{collection}}",
+  "mode": "rag"
 }
 ```
 
 **Optional Parameters**:
 
-`chat_history`: An array of previous questions and answers to provide context for the current query.
+- `chat_history`: An array of previous questions and answers to provide context for the current query.
 
-```JSON
+```json
 {
     "question": "{{query}}",
     "collection": "{{collection}}",
+    "mode": "conversation",
     "chat_history": [
         {
             "query": "what is artificial intelligence?",
@@ -39,10 +45,16 @@ Initiates a natural conversation with the model.
 }
 ```
 
-`source_docs`: Set to true to return source documents.
-`docs_num`: Specify the number of documents to return.
-`token_data`: Set to true to return token-level data like part-of-speech tags.
-`multiquery`: Set to true to use MultiQueryRetriever from langchain.
+- `source_docs`: Set to true to return source documents.
+- `docs_num`: Specify the number of documents to return.
+- `token_data`: Set to true to return token-level data like part-of-speech tags.
+- `multiquery`: Set to true to use MultiQueryRetriever from langchain.
+
+**Notes:**
+
+- If `mode` is not specified, the default behavior is `"rag"`.
+- In `"rag"` mode, the model uses both the provided collection and chat history for context.
+- In `"conversation"` mode, the model ignores the collection and relies solely on chat history and its own knowledge.
 
 ### POST `/completion`
 

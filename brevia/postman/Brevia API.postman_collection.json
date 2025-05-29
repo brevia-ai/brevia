@@ -37,7 +37,49 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"question\" : \"{{query}}\",\n    \"collection\" : \"{{collection}}\"\n}"
+                            "raw": "{\n    \"question\" : \"{{query}}\",\n    \"mode\": \"rag\",\n    \"collection\" : \"{{collection}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/chat",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "chat"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "chat - conversation, no RAG",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{access_token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json",
+                                "type": "text"
+                            },
+                            {
+                                "key": "X-Chat-Session",
+                                "value": "{{session_id}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"question\" : \"{{query}}\",\n    \"mode\": \"conversation\",\n    \"streaming\": false,\n    \"token_data\": true\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/chat",

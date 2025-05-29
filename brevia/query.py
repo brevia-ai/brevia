@@ -6,7 +6,7 @@ from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgvector import DistanceStrategy, PGVector
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.prompts import PromptTemplate
-from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.retrievers import BaseRetriever
 from langchain_core.vectorstores import VectorStore
@@ -318,14 +318,12 @@ def conversation_chain(
     llm_conf['callbacks'] = [] if answer_callbacks is None else answer_callbacks
     llm_conf['streaming'] = chat_params.streaming
 
-    parser = JsonOutputParser(pydantic_object=Result)
     prompt = PromptTemplate(
         input_variables=["question"],
-        template="\n{format_instructions}\n\n question:{question}",
-        partial_variables={"format_instructions": parser.get_format_instructions()},
+        template="\n{question}",
     )
     llm = load_chatmodel(llm_conf)
-    chain = prompt | llm | parser
+    chain = prompt | llm
 
     return (
         RunnablePassthrough.assign(

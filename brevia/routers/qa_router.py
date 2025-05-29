@@ -1,11 +1,13 @@
 """API endpoints for question answering and search"""
 import asyncio
+from glom import glom
 from typing import Annotated
 from typing_extensions import Self
 from pydantic import Field, model_validator
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain.chains.base import Chain
 from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.messages.ai import AIMessage
 from fastapi import APIRouter, Header
 from fastapi.responses import StreamingResponse
 from brevia import chat_history
@@ -193,13 +195,14 @@ async def run_chain(
 
 
 def chat_result(
-    result: dict,
+    result: dict | AIMessage,
     callb: TokensCallbackHandler,
     chat_body: ChatBody,
     x_chat_session: str | None = None,
 ) -> dict:
     """ Handle chat result: save chat history and return answer """
-    answer = result['answer'].strip(" \n")
+    answer = glom(result, 'answer', default=glom(result, 'content', default=''))
+    answer = str(answer).strip(" \n")
 
     chat_history_id = None
     if not chat_body.streaming:
@@ -212,9 +215,11 @@ def chat_result(
         )
         chat_history_id = None if chat_hist is None else str(chat_hist.uuid)
 
+    context = result['context'] if 'context' in result else None
+
     return {
         'bot': answer,
-        'docs': None if not chat_body.source_docs else result['context'],
+        'docs': None if not chat_body.source_docs else context,
         'chat_history_id': chat_history_id,
         'token_data': None if not chat_body.token_data else token_usage(callb)
     }

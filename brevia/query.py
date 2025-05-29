@@ -1,13 +1,12 @@
 """Question-answering and search functions against a vector database."""
 from langchain.retrievers.multi_query import MultiQueryRetriever
 from langchain.chains.base import Chain
-from langchain_core.prompts import PromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgvector import DistanceStrategy, PGVector
 from langchain_core.callbacks import BaseCallbackHandler
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.retrievers import BaseRetriever
 from langchain_core.vectorstores import VectorStore
@@ -175,7 +174,7 @@ def create_conversation_retriever(
     search_kwargs = chat_params.get_search_kwargs()
     retriever_conf = collection.cmetadata.get(
         'qa_retriever',
-        get_settings().qa_retriever.copy()
+        dict(get_settings().qa_retriever).copy()
     )
     if not retriever_conf:
         return create_default_retriever(
@@ -236,7 +235,7 @@ def conversation_rag_chain(
     # Main LLM configuration
     qa_llm_conf = collection.cmetadata.get(
         'qa_completion_llm',
-        settings.qa_completion_llm.copy()
+        dict(settings.qa_completion_llm).copy()
     )
     qa_llm_conf['callbacks'] = [] if answer_callbacks is None else answer_callbacks
     qa_llm_conf['streaming'] = chat_params.streaming
@@ -252,7 +251,7 @@ def conversation_rag_chain(
     # Chain to rewrite question with history
     fup_llm_conf = collection.cmetadata.get(
         'qa_followup_llm',
-        settings.qa_followup_llm.copy()
+        dict(settings.qa_followup_llm).copy()
     )
     fup_llm = load_chatmodel(fup_llm_conf)
     fup_chain = (
@@ -307,7 +306,7 @@ def conversation_chain(
     settings = get_settings()
 
     # Chain to rewrite question with history
-    fup_llm_conf = settings.qa_followup_llm.copy()
+    fup_llm_conf = dict(settings.qa_followup_llm).copy()
     fup_llm = load_chatmodel(fup_llm_conf)
     fup_chain = (
         load_condense_prompt()
@@ -315,7 +314,7 @@ def conversation_chain(
         | StrOutputParser()
     )
 
-    llm_conf = settings.qa_completion_llm.copy()
+    llm_conf = dict(settings.qa_completion_llm).copy()
     llm_conf['callbacks'] = [] if answer_callbacks is None else answer_callbacks
     llm_conf['streaming'] = chat_params.streaming
 

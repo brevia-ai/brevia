@@ -1,8 +1,8 @@
 """Query module tests"""
 import pytest
 from langchain.docstore.document import Document
-from langchain_core.vectorstores import VectorStoreRetriever
 from langchain.retrievers.multi_query import MultiQueryRetriever
+from langchain_core.vectorstores import VectorStoreRetriever
 from langchain_core.runnables import Runnable
 from brevia.models import load_chatmodel
 from brevia.query import (

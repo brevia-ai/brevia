@@ -89,7 +89,6 @@ async def chat_action(
         )
         embeddings = None
 
-
     with token_usage_callback() as token_callback:
         if not chat_body.streaming or test_models_in_use():
             return await run_chain(

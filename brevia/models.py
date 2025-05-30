@@ -22,8 +22,11 @@ class FakeBreviaLLM(FakeListLLM):
         return [10] * 10
 
 
-LOREM_IPSUM = """Lorem ipsum dolor sit amet, consectetur adipisici elit,
-sed eiusmod tempor incidunt ut labore et dolore magna aliqua."""
+LOREM_IPSUM = """{
+    "question": "What is lorem ipsum?",
+    "answer": "Lorem ipsum dolor sit amet, consectetur adipisici elit,
+              sed eiusmod tempor incidunt ut labore et dolore magna aliqua."
+}"""
 
 
 def load_llm(config: dict) -> BaseLLM:

@@ -5,6 +5,7 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_community.vectorstores.pgembedding import CollectionStore
 from langchain_community.vectorstores.pgvector import DistanceStrategy, PGVector
 from langchain_core.callbacks import BaseCallbackHandler
+from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.retrievers import BaseRetriever
@@ -173,7 +174,7 @@ def create_conversation_retriever(
     search_kwargs = chat_params.get_search_kwargs()
     retriever_conf = collection.cmetadata.get(
         'qa_retriever',
-        get_settings().qa_retriever.copy()
+        dict(get_settings().qa_retriever).copy()
     )
     if not retriever_conf:
         return create_default_retriever(
@@ -189,13 +190,13 @@ def create_conversation_retriever(
         document_search, search_kwargs, retriever_conf)
 
 
-def conversation_chain(
+def conversation_rag_chain(
     collection: CollectionStore,
     chat_params: ChatParams,
     answer_callbacks: list[BaseCallbackHandler] | None = None,
 ) -> Chain:
     """
-    Create and return a conversation chain for Q&A with embedded dataset knowledge.
+    Create and return a conversation chain for Q&A with embedded dataset knowledge.(RAG)
 
     Args:
         collection (CollectionStore): The collection store item containing the dataset.
@@ -234,7 +235,7 @@ def conversation_chain(
     # Main LLM configuration
     qa_llm_conf = collection.cmetadata.get(
         'qa_completion_llm',
-        settings.qa_completion_llm.copy()
+        dict(settings.qa_completion_llm).copy()
     )
     qa_llm_conf['callbacks'] = [] if answer_callbacks is None else answer_callbacks
     qa_llm_conf['streaming'] = chat_params.streaming
@@ -250,7 +251,7 @@ def conversation_chain(
     # Chain to rewrite question with history
     fup_llm_conf = collection.cmetadata.get(
         'qa_followup_llm',
-        settings.qa_followup_llm.copy()
+        dict(settings.qa_followup_llm).copy()
     )
     fup_llm = load_chatmodel(fup_llm_conf)
     fup_chain = (
@@ -278,4 +279,44 @@ def conversation_chain(
             question=fup_chain
         )
         | retrivial_chain
+    )
+
+
+def conversation_chain(
+    chat_params: ChatParams,
+    answer_callbacks: list[BaseCallbackHandler] | None = None,
+) -> Chain:
+    """
+    Create a simple conversation chain for conversation tasks without a collection.
+    This chain is used for general chat interactions that do not involve a specific
+    collection or dataset.
+    """
+
+    settings = get_settings()
+
+    # Chain to rewrite question with history
+    fup_llm_conf = dict(settings.qa_followup_llm).copy()
+    fup_llm = load_chatmodel(fup_llm_conf)
+    fup_chain = (
+        load_condense_prompt()
+        | fup_llm
+        | StrOutputParser()
+    )
+
+    llm_conf = dict(settings.qa_completion_llm).copy()
+    llm_conf['callbacks'] = [] if answer_callbacks is None else answer_callbacks
+    llm_conf['streaming'] = chat_params.streaming
+
+    prompt = PromptTemplate(
+        input_variables=["question"],
+        template="\n{question}",
+    )
+    llm = load_chatmodel(llm_conf)
+    chain = prompt | llm
+
+    return (
+        RunnablePassthrough.assign(
+            question=fup_chain
+        )
+        | chain
     )

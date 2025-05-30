@@ -4,6 +4,7 @@ from uuid import UUID
 import asyncio
 import logging
 import json
+from glom import glom
 from langchain_community.callbacks import OpenAICallbackHandler, get_openai_callback
 from langchain_core.callbacks import AsyncCallbackHandler, BaseCallbackHandler
 from langchain_core.documents import Document
@@ -81,7 +82,11 @@ class ConversationCallbackHandler(AsyncCallbackHandler):
     ) -> None:
         """Run when chain ends running."""
         if parent_run_id is None:
-            self.answer = outputs.get('answer')
+            self.answer = glom(
+                outputs,
+                'answer',
+                default=glom(outputs, 'content', default='')
+            )
             self.chain_ended.set()
 
     async def wait_conversation_done(self):

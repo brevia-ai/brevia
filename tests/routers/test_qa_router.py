@@ -95,7 +95,11 @@ def test_search_filter():
 
 def test_chat_language():
     """Test chat_language method"""
-    chat_body = ChatBody(question='', collection='', chat_lang='Klingon')
+    chat_body = ChatBody(
+        question='question',
+        collection='collection',
+        chat_lang='Klingon'
+    )
     lang = chat_language(chat_body=chat_body, cmetadata={})
     assert lang == 'Klingon'
 
@@ -116,3 +120,35 @@ def test_extract_content_score():
     """Test extract_content_score method"""
     result = extract_content_score(data_list={'error': 'big problems!'})
     assert result == {'error': 'big problems!'}
+
+
+def test_chat_invalid_mode():
+    """Test POST /chat with invalid mode"""
+    create_collection('test_collection', {})
+    response = client.post(
+        '/chat',
+        headers={'Content-Type': 'application/json'},
+        content=dumps({
+            "question": "How are you?",
+            "collection": "test_collection",
+            "mode": "invalid_mode"
+        })
+    )
+    assert response.status_code == 422  # Validation error
+    data = response.json()
+    assert 'mode' in str(data['detail'])  # Verify error mentions mode field
+
+
+def test_chat_invalid_collection():
+    """Test POST /chat with non-existent collection"""
+    response = client.post(
+        '/chat',
+        headers={'Content-Type': 'application/json'},
+        content=dumps({
+            "question": "How are you?",
+            "mode": "rag"
+        })
+    )
+    assert response.status_code == 422  # Validation error
+    data = response.json()
+    assert 'Collection' in str(data['detail'])

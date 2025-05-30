@@ -1,7 +1,6 @@
 """chat_history module tests"""
 from datetime import datetime, timedelta
 import uuid
-import pytest
 from brevia.chat_history import (
     history,
     add_history,
@@ -33,10 +32,15 @@ def test_add_history():
 
 
 def test_add_history_failure():
-    """Test history_from_db failure"""
-    with pytest.raises(ValueError) as exc:
-        add_history(uuid.uuid4(), 'test', 'who?', 'me')
-    assert str(exc.value) == 'Collection not found'
+    """Test add_history with non-existent collection"""
+    session_id = uuid.uuid4()
+    # When collection doesn't exist, it should
+    # still add the history but with collection_id = None
+    history_item = add_history(session_id, 'non_existent_collection', 'who?', 'me')
+    assert history_item is not None
+    assert history_item.collection_id is None
+    assert history_item.question == 'who?'
+    assert history_item.answer == 'me'
 
 
 def test_get_history():

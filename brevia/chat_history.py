@@ -115,12 +115,14 @@ def add_history(
         return None
 
     with Session(db_connection()) as session:
-        collection_store = CollectionStore.get_by_name(session, collection)
-        if not collection_store:
-            raise ValueError("Collection not found")
+        collection_uuid = None  # Default empty UUID
+        if collection:
+            collection_store = CollectionStore.get_by_name(session, collection)
+            collection_uuid = collection_store.uuid if collection_store else None
+
         chat_history_store = ChatHistoryStore(
             session_id=session_id,
-            collection_id=collection_store.uuid,
+            collection_id=collection_uuid,
             question=question,
             answer=answer,
             cmetadata=metadata,

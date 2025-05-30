@@ -292,17 +292,6 @@ def conversation_chain(
     collection or dataset.
     """
 
-    # Define your desired data structure.
-    class Result(BaseModel):
-        """
-        Result model for the conversation chain output.
-        Attributes:
-            question (str): The question asked in the conversation.
-            answer (str): The answer provided in response to the question.
-        """
-        question: str = Field(description="The question asked in the conversation.")
-        answer: str = Field(description="The answer to the question.")
-
     settings = get_settings()
 
     # Chain to rewrite question with history

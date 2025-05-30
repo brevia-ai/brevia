@@ -4,7 +4,7 @@ This section explores the advanced chat functionalities that enable natural and 
 
 Brevia provides two distinct endpoints for managing conversations:
 
-`/chat`: This endpoint is designed to initiate fluid and natural conversations with the language model. It integrates a conversational memory and chat history system, allowing you to build on previous interactions and create a more engaging experience.
+`/chat`: This endpoint is designed to initiate fluid and natural conversations with the language model. It integrates a conversational memory and chat history system, allowing you to build on previous interactions and create a more engaging experience. It supports both Retrieval-Augmented Generation (RAG) mode, where the model retrieves relevant documents from a specified collection to answer questions, and pure conversational mode, where the model relies solely on chat history and its own knowledge.
 
 `/completion`: This endpoint is ideal for executing single commands and requests. It provides quick and concise responses without the need for conversational context, making it perfect for launching specific tasks or obtaining immediate information.
 
@@ -50,7 +50,7 @@ Initiates a natural conversation with the model.
 **Payloads**:
 
 - `question`: The query you want to ask the model.
-- `collection`: The collection of documents to search for relevant information.
+- `collection`: The collection of documents to search for relevant information (mandatory if `mode` is set to `"rag"`).
 - `mode` (optional): Specifies the chat mode.
     - `"rag"`: Retrieval-Augmented Generation mode. The model answers using information retrieved from the specified collection.
     - `"conversation"`: Pure conversational mode. The model answers based only on the chat history and its own knowledge, without retrieving documents.
@@ -87,8 +87,13 @@ Initiates a natural conversation with the model.
 
 **Additional Optional Parameters**:
 
-- `docs_num`: The number of documents to retrieve for context. If not specified, the default from settings or collection metadata is used.
+For `conversation` and `RAG` modes:
+
 - `streaming`: A boolean flag to enable or disable streaming responses. Default is `False`.
+
+For `rag` mode only:
+
+- `docs_num`: The number of documents to retrieve for context. If not specified, the default from settings or collection metadata is used.
 - `distance_strategy_name`: The name of the distance strategy to use for vector similarity. Options include `euclidean`, `cosine`, and `max`. Default is `cosine`.
 - `filter`: An optional dictionary of metadata to use as a filter for document retrieval.
 - `source_docs`: A boolean flag to specify if the retrieved source documents should be included in the response. Default is `False`.

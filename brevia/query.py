@@ -12,7 +12,7 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_core.vectorstores import VectorStore
 from langchain_core.language_models import BaseChatModel
 from langchain_core.documents import Document
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from brevia.connection import connection_string
 from brevia.collections import single_collection_by_name
 from brevia.models import load_chatmodel, load_embeddings

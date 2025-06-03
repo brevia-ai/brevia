@@ -59,9 +59,14 @@ This will provide:
 * [PgAdmin UI](https://www.pgadmin.org) at http://localhost:4000
 * [PostgreSQL](https://www.postgresql.org) with [`pg_vector`](https://github.com/pgvector/pgvector) running on `localhost:5432`
 
-To use ports other than 8000, 3000, 4000, or 5432, set the environment variables `BREVIA_API_PORT`, `BREVIA_APP_PORT`, `PGVECTOR_PORT`, or `PGADMIN_PORT` in the `.env` file or before running `docker compose up`.
+To use ports other than 8000, 3000, 4000, or 5432, set the environment variables `BREVIA_API_PORT`, `BREVIA_APP_PORT`, `PGVECTOR_PORT`, or `PGADMIN_PORT` in the `.env` file or before running the Docker compose command.
 
-You can also use the `--profile api` option to start only the Brevia API without the Brevia App.
+You can also use:
+
+* `--profile api` option to start only the Brevia API without the Brevia App
+* `--profile admin` option to start only the Postgres+pg_vector and the PgAdmin UI.
+
+Without any `--profile` option, only the Postgres+pg_vector service will start.
 
 ## Create a Brevia Project
 

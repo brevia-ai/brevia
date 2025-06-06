@@ -67,6 +67,7 @@ class ChatParams(BaseModel):
     filter: dict[str, str | dict] | None = None
     source_docs: bool = False
     multiquery: bool = False
+    config: dict | None = None
     search_type: str = "similarity"
     score_threshold: float = 0.0
 
@@ -217,6 +218,8 @@ def conversation_rag_chain(
             - search_type (str): Type of search algorithm to use (def is 'similarity').
             - score_threshold (float): Threshold for filtering documents based on
               relevance scores (default is 0.0).
+            - config (dict | None): Optional configuration dict that can contain
+              completion_llm and followup_llm configs to override defaults.
         answer_callbacks (list[BaseCallbackHandler] | None): List of callback handlers
             for the final LLM answer to enable streaming (default is None).
 
@@ -233,10 +236,15 @@ def conversation_rag_chain(
     prompts = prompts if prompts else {}
 
     # Main LLM configuration
-    qa_llm_conf = collection.cmetadata.get(
-        'qa_completion_llm',
-        dict(settings.qa_completion_llm).copy()
-    )
+    # Check if completion_llm config is provided in chat_params
+    if (chat_params.config
+            and chat_params.config.get('completion_llm')):
+        qa_llm_conf = chat_params.config['completion_llm'].copy()
+    else:
+        qa_llm_conf = collection.cmetadata.get(
+            'qa_completion_llm',
+            dict(settings.qa_completion_llm).copy()
+        )
     qa_llm_conf['callbacks'] = [] if answer_callbacks is None else answer_callbacks
     qa_llm_conf['streaming'] = chat_params.streaming
     chatllm = load_chatmodel(qa_llm_conf)
@@ -249,10 +257,15 @@ def conversation_rag_chain(
     )
 
     # Chain to rewrite question with history
-    fup_llm_conf = collection.cmetadata.get(
-        'qa_followup_llm',
-        dict(settings.qa_followup_llm).copy()
-    )
+    # Check if followup_llm config is provided in chat_params
+    if (chat_params.config
+            and chat_params.config.get('followup_llm')):
+        fup_llm_conf = chat_params.config['followup_llm'].copy()
+    else:
+        fup_llm_conf = collection.cmetadata.get(
+            'qa_followup_llm',
+            dict(settings.qa_followup_llm).copy()
+        )
     fup_llm = load_chatmodel(fup_llm_conf)
     fup_chain = (
         load_condense_prompt(prompts.get('condense'))

@@ -10,6 +10,7 @@ from brevia.settings import get_settings
 class CompletionParams(BaseModel):
     """ Q&A basic conversation chain params """
     prompt: dict | None = None
+    config: dict | None = None
 
 
 def load_custom_prompt(prompt: dict | None):
@@ -28,10 +29,15 @@ def simple_completion_chain(
     """
 
     settings = get_settings()
-    llm_conf = settings.qa_completion_llm.copy()
-    comp_llm = load_chatmodel(llm_conf)
     verbose = settings.verbose_mode
-    # Create chain for follow-up question using chat history (if present)
+
+    # Check if completion_llm config is provided in completion_params
+    if (completion_params.config
+            and completion_params.config.get('completion_llm')):
+        llm_conf = completion_params.config['completion_llm'].copy()
+    else:
+        llm_conf = settings.qa_completion_llm.copy()
+    comp_llm = load_chatmodel(llm_conf)
     completion_llm = LLMChain(
         llm=comp_llm,
         prompt=load_custom_prompt(completion_params.prompt),

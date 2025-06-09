@@ -55,7 +55,7 @@ jobs:
 
       - name: Build and publish to pypi
         if: ${{ !contains(needs.release_job.outputs.version, 'undefined') }}
-        uses: JRubics/poetry-publish@v1.17
+        uses: JRubics/poetry-publish@v2.1
         with:
           pypi_token: ${{ secrets.PYPI_TOKEN }}
 

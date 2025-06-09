@@ -61,7 +61,7 @@ jobs:
 
       - name: Log in to the Container registry
         if: ${{ !contains(needs.release_job.outputs.version, 'undefined') }}
-        uses: docker/login-action@6d4b68b490aef8836e8fb5e50ee7b3bdfa5894f0
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -70,7 +70,7 @@ jobs:
       - name: Build and push Docker image
         if: ${{ !contains(needs.release_job.outputs.version, 'undefined') }}
         id: push
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true

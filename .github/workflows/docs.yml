@@ -36,7 +36,7 @@ jobs:
 
       - name: Load cached venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
@@ -78,7 +78,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Save build cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           key: brevia-docs-${{ hashfiles('.cache/**') }}
           path: .cache

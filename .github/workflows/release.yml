@@ -20,7 +20,7 @@ env:
 
 jobs:
   release_job:
-    uses: bedita/github-workflows/.github/workflows/release.yml@v1
+    uses: bedita/github-workflows/.github/workflows/release.yml@v2
     with:
       main_branch: 'main'
       dist_branches: '["main"]'

@@ -14,6 +14,7 @@ class CompletionBody(CompletionParams):
     """ /completion request body """
     text: str
     prompt: dict | None = None
+    config: dict | None = None
     token_data: bool = False
 
 

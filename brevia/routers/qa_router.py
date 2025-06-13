@@ -1,8 +1,8 @@
 """API endpoints for question answering and search"""
 import asyncio
-from glom import glom
 from typing import Annotated
 from typing_extensions import Self
+from glom import glom
 from pydantic import Field, model_validator
 from langchain.callbacks import AsyncIteratorCallbackHandler
 from langchain.chains.base import Chain
@@ -39,6 +39,7 @@ class ChatBody(ChatParams):
     collection: str | None = None
     chat_history: list = []
     chat_lang: str | None = None
+    config: dict | None = None
     mode: str = Field(pattern='^(rag|conversation)$', default='rag')
     token_data: bool = False
 

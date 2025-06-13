@@ -3,13 +3,14 @@ from langchain.chains.base import Chain
 from langchain.chains.llm import LLMChain
 from langchain_core.prompts.loading import load_prompt_from_config
 from pydantic import BaseModel
-from brevia.models import load_chatmodel
+from brevia.models import load_chatmodel, get_model_config
 from brevia.settings import get_settings
 
 
 class CompletionParams(BaseModel):
     """ Q&A basic conversation chain params """
     prompt: dict | None = None
+    config: dict | None = None
 
 
 def load_custom_prompt(prompt: dict | None):
@@ -28,10 +29,14 @@ def simple_completion_chain(
     """
 
     settings = get_settings()
-    llm_conf = settings.qa_completion_llm.copy()
-    comp_llm = load_chatmodel(llm_conf)
     verbose = settings.verbose_mode
-    # Create chain for follow-up question using chat history (if present)
+
+    llm_conf = get_model_config(
+        'qa_completion_llm',
+        user_config=completion_params.config,
+        default=settings.qa_completion_llm.copy()
+    )
+    comp_llm = load_chatmodel(llm_conf)
     completion_llm = LLMChain(
         llm=comp_llm,
         prompt=load_custom_prompt(completion_params.prompt),

@@ -15,7 +15,7 @@ from langchain_core.documents import Document
 from pydantic import BaseModel
 from brevia.connection import connection_string
 from brevia.collections import single_collection_by_name
-from brevia.models import load_chatmodel, load_embeddings
+from brevia.models import load_chatmodel, load_embeddings, get_model_config
 from brevia.prompts import load_qa_prompt, load_condense_prompt
 from brevia.settings import get_settings
 from brevia.utilities.types import load_type
@@ -67,6 +67,7 @@ class ChatParams(BaseModel):
     filter: dict[str, str | dict] | None = None
     source_docs: bool = False
     multiquery: bool = False
+    config: dict | None = None
     search_type: str = "similarity"
     score_threshold: float = 0.0
 
@@ -217,6 +218,8 @@ def conversation_rag_chain(
             - search_type (str): Type of search algorithm to use (def is 'similarity').
             - score_threshold (float): Threshold for filtering documents based on
               relevance scores (default is 0.0).
+            - config (dict | None): Optional configuration dict that can contain
+              completion_llm and followup_llm configs to override defaults.
         answer_callbacks (list[BaseCallbackHandler] | None): List of callback handlers
             for the final LLM answer to enable streaming (default is None).
 
@@ -232,10 +235,11 @@ def conversation_rag_chain(
     prompts = collection.cmetadata.get('prompts', {})
     prompts = prompts if prompts else {}
 
-    # Main LLM configuration
-    qa_llm_conf = collection.cmetadata.get(
+    # Main LLM configuration using get_model_config
+    qa_llm_conf = get_model_config(
         'qa_completion_llm',
-        dict(settings.qa_completion_llm).copy()
+        user_config=chat_params.config,
+        db_metadata=collection.cmetadata
     )
     qa_llm_conf['callbacks'] = [] if answer_callbacks is None else answer_callbacks
     qa_llm_conf['streaming'] = chat_params.streaming
@@ -248,10 +252,11 @@ def conversation_rag_chain(
         llm=chatllm
     )
 
-    # Chain to rewrite question with history
-    fup_llm_conf = collection.cmetadata.get(
+    # Chain to rewrite question with history using get_model_config
+    fup_llm_conf = get_model_config(
         'qa_followup_llm',
-        dict(settings.qa_followup_llm).copy()
+        user_config=chat_params.config,
+        db_metadata=collection.cmetadata
     )
     fup_llm = load_chatmodel(fup_llm_conf)
     fup_chain = (
@@ -292,10 +297,13 @@ def conversation_chain(
     collection or dataset.
     """
 
-    settings = get_settings()
-
     # Chain to rewrite question with history
-    fup_llm_conf = dict(settings.qa_followup_llm).copy()
+    # Check if followup_llm config is provided in chat_params
+    fup_llm_conf = get_model_config(
+        'qa_followup_llm',
+        user_config=chat_params.config
+    )
+
     fup_llm = load_chatmodel(fup_llm_conf)
     fup_chain = (
         load_condense_prompt()
@@ -303,7 +311,13 @@ def conversation_chain(
         | StrOutputParser()
     )
 
-    llm_conf = dict(settings.qa_completion_llm).copy()
+    # Main LLM configuration
+    # Check if completion_llm config is provided in chat_params
+    llm_conf = get_model_config(
+        'qa_completion_llm',
+        user_config=chat_params.config
+    )
+
     llm_conf['callbacks'] = [] if answer_callbacks is None else answer_callbacks
     llm_conf['streaming'] = chat_params.streaming
 

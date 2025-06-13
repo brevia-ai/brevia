@@ -1,5 +1,6 @@
 """Utilities to create langchain LLM and Chat Model instances."""
 from abc import ABC, abstractmethod
+from glom import glom
 from typing import Any
 from langchain.chat_models.base import init_chat_model
 from langchain_core.embeddings import Embeddings
@@ -27,6 +28,32 @@ LOREM_IPSUM = """{
     "answer": "Lorem ipsum dolor sit amet, consectetur adipisici elit,
               sed eiusmod tempor incidunt ut labore et dolore magna aliqua."
 }"""
+
+
+def get_model_config(
+    key: str,
+    user_config: dict | None = None,
+    db_metadata: dict | None = None,
+    default: object = None,
+) -> object:
+    """
+    Retrieve a model configuration value by searching in user config, db metadata,
+    and settings, in order. Uses glom for safe nested lookup.
+    """
+    # Check user config and db metadata
+    for source in [user_config, db_metadata]:
+        if source is not None:
+            value = glom(source, key, default=None)
+            if value is not None:
+                return value
+
+    # Check settings only if it's a known key
+    settings = get_settings()
+    if hasattr(settings, key):
+        value = getattr(settings, key)
+        return value.copy() if hasattr(value, "copy") else value
+
+    return default
 
 
 def load_llm(config: dict) -> BaseLLM:

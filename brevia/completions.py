@@ -3,7 +3,7 @@ from langchain.chains.base import Chain
 from langchain.chains.llm import LLMChain
 from langchain_core.prompts.loading import load_prompt_from_config
 from pydantic import BaseModel
-from brevia.models import load_chatmodel
+from brevia.models import load_chatmodel, get_model_config
 from brevia.settings import get_settings
 
 
@@ -31,12 +31,11 @@ def simple_completion_chain(
     settings = get_settings()
     verbose = settings.verbose_mode
 
-    # Check if completion_llm config is provided in completion_params
-    if (completion_params.config
-            and completion_params.config.get('completion_llm')):
-        llm_conf = completion_params.config['completion_llm'].copy()
-    else:
-        llm_conf = settings.qa_completion_llm.copy()
+    llm_conf = get_model_config(
+        'qa_completion_llm',
+        user_config=completion_params.config,
+        default=settings.qa_completion_llm.copy()
+    )
     comp_llm = load_chatmodel(llm_conf)
     completion_llm = LLMChain(
         llm=comp_llm,

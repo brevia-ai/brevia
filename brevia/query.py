@@ -15,7 +15,7 @@ from langchain_core.documents import Document
 from pydantic import BaseModel
 from brevia.connection import connection_string
 from brevia.collections import single_collection_by_name
-from brevia.models import load_chatmodel, load_embeddings
+from brevia.models import load_chatmodel, load_embeddings, get_model_config
 from brevia.prompts import load_qa_prompt, load_condense_prompt
 from brevia.settings import get_settings
 from brevia.utilities.types import load_type
@@ -235,16 +235,12 @@ def conversation_rag_chain(
     prompts = collection.cmetadata.get('prompts', {})
     prompts = prompts if prompts else {}
 
-    # Main LLM configuration
-    # Check if completion_llm config is provided in chat_params
-    if (chat_params.config
-            and chat_params.config.get('completion_llm')):
-        qa_llm_conf = chat_params.config['completion_llm'].copy()
-    else:
-        qa_llm_conf = collection.cmetadata.get(
-            'qa_completion_llm',
-            dict(settings.qa_completion_llm).copy()
-        )
+    # Main LLM configuration using get_model_config
+    qa_llm_conf = get_model_config(
+        'qa_completion_llm',
+        user_config=chat_params.config,
+        db_metadata=collection.cmetadata
+    )
     qa_llm_conf['callbacks'] = [] if answer_callbacks is None else answer_callbacks
     qa_llm_conf['streaming'] = chat_params.streaming
     chatllm = load_chatmodel(qa_llm_conf)
@@ -256,16 +252,12 @@ def conversation_rag_chain(
         llm=chatllm
     )
 
-    # Chain to rewrite question with history
-    # Check if followup_llm config is provided in chat_params
-    if (chat_params.config
-            and chat_params.config.get('followup_llm')):
-        fup_llm_conf = chat_params.config['followup_llm'].copy()
-    else:
-        fup_llm_conf = collection.cmetadata.get(
-            'qa_followup_llm',
-            dict(settings.qa_followup_llm).copy()
-        )
+    # Chain to rewrite question with history using get_model_config
+    fup_llm_conf = get_model_config(
+        'qa_followup_llm',
+        user_config=chat_params.config,
+        db_metadata=collection.cmetadata
+    )
     fup_llm = load_chatmodel(fup_llm_conf)
     fup_chain = (
         load_condense_prompt(prompts.get('condense'))

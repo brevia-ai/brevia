@@ -297,8 +297,6 @@ def conversation_chain(
     collection or dataset.
     """
 
-    settings = get_settings()
-
     # Chain to rewrite question with history
     # Check if followup_llm config is provided in chat_params
     fup_llm_conf = get_model_config(

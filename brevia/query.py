@@ -301,11 +301,10 @@ def conversation_chain(
 
     # Chain to rewrite question with history
     # Check if followup_llm config is provided in chat_params
-    if (chat_params.config
-            and chat_params.config.get('followup_llm')):
-        fup_llm_conf = chat_params.config['followup_llm'].copy()
-    else:
-        fup_llm_conf = dict(settings.qa_followup_llm).copy()
+    fup_llm_conf = get_model_config(
+        'qa_followup_llm',
+        user_config=chat_params.config
+    )
 
     fup_llm = load_chatmodel(fup_llm_conf)
     fup_chain = (
@@ -316,11 +315,10 @@ def conversation_chain(
 
     # Main LLM configuration
     # Check if completion_llm config is provided in chat_params
-    if (chat_params.config
-            and chat_params.config.get('completion_llm')):
-        llm_conf = chat_params.config['completion_llm'].copy()
-    else:
-        llm_conf = dict(settings.qa_completion_llm).copy()
+    llm_conf = get_model_config(
+        'qa_completion_llm',
+        user_config=chat_params.config
+    )
 
     llm_conf['callbacks'] = [] if answer_callbacks is None else answer_callbacks
     llm_conf['streaming'] = chat_params.streaming

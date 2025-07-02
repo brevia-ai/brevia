@@ -61,34 +61,24 @@ def get_jobs(filter: JobsFilter) -> dict:  # pylint: disable=redefined-builtin
     Read async jobs with optional filters using pagination data in response.
     """
 
-    # Handle date filters - only apply if explicitly provided
-    filter_min_date = text('1 = 1')  # always true by default
-    filter_max_date = text('1 = 1')  # always true by default
-
-    if filter.min_date:
-        min_date = date_filter(filter.min_date, 'min')
-        filter_min_date = AsyncJobsStore.created >= min_date
-
-    if filter.max_date:
-        max_date = date_filter(filter.max_date, 'max')
-        filter_max_date = AsyncJobsStore.created <= max_date
-
-    filter_service = text('1 = 1')  # (default) always true expression
+    min_date = date_filter(filter.min_date, 'min')
+    max_date = date_filter(filter.max_date, 'max')
+    filter_service = AsyncJobsStore.service is not None
     if filter.service:
         filter_service = AsyncJobsStore.service == filter.service
     filter_completed = text('1 = 1')  # (default) always true expression
     if filter.completed is not None:
         filter_completed = (
-            AsyncJobsStore.completed.is_not(None)
+            AsyncJobsStore.completed is not None
             if filter.completed
-            else AsyncJobsStore.completed.is_(None)
+            else AsyncJobsStore.completed is None
         )
 
     with Session(db_connection()) as session:
         query = get_jobs_query(
             session=session,
-            filter_min_date=filter_min_date,
-            filter_max_date=filter_max_date,
+            filter_min_date=AsyncJobsStore.created >= min_date,
+            filter_max_date=AsyncJobsStore.created <= max_date,
             filter_service=filter_service,
             filter_completed=filter_completed,
         )

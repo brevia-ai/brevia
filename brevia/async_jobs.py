@@ -2,12 +2,15 @@
 import logging
 import time
 from datetime import datetime
-import sqlalchemy
+from sqlalchemy import BinaryExpression, Column, desc, func, String, text
+from pydantic import BaseModel as PydanticModel
 from sqlalchemy.dialects.postgresql import JSON, TIMESTAMP, SMALLINT
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, Query
 from langchain_community.vectorstores.pgembedding import BaseModel
 from brevia.connection import db_connection
 from brevia.services import BaseService
+from brevia.utilities.dates import date_filter
+from brevia.utilities.json_api import query_data_pagination
 from brevia.utilities.types import load_type
 
 MAX_DURATION = 120  # default max duration is 120 min / 2hr
@@ -19,28 +22,111 @@ class AsyncJobsStore(BaseModel):
     """ Async Jobs table """
     __tablename__ = "async_jobs"
 
-    service = sqlalchemy.Column(sqlalchemy.String(), nullable=False)
-    payload = sqlalchemy.Column(JSON())
-    expires = sqlalchemy.Column(TIMESTAMP(timezone=False))
-    created = sqlalchemy.Column(
+    service = Column(String(), nullable=False)
+    payload = Column(JSON())
+    expires = Column(TIMESTAMP(timezone=False))
+    created = Column(
         TIMESTAMP(timezone=False),
         nullable=False,
-        server_default=sqlalchemy.func.current_timestamp(),
+        server_default=func.current_timestamp(),
     )
-    completed = sqlalchemy.Column(TIMESTAMP(timezone=False))
-    locked_until = sqlalchemy.Column(TIMESTAMP(timezone=False))
-    max_attempts = sqlalchemy.Column(
+    completed = Column(TIMESTAMP(timezone=False))
+    locked_until = Column(TIMESTAMP(timezone=False))
+    max_attempts = Column(
         SMALLINT(),
         nullable=False,
         server_default='1',
     )
-    result = sqlalchemy.Column(JSON(), nullable=True)
+    result = Column(JSON(), nullable=True)
 
 
 def single_job(uuid: str) -> (AsyncJobsStore | None):
     """ Get single job by UUID """
     with Session(db_connection()) as session:
         return session.get(AsyncJobsStore, uuid)
+
+
+class JobsFilter(PydanticModel):
+    """ Jobs filter """
+    min_date: str | None = None
+    max_date: str | None = None
+    service: str | None = None
+    completed: bool | None = None
+    page: int = 1
+    page_size: int = 50
+
+
+def get_jobs(filter: JobsFilter) -> dict:  # pylint: disable=redefined-builtin
+    """
+    Read async jobs with optional filters using pagination data in response.
+    """
+
+    # Handle date filters - only apply if explicitly provided
+    filter_min_date = text('1 = 1')  # always true by default
+    filter_max_date = text('1 = 1')  # always true by default
+
+    if filter.min_date:
+        min_date = date_filter(filter.min_date, 'min')
+        filter_min_date = AsyncJobsStore.created >= min_date
+
+    if filter.max_date:
+        max_date = date_filter(filter.max_date, 'max')
+        filter_max_date = AsyncJobsStore.created <= max_date
+
+    filter_service = text('1 = 1')  # (default) always true expression
+    if filter.service:
+        filter_service = AsyncJobsStore.service == filter.service
+    filter_completed = text('1 = 1')  # (default) always true expression
+    if filter.completed is not None:
+        filter_completed = (
+            AsyncJobsStore.completed.is_not(None)
+            if filter.completed
+            else AsyncJobsStore.completed.is_(None)
+        )
+
+    with Session(db_connection()) as session:
+        query = get_jobs_query(
+            session=session,
+            filter_min_date=filter_min_date,
+            filter_max_date=filter_max_date,
+            filter_service=filter_service,
+            filter_completed=filter_completed,
+        )
+        result = query_data_pagination(
+            query=query,
+            page=filter.page,
+            page_size=filter.page_size
+        )
+        return result
+
+
+def get_jobs_query(
+    session: Session,
+    filter_min_date: BinaryExpression,
+    filter_max_date: BinaryExpression,
+    filter_service: BinaryExpression,
+    filter_completed: BinaryExpression,
+) -> Query:
+    """
+    Constructs a SQLAlchemy query to retrieve async jobs based on specified filters.
+    """
+
+    query = (
+        session.query(
+            AsyncJobsStore.uuid,
+            AsyncJobsStore.service,
+            AsyncJobsStore.payload,
+            AsyncJobsStore.expires,
+            AsyncJobsStore.created,
+            AsyncJobsStore.completed,
+            AsyncJobsStore.locked_until,
+            AsyncJobsStore.max_attempts,
+            AsyncJobsStore.result,
+        )
+        .filter(filter_min_date, filter_max_date, filter_service, filter_completed)
+        .order_by(desc(AsyncJobsStore.created))
+    )
+    return query
 
 
 def create_job(

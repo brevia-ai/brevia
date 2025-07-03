@@ -1,12 +1,13 @@
 """async_jobs module tests"""
 from datetime import datetime, timedelta
+import time
 import pytest
 from sqlalchemy.orm import Session
 from brevia.connection import db_connection
 from brevia.async_jobs import (
     single_job, create_job, complete_job,
     save_job_result, create_service, lock_job_service,
-    is_job_available, run_job_service,
+    is_job_available, run_job_service, get_jobs, JobsFilter,
 )
 from brevia.services import BaseService
 
@@ -129,3 +130,242 @@ def test_run_job_failure():
     exp = 'ValueError: Class "NotExistingService" not found'
     assert 'error' in retrieved_job.result
     assert retrieved_job.result['error'].startswith(exp)
+
+
+def test_get_jobs_no_filters():
+    """Test get_jobs function without filters"""
+    # Create some test jobs
+    job1 = create_job('TestService1', {'test': 'data1'})
+    job2 = create_job('TestService2', {'test': 'data2'})
+
+    # Get jobs without filters
+    filter_obj = JobsFilter()
+    result = get_jobs(filter_obj)
+
+    # Verify response structure
+    assert isinstance(result, dict)
+    assert 'data' in result
+    assert 'meta' in result
+    assert 'pagination' in result['meta']
+
+    # Verify pagination structure
+    pagination = result['meta']['pagination']
+    assert 'page' in pagination
+    assert 'count' in pagination
+    assert 'page_count' in pagination
+
+    # Verify we have at least our test jobs
+    assert len(result['data']) >= 2
+
+    # Verify job data structure
+    job_uuids = [str(job1.uuid), str(job2.uuid)]
+    found_jobs = [job for job in result['data'] if str(job['uuid']) in job_uuids]
+    assert len(found_jobs) >= 2
+
+
+def test_get_jobs_with_service_filter():
+    """Test get_jobs function with service filter"""
+    # Create jobs with different services
+    service_name = f'FilterTestService_{int(time.time())}'
+    job1 = create_job(service_name, {'test': 'data1'})
+    job2 = create_job('DifferentService', {'test': 'data2'})
+
+    # Filter by specific service
+    filter_obj = JobsFilter(service=service_name)
+    result = get_jobs(filter_obj)
+
+    assert 'data' in result
+    assert len(result['data']) >= 1
+
+    # All returned jobs should have the specified service
+    for job in result['data']:
+        if str(job['uuid']) == str(job1.uuid):
+            assert job['service'] == service_name
+
+    # Verify the other job is not included when filtering
+    other_job_found = any(str(job['uuid']) == str(job2.uuid) for job in result['data'])
+    if other_job_found:
+        # If found, it should also have the same service (which shouldn't happen)
+        other_job_service = next(
+            job['service'] for job in result['data']
+            if str(job['uuid']) == str(job2.uuid)
+        )
+        assert other_job_service == service_name
+    else:
+        # This is the expected case - other job should not be found
+        assert not other_job_found
+
+
+def test_get_jobs_with_completed_filter():
+    """Test get_jobs function with completed filter"""
+    # Create jobs and complete one of them
+    job1 = create_job('CompletedTestService', {'test': 'completed'})
+    job2 = create_job('IncompleteTestService', {'test': 'incomplete'})
+
+    # Complete the first job
+    complete_job(str(job1.uuid), {'result': 'success'})
+
+    # Filter for completed jobs
+    filter_obj = JobsFilter(completed=True)
+    result = get_jobs(filter_obj)
+
+    assert 'data' in result
+
+    # Find our completed job in the results
+    completed_job_found = None
+    for job in result['data']:
+        if str(job['uuid']) == str(job1.uuid):
+            completed_job_found = job
+            break
+
+    assert completed_job_found is not None
+    assert completed_job_found['completed'] is not None
+
+    # Filter for incomplete jobs
+    filter_obj = JobsFilter(completed=False)
+    result = get_jobs(filter_obj)
+
+    assert 'data' in result
+
+    # Find our incomplete job in the results
+    incomplete_job_found = None
+    for job in result['data']:
+        if str(job['uuid']) == str(job2.uuid):
+            incomplete_job_found = job
+            break
+
+    assert incomplete_job_found is not None
+    assert incomplete_job_found['completed'] is None
+
+
+def test_get_jobs_with_date_filters():
+    """Test get_jobs function with date filters"""
+    # Create a job
+    job = create_job('DateTestService', {'test': 'date_filter'})
+
+    # Get current date for filtering
+    yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+    tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+
+    # Test with min_date filter
+    filter_obj = JobsFilter(min_date=yesterday)
+    result = get_jobs(filter_obj)
+
+    assert 'data' in result
+    # Our job should be included since it was created today (after yesterday)
+    job_found = any(
+        str(job_data['uuid']) == str(job.uuid) for job_data in result['data']
+    )
+    assert job_found
+
+    # Test with max_date filter
+    filter_obj = JobsFilter(max_date=tomorrow)
+    result = get_jobs(filter_obj)
+
+    assert 'data' in result
+    # Our job should be included since it was created today (before tomorrow)
+    job_found = any(
+        str(job_data['uuid']) == str(job.uuid) for job_data in result['data']
+    )
+    assert job_found
+
+    # Test with both min_date and max_date
+    filter_obj = JobsFilter(min_date=yesterday, max_date=tomorrow)
+    result = get_jobs(filter_obj)
+
+    assert 'data' in result
+    job_found = any(
+        str(job_data['uuid']) == str(job.uuid) for job_data in result['data']
+    )
+    assert job_found
+
+    # Test with restrictive date range (future dates)
+    future_date = (datetime.now() + timedelta(days=2)).strftime('%Y-%m-%d')
+    filter_obj = JobsFilter(min_date=future_date)
+    result = get_jobs(filter_obj)
+
+    # Our job should not be included since it was created before the future date
+    job_found = any(
+        str(job_data['uuid']) == str(job.uuid) for job_data in result['data']
+    )
+    assert not job_found
+
+
+def test_get_jobs_with_pagination():
+    """Test get_jobs function with pagination"""
+    # Create multiple jobs for pagination testing
+    jobs = []
+    for i in range(5):
+        job = create_job(f'PaginationTestService_{i}', {'test': f'pagination_{i}'})
+        jobs.append(job)
+
+    # Test with custom page size
+    filter_obj = JobsFilter(page=1, page_size=3)
+    result = get_jobs(filter_obj)
+
+    assert 'data' in result
+    assert 'meta' in result
+    assert 'pagination' in result['meta']
+
+    pagination = result['meta']['pagination']
+    assert pagination['page'] == 1
+    assert len(result['data']) <= 3
+
+    # Test second page
+    filter_obj = JobsFilter(page=2, page_size=3)
+    result = get_jobs(filter_obj)
+
+    pagination = result['meta']['pagination']
+    assert pagination['page'] == 2
+
+
+def test_get_jobs_with_multiple_filters():
+    """Test get_jobs function with multiple filters combined"""
+    # Create a specific job for this test
+    service_name = f'MultiFilterTest_{int(time.time())}'
+    job = create_job(service_name, {'test': 'multi_filter'})
+
+    yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+    tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
+
+    # Test combining service, completed, and date filters
+    filter_obj = JobsFilter(
+        service=service_name,
+        completed=False,
+        min_date=yesterday,
+        max_date=tomorrow,
+        page_size=10
+    )
+    result = get_jobs(filter_obj)
+
+    assert 'data' in result
+    assert 'meta' in result
+    assert 'pagination' in result['meta']
+
+    # Find our specific job in the results
+    target_job = None
+    for job_data in result['data']:
+        if str(job_data['uuid']) == str(job.uuid):
+            target_job = job_data
+            break
+
+    assert target_job is not None
+    assert target_job['service'] == service_name
+    assert target_job['completed'] is None  # Should be incomplete
+
+
+def test_get_jobs_empty_results():
+    """Test get_jobs function with filters that return no results"""
+    # Use a service name that doesn't exist
+    non_existent_service = f'NonExistentService_{int(time.time())}'
+
+    filter_obj = JobsFilter(service=non_existent_service)
+    result = get_jobs(filter_obj)
+
+    assert 'data' in result
+    assert 'meta' in result
+    assert 'pagination' in result['meta']
+    assert len(result['data']) == 0
+
+    pagination = result['meta']['pagination']
+    assert pagination['count'] == 0

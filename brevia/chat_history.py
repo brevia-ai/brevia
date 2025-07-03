@@ -1,7 +1,6 @@
 """Chat history table & utilities"""
 from typing import List
 import logging
-from datetime import datetime, time
 from langchain_community.vectorstores.pgembedding import BaseModel, CollectionStore
 from pydantic import BaseModel as PydanticModel
 import sqlalchemy
@@ -12,6 +11,7 @@ from sqlalchemy.sql.expression import BinaryExpression
 from brevia.connection import db_connection
 from brevia.models import load_embeddings
 from brevia.settings import get_settings
+from brevia.utilities.dates import date_filter
 from brevia.utilities.json_api import query_data_pagination
 from brevia.utilities.uuid import is_valid_uuid
 
@@ -145,31 +145,6 @@ class ChatHistoryFilter(PydanticModel):
     page_size: int = 50
 
 
-def get_date_filter(date_str, type_str):
-    """
-    Parses a date string into a datetime object with combined time information.
-
-    Args:
-        date_str (str): A string representing a date in the format 'YYYY-MM-DD'.
-            None if no specific date is provided.
-
-        type_str (str): Indicates whether to create a maximum or minimum date filter.
-            Valid values are 'max' or 'min'.
-    """
-    max_date = datetime.now()
-    min_date = datetime.fromtimestamp(0)
-
-    if date_str is not None:
-        parsed_date = datetime.strptime(date_str, '%Y-%m-%d')
-        if type_str == 'max':
-            max_date = parsed_date
-            return datetime.combine(max_date, time.max)
-        min_date = parsed_date
-        return datetime.combine(min_date, time.min)
-
-    return max_date if type_str == 'max' else min_date
-
-
 def get_collection_filter(collection_name):
     """
     Constructs a filter expression based on the collection name.
@@ -196,8 +171,8 @@ def get_history(filter: ChatHistoryFilter) -> dict:  # pylint: disable=redefined
     Read chat history with optional filters using pagination data in response.
     """
 
-    min_date = get_date_filter(filter.min_date, 'min')
-    max_date = get_date_filter(filter.max_date, 'max')
+    min_date = date_filter(filter.min_date, 'min')
+    max_date = date_filter(filter.max_date, 'max')
     filter_collection = get_collection_filter(filter.collection)
     filter_session_id = get_session_filter(filter.session_id)
 
@@ -223,8 +198,8 @@ def get_history_sessions(filter: ChatHistoryFilter) -> dict:
     Read chat history with optional filters using pagination data in response.
     """
 
-    min_date = get_date_filter(filter.min_date, 'min')
-    max_date = get_date_filter(filter.max_date, 'max')
+    min_date = date_filter(filter.min_date, 'min')
+    max_date = date_filter(filter.max_date, 'max')
     filter_collection = get_collection_filter(filter.collection)
 
     with Session(db_connection()) as session:

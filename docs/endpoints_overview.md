@@ -308,6 +308,55 @@ It works only with `form-data` input that must include a `file` parameter with t
 
 ## Async jobs endpoints
 
+### GET `/jobs`
+
+Retrieve a list of all analysis jobs with optional filtering and pagination.
+
+**Optional Parameters**:
+
+- `min_date`: Filter jobs created after this date (YYYY-MM-DD format)
+- `max_date`: Filter jobs created before this date (YYYY-MM-DD format)
+- `service`: Filter jobs by service name (e.g., "brevia.services.SummarizeFileService")
+- `completed`: Filter by completion status (true for completed jobs, false for pending jobs)
+- `page`: Page number for pagination (default: 1)
+- `page_size`: Number of items per page (default: 50)
+
+**Example usage**:
+
+```http
+GET /jobs?completed=true&page=1&page_size=20
+GET /jobs?service=brevia.services.SummarizeFileService&min_date=2024-01-01
+```
+
+**Example response**:
+
+```JSON
+{
+    "data": [
+        {
+            "uuid": "7ca33644-5ddb-4747-84c0-8818715a65f8",
+            "service": "brevia.services.SummarizeFileService",
+            "created": "2024-02-29T16:31:25.546740",
+            "completed": "2024-02-29T17:31:27.700342",
+            "expires": "2024-02-29T21:31:25",
+            "max_attempts": 1,
+            "payload": {
+                "file_path": "/tmp/tmpgns0ci85.pdf",
+                "chain_type": "",
+                "token_data": false
+            },
+            "result": {
+                "output": "Lorem ipsum...."
+            }
+        }
+    ],
+    "page": 1,
+    "page_size": 20,
+    "total_pages": 5,
+    "total_items": 100
+}
+```
+
 ### GET `/jobs/{uuid}`
 
 Retrieve aync job data using its `uuid`

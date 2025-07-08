@@ -41,6 +41,13 @@ def upgrade() -> None:
         existing_nullable=True,
     )
     op.alter_column(
+        'async_jobs', 'completed',
+        existing_type=postgresql.TIMESTAMP(),
+        type_=postgresql.TIMESTAMP(timezone=True),
+        existing_comment='Timestamp at which this job was marked as completed',
+        existing_nullable=True,
+    )
+    op.alter_column(
         'chat_history', 'created',
         existing_type=postgresql.TIMESTAMP(),
         type_=sa.DateTime(timezone=True),
@@ -92,6 +99,13 @@ def downgrade() -> None:
         type_=postgresql.TIMESTAMP(),
         existing_nullable=False,
         existing_server_default=sa.text('CURRENT_TIMESTAMP'),
+    )
+    op.alter_column(
+        'async_jobs', 'completed',
+        existing_type=postgresql.TIMESTAMP(timezone=True),
+        type_=postgresql.TIMESTAMP(),
+        existing_comment='Timestamp at which this job was marked as completed',
+        existing_nullable=True,
     )
     op.alter_column(
         'async_jobs', 'locked_until',

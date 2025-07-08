@@ -18,3 +18,8 @@ def upgrade(revision="head"):
 
 def downgrade(revision):
     command.downgrade(alembic_cfg, revision)
+
+
+def revision(message, autogenerate=False):
+    """Create a new revision file"""
+    command.revision(alembic_cfg, message=message, autogenerate=autogenerate)

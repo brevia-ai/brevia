@@ -5,6 +5,7 @@ from os import getcwd, path
 from logging import config
 import click
 from brevia.alembic import current, upgrade, downgrade
+from brevia.alembic import revision as create_revision
 from brevia.index import update_links_documents
 from brevia.utilities import files_import, run_service, collections_io
 from brevia.tokens import create_token
@@ -37,6 +38,20 @@ def db_upgrade_cmd(revision):
 def db_downgrade_cmd(revision):
     """Revert to a previous database revision"""
     downgrade(revision)
+
+
+@click.command()
+@click.option("-m", "--message", required=True, help="Revision message")
+@click.option(
+    "--autogenerate",
+    is_flag=True,
+    default=False,
+    help="Autogenerate migration from model changes"
+)
+def db_revision_cmd(message, autogenerate):
+    """Create a new database revision"""
+    create_revision(message, autogenerate=autogenerate)
+    print(f"New revision created: {message}")
 
 
 @click.command()

@@ -1,4 +1,5 @@
 """Commands module tests"""
+import glob
 from pathlib import Path
 from os import unlink
 from os.path import exists
@@ -8,6 +9,7 @@ from brevia.commands import (
     db_current_cmd,
     db_upgrade_cmd,
     db_downgrade_cmd,
+    db_revision_cmd,
     export_collection,
     import_collection,
     import_file,
@@ -145,3 +147,40 @@ def test_update_collection_links():
         collection.name,
     ])
     assert result.exit_code == 0
+
+
+def test_db_revision_cmd():
+    """ Test db_revision_cmd function """
+    runner = CliRunner()
+    result = runner.invoke(db_revision_cmd, [
+        '--message',
+        'Test revision message',
+    ])
+    assert result.exit_code == 0
+    assert 'New revision created: Test revision message' in result.output
+
+    # Clean up generated migration files
+    versions_dir = f'{Path(__file__).parent.parent}/brevia/alembic/versions'
+    migration_files = glob.glob(f'{versions_dir}/*_test_revision_message.py')
+    for file_path in migration_files:
+        if exists(file_path):
+            unlink(file_path)
+
+
+def test_db_revision_cmd_with_autogenerate():
+    """ Test db_revision_cmd function with autogenerate flag """
+    runner = CliRunner()
+    result = runner.invoke(db_revision_cmd, [
+        '--message',
+        'Test autogenerate revision',
+        '--autogenerate',
+    ])
+    assert result.exit_code == 0
+    assert 'New revision created: Test autogenerate revision' in result.output
+
+    # Clean up generated migration files
+    versions_dir = f'{Path(__file__).parent.parent}/brevia/alembic/versions'
+    migration_files = glob.glob(f'{versions_dir}/*_test_autogenerate_revision.py')
+    for file_path in migration_files:
+        if exists(file_path):
+            unlink(file_path)

@@ -4,6 +4,15 @@ from sqlalchemy import pool
 from alembic import context
 from sqlalchemy_utils import database_exists, create_database
 from brevia.connection import connection_string
+# Import models for autogenerate support
+from brevia.chat_history import ChatHistoryStore  # noqa: F401
+from brevia.async_jobs import AsyncJobsStore  # noqa: F401
+from brevia.settings import ConfigStore  # noqa: F401
+from langchain_community.vectorstores.pgembedding import (  # noqa: F401
+    BaseModel,
+    CollectionStore,
+    EmbeddingStore,
+)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -28,9 +37,8 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
+# Models are imported at the top of the file
+target_metadata = BaseModel.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

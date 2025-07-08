@@ -160,6 +160,20 @@ db_upgrade
 
 This will run migrations using [Alembic](https://alembic.sqlalchemy.org/en/latest/) (already installed as a dependency) to create or update the required tables in your database.
 
+### Creating New Database Revisions
+
+If you need to create new database migrations after modifying the database models, you can use the `db_revision` command:
+
+```bash
+# Create a new revision with manual changes
+db_revision --message "Add new column to users table"
+
+# Create a new revision with automatic detection of model changes
+db_revision --message "Update user model" --autogenerate
+```
+
+The `--autogenerate` flag will automatically detect changes in your SQLAlchemy models and generate the appropriate migration code. Without this flag, you'll need to manually write the migration code in the generated revision file.
+
 ## Launch
 
 You are now ready to go. Simply run from the virtual environment:

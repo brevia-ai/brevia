@@ -4,9 +4,11 @@ from functools import lru_cache
 from typing import Annotated, Any
 from os import environ, path, getcwd
 from urllib import parse
-from sqlalchemy import NullPool, create_engine, Column, String, func, inspect
+from sqlalchemy import (
+    TIMESTAMP, NullPool, create_engine, Column, String, func, inspect,
+    UniqueConstraint,
+)
 from sqlalchemy.engine import Connection
-from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.orm import Session
 from langchain_community.vectorstores.pgembedding import BaseModel
 from langchain.globals import set_verbose
@@ -210,19 +212,26 @@ class ConfigStore(BaseModel):
     # pylint: disable=too-few-public-methods,not-callable
     """ Config table """
     __tablename__ = "config"
+    __table_args__ = (
+        UniqueConstraint('config_key', name='uq_config_key'),
+    )
 
-    config_key = Column(String(), nullable=False, unique=True)
-    config_val = Column(String(), nullable=False)
+    config_key = Column(
+        String(), nullable=False, comment='Configuration name'
+    )
+    config_val = Column(String(), nullable=False, comment='Configuration value')
     created = Column(
-        TIMESTAMP(timezone=False),
+        TIMESTAMP(timezone=True),
         nullable=False,
         server_default=func.current_timestamp(),
+        comment='Creation timestamp',
     )
     modified = Column(
-        TIMESTAMP(timezone=False),
+        TIMESTAMP(timezone=True),
         nullable=False,
         server_default=func.current_timestamp(),
         onupdate=func.current_timestamp(),
+        comment='Last update timestamp',
     )
 
 

@@ -1,7 +1,7 @@
 """Async Jobs table & utilities"""
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import BinaryExpression, Column, desc, func, String, text
 from pydantic import BaseModel as PydanticModel
 from sqlalchemy.dialects.postgresql import JSON, TIMESTAMP, SMALLINT
@@ -22,22 +22,30 @@ class AsyncJobsStore(BaseModel):
     """ Async Jobs table """
     __tablename__ = "async_jobs"
 
-    service = Column(String(), nullable=False)
-    payload = Column(JSON())
-    expires = Column(TIMESTAMP(timezone=False))
+    service = Column(String(), nullable=False, comment='Service job')
+    payload = Column(JSON(), comment='Input data for this job')
+    expires = Column(TIMESTAMP(timezone=True), comment='Job expiry time')
     created = Column(
-        TIMESTAMP(timezone=False),
+        TIMESTAMP(timezone=True),
         nullable=False,
         server_default=func.current_timestamp(),
+        comment='Creation timestamp',
     )
-    completed = Column(TIMESTAMP(timezone=False))
-    locked_until = Column(TIMESTAMP(timezone=False))
+    completed = Column(
+        TIMESTAMP(timezone=True),
+        comment='Timestamp at which this job was marked as completed',
+    )
+    locked_until = Column(
+        TIMESTAMP(timezone=True),
+        comment='Timestamp at which the lock expires'
+    )
     max_attempts = Column(
         SMALLINT(),
         nullable=False,
         server_default='1',
+        comment='Maximum number of attempts left for this job'
     )
-    result = Column(JSON(), nullable=True)
+    result = Column(JSON(), nullable=True, comment='Job result')
 
 
 def single_job(uuid: str) -> (AsyncJobsStore | None):
@@ -136,8 +144,8 @@ def create_job(
     """ Create async job """
     max_duration = payload.get('max_duration', MAX_DURATION)  # max duration in minutes
     max_attempts = payload.get('max_attempts', MAX_ATTEMPTS)
-    tstamp = int(time.time()) + (max_duration * max_attempts * 2 * 60)
-    expires = datetime.fromtimestamp(tstamp)
+    tstamp = time.time() + (max_duration * max_attempts * 2 * 60)
+    expires = datetime.fromtimestamp(timestamp=tstamp, tz=timezone.utc)
 
     with Session(db_connection()) as session:
         job_store = AsyncJobsStore(
@@ -164,7 +172,7 @@ def complete_job(
     if not job_store:
         log.error("Job %s not found", uuid)
         return
-    now = datetime.now()
+    now = datetime.now(tz=timezone.utc)
     if job_store.expires and job_store.expires < now:
         log.warning("Job %s is expired at %s", uuid, job_store.expires)
         return
@@ -184,7 +192,7 @@ def complete_job(
 def save_job_result(job_store: AsyncJobsStore, result: dict, error: bool = False):
     """Save Job result"""
     with Session(db_connection()) as session:
-        job_store.completed = datetime.now()
+        job_store.completed = datetime.now(tz=timezone.utc)
         job_store.result = result
         if error:
             job_store.max_attempts = max(job_store.max_attempts - 1, 0)
@@ -233,8 +241,8 @@ def lock_job_service(
     if not is_job_available(job_store):
         raise RuntimeError(f'Job {job_store.uuid} is not available')
     payload = job_store.payload if job_store.payload else {}
-    tstamp = int(time.time()) + (int(payload.get('max_duration', MAX_DURATION)) * 60)
-    locked_until = datetime.fromtimestamp(tstamp)
+    tstamp = time.time() + (float(payload.get('max_duration', MAX_DURATION)) * 60)
+    locked_until = datetime.fromtimestamp(tstamp, tz=timezone.utc)
 
     with Session(db_connection()) as session:
         job_store.locked_until = locked_until
@@ -247,7 +255,7 @@ def is_job_available(
     job_store: AsyncJobsStore
 ) -> bool:
     """Check if job is available"""
-    now = datetime.now()
+    now = datetime.now(tz=timezone.utc)
     if job_store.completed or (job_store.expires and job_store.expires < now):
         return False
     if job_store.locked_until and (job_store.locked_until > now):

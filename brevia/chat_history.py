@@ -33,7 +33,7 @@ class ChatHistoryStore(BaseModel):
     answer = sqlalchemy.Column(sqlalchemy.String)
     # pylint: disable=not-callable
     created = sqlalchemy.Column(
-        sqlalchemy.DateTime(timezone=False),
+        sqlalchemy.DateTime(timezone=True),
         nullable=False,
         server_default=sqlalchemy.sql.func.now()
     )
@@ -41,9 +41,16 @@ class ChatHistoryStore(BaseModel):
     user_evaluation = sqlalchemy.Column(
         sqlalchemy.BOOLEAN(),
         nullable=True,
+        comment='User evaluation as good (True) or bad (False)',
     )
-    user_feedback = sqlalchemy.Column(sqlalchemy.String)
-    chat_source = sqlalchemy.Column(sqlalchemy.String)
+    user_feedback = sqlalchemy.Column(
+        sqlalchemy.String,
+        comment='User textual feedback on the evaluation',
+    )
+    chat_source = sqlalchemy.Column(
+        sqlalchemy.String,
+        comment='Generic string to identify chat source (e.g. application name)',
+    )
 
 
 def history(chat_history: list, session: str = None):

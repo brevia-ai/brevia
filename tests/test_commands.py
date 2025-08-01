@@ -218,8 +218,7 @@ def test_cleanup_jobs_dry_run():
     ])  # No confirmation needed for dry run
 
     assert result.exit_code == 0
-    assert 'Found' in result.output
-    assert 'DRY RUN' in result.output
+    assert 'Dry run completed' in result.output
 
 
 def test_cleanup_jobs_actual_deletion():
@@ -273,7 +272,7 @@ def test_cleanup_jobs_no_jobs_to_delete():
     ], input='y\n')  # Provide 'y' input for confirmation
 
     assert result.exit_code == 0
-    assert 'No async jobs found' in result.output
+    assert 'No async jobs to delete' in result.output
 
 
 def test_cleanup_jobs_with_datetime():

@@ -41,6 +41,7 @@ repository = "https://github.com/brevia-ai/brevia"
     extras = [ "standard" ]
 
   [tool.poetry.scripts]
+  cleanup_jobs = "brevia.commands:cleanup_jobs"
   create_token = "brevia.commands:create_access_token"
   create_openapi = "brevia.commands:create_openapi"
   db_current = "brevia.commands:db_current_cmd"

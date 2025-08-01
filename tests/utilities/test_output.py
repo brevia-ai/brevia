@@ -83,14 +83,13 @@ def test_s3_upload_method():
     output = LinkedFileOutput(job_id='1234')
 
     mock_s3 = MagicMock()
-    import sys
-    sys.modules['boto3'] = mock_s3
     mock_client = MagicMock()
     mock_s3.client.return_value = mock_client
     mock_client.upload_file.return_value = None
 
-    result = output._s3_upload('test.txt', 'my-bucket', '1234/test.txt')
-    assert result is None
+    with patch.dict('sys.modules', {'boto3': mock_s3}):
+        result = output._s3_upload('test.txt', 'my-bucket', '1234/test.txt')
+        assert result is None
 
 
 def test_cleanup_job_files_no_job_id():
@@ -183,8 +182,6 @@ def test_s3_delete_objects_method():
     output = LinkedFileOutput(job_id='1234')
 
     mock_s3 = MagicMock()
-    import sys
-    sys.modules['boto3'] = mock_s3
     mock_client = MagicMock()
     mock_s3.client.return_value = mock_client
 
@@ -198,21 +195,22 @@ def test_s3_delete_objects_method():
     }
     mock_client.delete_objects.return_value = None
 
-    output._s3_delete_objects('my-bucket', '1234/')
+    with patch.dict('sys.modules', {'boto3': mock_s3}):
+        output._s3_delete_objects('my-bucket', '1234/')
 
-    mock_client.list_objects_v2.assert_called_once_with(
-        Bucket='my-bucket', Prefix='1234/'
-    )
-    mock_client.delete_objects.assert_called_once_with(
-        Bucket='my-bucket',
-        Delete={
-            'Objects': [
-                {'Key': '1234/file1.txt'},
-                {'Key': '1234/file2.txt'},
-                {'Key': '1234/subdir/file3.txt'}
-            ]
-        }
-    )
+        mock_client.list_objects_v2.assert_called_once_with(
+            Bucket='my-bucket', Prefix='1234/'
+        )
+        mock_client.delete_objects.assert_called_once_with(
+            Bucket='my-bucket',
+            Delete={
+                'Objects': [
+                    {'Key': '1234/file1.txt'},
+                    {'Key': '1234/file2.txt'},
+                    {'Key': '1234/subdir/file3.txt'}
+                ]
+            }
+        )
 
 
 def test_s3_delete_objects_no_contents():
@@ -220,21 +218,20 @@ def test_s3_delete_objects_no_contents():
     output = LinkedFileOutput(job_id='1234')
 
     mock_s3 = MagicMock()
-    import sys
-    sys.modules['boto3'] = mock_s3
     mock_client = MagicMock()
     mock_s3.client.return_value = mock_client
 
     # Mock the list_objects_v2 response with no contents
     mock_client.list_objects_v2.return_value = {}
 
-    # Should not raise an error when no objects are found
-    output._s3_delete_objects('my-bucket', '1234/')
+    with patch.dict('sys.modules', {'boto3': mock_s3}):
+        # Should not raise an error when no objects are found
+        output._s3_delete_objects('my-bucket', '1234/')
 
-    mock_client.list_objects_v2.assert_called_once_with(
-        Bucket='my-bucket', Prefix='1234/'
-    )
-    mock_client.delete_objects.assert_not_called()
+        mock_client.list_objects_v2.assert_called_once_with(
+            Bucket='my-bucket', Prefix='1234/'
+        )
+        mock_client.delete_objects.assert_not_called()
 
 
 def test_s3_delete_objects_large_batch():
@@ -242,8 +239,6 @@ def test_s3_delete_objects_large_batch():
     output = LinkedFileOutput(job_id='1234')
 
     mock_s3 = MagicMock()
-    import sys
-    sys.modules['boto3'] = mock_s3
     mock_client = MagicMock()
     mock_s3.client.return_value = mock_client
 
@@ -252,15 +247,16 @@ def test_s3_delete_objects_large_batch():
     mock_client.list_objects_v2.return_value = {'Contents': objects}
     mock_client.delete_objects.return_value = None
 
-    output._s3_delete_objects('my-bucket', '1234/')
+    with patch.dict('sys.modules', {'boto3': mock_s3}):
+        output._s3_delete_objects('my-bucket', '1234/')
 
-    # Should be called twice due to 1000 object limit per batch
-    assert mock_client.delete_objects.call_count == 2
+        # Should be called twice due to 1000 object limit per batch
+        assert mock_client.delete_objects.call_count == 2
 
-    # First call should have 1000 objects
-    first_call_args = mock_client.delete_objects.call_args_list[0]
-    assert len(first_call_args[1]['Delete']['Objects']) == 1000
+        # First call should have 1000 objects
+        first_call_args = mock_client.delete_objects.call_args_list[0]
+        assert len(first_call_args[1]['Delete']['Objects']) == 1000
 
-    # Second call should have remaining 500 objects
-    second_call_args = mock_client.delete_objects.call_args_list[1]
-    assert len(second_call_args[1]['Delete']['Objects']) == 500
+        # Second call should have remaining 500 objects
+        second_call_args = mock_client.delete_objects.call_args_list[1]
+        assert len(second_call_args[1]['Delete']['Objects']) == 500

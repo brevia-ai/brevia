@@ -1,11 +1,13 @@
 """Utility commands for applications"""
 import json
 import sys
+from datetime import datetime
 from os import getcwd, path
 from logging import config
 import click
 from brevia.alembic import current, upgrade, downgrade
 from brevia.alembic import revision as create_revision
+from brevia.async_jobs import cleanup_async_jobs
 from brevia.index import update_links_documents
 from brevia.utilities import files_import, run_service, collections_io
 from brevia.tokens import create_token
@@ -167,3 +169,34 @@ def update_collection_links(collection: str):
     init_logging()
     num = update_links_documents(collection_name=collection)
     print(f'Updated {num} links documents. Done!')
+
+
+@click.command()
+@click.option(
+    '--before-date',
+    type=click.DateTime(formats=['%Y-%m-%d', '%Y-%m-%d %H:%M:%S']),
+    required=True,
+    help='Remove async jobs created before this date '
+         '(format: YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)'
+)
+@click.option(
+    '--dry-run',
+    is_flag=True,
+    help='Show what would be deleted without actually deleting'
+)
+def cleanup_jobs(before_date: datetime, dry_run: bool):
+    """
+    Remove async jobs and related files created before the specified date.
+    """
+    # Only ask for confirmation if not doing a dry run
+    if not dry_run:
+        if not click.confirm('Are you sure you want to delete async jobs?'):
+            click.echo('Operation cancelled.')
+            return
+
+    num = cleanup_async_jobs(before_date=before_date, dry_run=dry_run)
+
+    if dry_run:
+        click.echo(f"Dry run completed. {num} jobs would be deleted.")
+    else:
+        click.echo(f"Successfully deleted {num} async jobs")

@@ -17,6 +17,7 @@ from brevia.commands import (
     create_access_token,
     create_openapi,
     update_collection_links,
+    cleanup_jobs,
 )
 from brevia.collections import create_collection, collection_name_exists
 from brevia.settings import get_settings
@@ -184,3 +185,164 @@ def test_db_revision_cmd_with_autogenerate():
     for file_path in migration_files:
         if exists(file_path):
             unlink(file_path)
+
+
+def test_cleanup_jobs_dry_run():
+    """Test cleanup_jobs command with dry run"""
+    from datetime import datetime, timedelta
+    from brevia.async_jobs import create_job, AsyncJobsStore
+    from brevia.connection import db_connection
+    from sqlalchemy.orm import Session
+
+    # Create a test job with old date
+    service = 'test_cleanup_command'
+    payload = {'max_duration': 10, 'max_attempts': 1}
+    job = create_job(service, payload)
+
+    # Set created date to the past
+    past_date = datetime.now() - timedelta(days=2)
+
+    with Session(db_connection()) as session:
+        job_store = session.get(AsyncJobsStore, job.uuid)
+        job_store.created = past_date
+        session.add(job_store)
+        session.commit()
+
+    runner = CliRunner()
+    cutoff_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+
+    # Test dry run
+    result = runner.invoke(cleanup_jobs, [
+        '--before-date', cutoff_date,
+        '--dry-run'
+    ])  # No confirmation needed for dry run
+
+    assert result.exit_code == 0
+    assert 'Found' in result.output
+    assert 'DRY RUN' in result.output
+
+
+def test_cleanup_jobs_actual_deletion():
+    """Test cleanup_jobs command with actual deletion"""
+    from datetime import datetime, timedelta
+    from brevia.async_jobs import create_job, single_job, AsyncJobsStore
+    from brevia.connection import db_connection
+    from sqlalchemy.orm import Session
+
+    # Create test jobs
+    service = 'test_cleanup_command_delete'
+    payload = {'max_duration': 10, 'max_attempts': 1}
+    job1 = create_job(service, payload)
+    job2 = create_job(service, payload)
+
+    # Set one job to have old date
+    past_date = datetime.now() - timedelta(days=2)
+
+    with Session(db_connection()) as session:
+        job1_store = session.get(AsyncJobsStore, job1.uuid)
+        job1_store.created = past_date
+        session.add(job1_store)
+        session.commit()
+
+    runner = CliRunner()
+    cutoff_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+
+    # Test actual deletion
+    result = runner.invoke(cleanup_jobs, [
+        '--before-date', cutoff_date,
+    ], input='y\n')  # Provide 'y' input for confirmation
+
+    assert result.exit_code == 0
+    assert 'Successfully deleted' in result.output
+
+    # Verify job1 is deleted and job2 still exists
+    assert single_job(job1.uuid) is None
+    assert single_job(job2.uuid) is not None
+
+
+def test_cleanup_jobs_no_jobs_to_delete():
+    """Test cleanup_jobs command when no jobs need to be deleted"""
+    from datetime import datetime, timedelta
+
+    runner = CliRunner()
+    # Use a very old date to ensure no jobs are found
+    old_date = (datetime.now() - timedelta(days=365)).strftime('%Y-%m-%d')
+
+    result = runner.invoke(cleanup_jobs, [
+        '--before-date', old_date,
+    ], input='y\n')  # Provide 'y' input for confirmation
+
+    assert result.exit_code == 0
+    assert 'No async jobs found' in result.output
+
+
+def test_cleanup_jobs_with_datetime():
+    """Test cleanup_jobs command with datetime format"""
+    from datetime import datetime, timedelta
+    from brevia.async_jobs import create_job, single_job, AsyncJobsStore
+    from brevia.connection import db_connection
+    from sqlalchemy.orm import Session
+
+    # Create a test job
+    service = 'test_cleanup_datetime'
+    payload = {'max_duration': 10, 'max_attempts': 1}
+    job = create_job(service, payload)
+
+    # Set created date to the past
+    past_date = datetime.now() - timedelta(days=2)
+
+    with Session(db_connection()) as session:
+        job_store = session.get(AsyncJobsStore, job.uuid)
+        job_store.created = past_date
+        session.add(job_store)
+        session.commit()
+
+    runner = CliRunner()
+    # Use full datetime format
+    cutoff_datetime = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
+
+    result = runner.invoke(cleanup_jobs, [
+        '--before-date', cutoff_datetime,
+    ], input='y\n')  # Provide 'y' input for confirmation
+
+    assert result.exit_code == 0
+    assert 'Successfully deleted' in result.output
+
+    # Verify job is deleted
+    assert single_job(job.uuid) is None
+
+
+def test_cleanup_jobs_cancelled_operation():
+    """Test cleanup_jobs command when user cancels the operation"""
+    from datetime import datetime, timedelta
+    from brevia.async_jobs import create_job, single_job, AsyncJobsStore
+    from brevia.connection import db_connection
+    from sqlalchemy.orm import Session
+
+    # Create a test job
+    service = 'test_cleanup_cancelled'
+    payload = {'max_duration': 10, 'max_attempts': 1}
+    job = create_job(service, payload)
+
+    # Set created date to the past
+    past_date = datetime.now() - timedelta(days=2)
+
+    with Session(db_connection()) as session:
+        job_store = session.get(AsyncJobsStore, job.uuid)
+        job_store.created = past_date
+        session.add(job_store)
+        session.commit()
+
+    runner = CliRunner()
+    cutoff_date = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+
+    # Test cancelled operation (user responds 'n')
+    result = runner.invoke(cleanup_jobs, [
+        '--before-date', cutoff_date,
+    ], input='n\n')  # User cancels the operation
+
+    assert result.exit_code == 0
+    assert 'Operation cancelled' in result.output
+
+    # Verify job still exists
+    assert single_job(job.uuid) is not None

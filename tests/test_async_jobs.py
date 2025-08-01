@@ -2,12 +2,14 @@
 from datetime import datetime, timedelta
 import time
 import pytest
+from unittest.mock import patch
 from sqlalchemy.orm import Session
 from brevia.connection import db_connection
 from brevia.async_jobs import (
     single_job, create_job, complete_job,
     save_job_result, create_service, lock_job_service,
     is_job_available, run_job_service, get_jobs, JobsFilter,
+    cleanup_async_jobs, AsyncJobsStore,
 )
 from brevia.services import BaseService
 
@@ -369,3 +371,235 @@ def test_get_jobs_empty_results():
 
     pagination = result['meta']['pagination']
     assert pagination['count'] == 0
+
+
+def test_cleanup_async_jobs_no_jobs():
+    """Test cleanup_async_jobs when no jobs exist to delete"""
+    # Use a future date to ensure no jobs are found
+    future_date = datetime.now() + timedelta(days=1)
+
+    # Test dry run with no jobs
+    result = cleanup_async_jobs(before_date=future_date, dry_run=True)
+    assert result == 0
+
+    # Test actual cleanup with no jobs
+    result = cleanup_async_jobs(before_date=future_date, dry_run=False)
+    assert result == 0
+
+
+def test_cleanup_async_jobs_dry_run():
+    """Test cleanup_async_jobs dry run functionality"""
+    # Create some test jobs
+    service = 'test_cleanup_service'
+    payload = {'max_duration': 10, 'max_attempts': 1}
+
+    job1 = create_job(service, payload)
+    job2 = create_job(service, payload)
+
+    # Set created dates to the past for testing
+    past_date = datetime.now() - timedelta(days=2)
+    cutoff_date = datetime.now() - timedelta(days=1)
+
+    with Session(db_connection()) as session:
+        # Update job1 to have an old created date
+        job1_store = session.get(AsyncJobsStore, job1.uuid)
+        job1_store.created = past_date
+        session.add(job1_store)
+        session.commit()
+
+    # Dry run should return count without deleting
+    result = cleanup_async_jobs(before_date=cutoff_date, dry_run=True)
+    assert result == 1
+
+    # Verify job1 still exists
+    retrieved_job = single_job(job1.uuid)
+    assert retrieved_job is not None
+
+    # Verify job2 still exists (should not be affected)
+    retrieved_job2 = single_job(job2.uuid)
+    assert retrieved_job2 is not None
+
+
+def test_cleanup_async_jobs_actual_deletion():
+    """Test cleanup_async_jobs actual deletion functionality"""
+    # Create some test jobs
+    service = 'test_cleanup_service_delete'
+    payload = {'max_duration': 10, 'max_attempts': 1}
+
+    job1 = create_job(service, payload)
+    job2 = create_job(service, payload)
+    job3 = create_job(service, payload)
+
+    # Set different created dates
+    old_date = datetime.now() - timedelta(days=3)
+    cutoff_date = datetime.now() - timedelta(days=1)
+
+    with Session(db_connection()) as session:
+        # Update job1 and job2 to have old created dates
+        job1_store = session.get(AsyncJobsStore, job1.uuid)
+        job1_store.created = old_date
+        session.add(job1_store)
+
+        job2_store = session.get(AsyncJobsStore, job2.uuid)
+        job2_store.created = old_date
+        session.add(job2_store)
+
+        session.commit()
+
+    # Perform actual cleanup
+    result = cleanup_async_jobs(before_date=cutoff_date, dry_run=False)
+    assert result == 2
+
+    # Verify job1 and job2 are deleted
+    retrieved_job1 = single_job(job1.uuid)
+    assert retrieved_job1 is None
+
+    retrieved_job2 = single_job(job2.uuid)
+    assert retrieved_job2 is None
+
+    # Verify job3 still exists (created recently, not affected)
+    retrieved_job3 = single_job(job3.uuid)
+    assert retrieved_job3 is not None
+
+
+def test_cleanup_async_jobs_with_timezone():
+    """Test cleanup_async_jobs with timezone-aware datetime"""
+    from datetime import timezone
+
+    # Create a test job
+    service = 'test_cleanup_timezone'
+    payload = {'max_duration': 10, 'max_attempts': 1}
+
+    job = create_job(service, payload)
+
+    # Set created date to the past with timezone
+    past_date = datetime.now(tz=timezone.utc) - timedelta(days=2)
+    cutoff_date = datetime.now(tz=timezone.utc) - timedelta(days=1)
+
+    with Session(db_connection()) as session:
+        job_store = session.get(AsyncJobsStore, job.uuid)
+        job_store.created = past_date
+        session.add(job_store)
+        session.commit()
+
+    # Test with timezone-aware datetime
+    result = cleanup_async_jobs(before_date=cutoff_date, dry_run=False)
+    assert result == 1
+
+    # Verify job is deleted
+    retrieved_job = single_job(job.uuid)
+    assert retrieved_job is None
+
+
+@patch('brevia.async_jobs.LinkedFileOutput')
+def test_cleanup_async_jobs_with_file_cleanup(mock_linked_file_output):
+    """Test cleanup_async_jobs calls file cleanup for each deleted job"""
+    from datetime import timezone
+
+    # Create test jobs
+    service = 'test_cleanup_with_files'
+    payload = {'max_duration': 10, 'max_attempts': 1}
+
+    job1 = create_job(service, payload)
+    job2 = create_job(service, payload)
+
+    # Set created dates to the past
+    past_date = datetime.now(tz=timezone.utc) - timedelta(days=2)
+    cutoff_date = datetime.now(tz=timezone.utc) - timedelta(days=1)
+
+    with Session(db_connection()) as session:
+        # Update both jobs to have old created dates
+        job1_store = session.get(AsyncJobsStore, job1.uuid)
+        job1_store.created = past_date
+        session.add(job1_store)
+
+        job2_store = session.get(AsyncJobsStore, job2.uuid)
+        job2_store.created = past_date
+        session.add(job2_store)
+
+        session.commit()
+
+    # Mock the LinkedFileOutput instance and cleanup method
+    mock_instance = mock_linked_file_output.return_value
+    mock_instance.cleanup_job_files.return_value = None
+
+    # Perform actual cleanup
+    result = cleanup_async_jobs(before_date=cutoff_date, dry_run=False)
+    assert result == 2
+
+    # Verify LinkedFileOutput was called for each job
+    assert mock_linked_file_output.call_count == 2
+    mock_linked_file_output.assert_any_call(job_id=str(job1.uuid))
+    mock_linked_file_output.assert_any_call(job_id=str(job2.uuid))
+
+    # Verify cleanup_job_files was called for each job
+    assert mock_instance.cleanup_job_files.call_count == 2
+
+    # Verify jobs are deleted from database
+    assert single_job(job1.uuid) is None
+    assert single_job(job2.uuid) is None
+
+
+@patch('brevia.async_jobs.LinkedFileOutput')
+def test_cleanup_async_jobs_file_cleanup_error(mock_linked_file_output):
+    """Test cleanup_async_jobs handles file cleanup errors gracefully"""
+    from datetime import timezone
+
+    # Create a test job
+    service = 'test_cleanup_error'
+    payload = {'max_duration': 10, 'max_attempts': 1}
+    job = create_job(service, payload)
+
+    # Set created date to the past
+    past_date = datetime.now(tz=timezone.utc) - timedelta(days=2)
+    cutoff_date = datetime.now(tz=timezone.utc) - timedelta(days=1)
+
+    with Session(db_connection()) as session:
+        job_store = session.get(AsyncJobsStore, job.uuid)
+        job_store.created = past_date
+        session.add(job_store)
+        session.commit()
+
+    # Mock the LinkedFileOutput to raise an exception during cleanup
+    mock_instance = mock_linked_file_output.return_value
+    mock_instance.cleanup_job_files.side_effect = Exception("File cleanup failed")
+
+    # Perform cleanup - should not fail despite file cleanup error
+    result = cleanup_async_jobs(before_date=cutoff_date, dry_run=False)
+    assert result == 1
+
+    # Verify job is still deleted from database despite file cleanup error
+    assert single_job(job.uuid) is None
+
+    # Verify cleanup was attempted
+    mock_linked_file_output.assert_called_once_with(job_id=str(job.uuid))
+    mock_instance.cleanup_job_files.assert_called_once()
+
+
+def test_cleanup_async_jobs_dry_run_no_file_cleanup():
+    """Test cleanup_async_jobs dry run does not call file cleanup"""
+    # Create a test job
+    service = 'test_dry_run_no_cleanup'
+    payload = {'max_duration': 10, 'max_attempts': 1}
+    job = create_job(service, payload)
+
+    # Set created date to the past
+    past_date = datetime.now() - timedelta(days=2)
+    cutoff_date = datetime.now() - timedelta(days=1)
+
+    with Session(db_connection()) as session:
+        job_store = session.get(AsyncJobsStore, job.uuid)
+        job_store.created = past_date
+        session.add(job_store)
+        session.commit()
+
+    with patch('brevia.async_jobs.LinkedFileOutput') as mock_linked_file_output:
+        # Perform dry run
+        result = cleanup_async_jobs(before_date=cutoff_date, dry_run=True)
+        assert result == 1
+
+        # Verify LinkedFileOutput was not called in dry run
+        mock_linked_file_output.assert_not_called()
+
+        # Verify job still exists after dry run
+        assert single_job(job.uuid) is not None

@@ -1,6 +1,7 @@
 """File output utilities"""
 import tempfile
 import os
+import shutil
 from brevia.settings import get_settings
 
 
@@ -86,3 +87,66 @@ class LinkedFileOutput:
             os.unlink(output_path)
 
         return self.file_url(filename)
+
+    def _s3_delete_objects(self, bucket_name: str, prefix: str):
+        """
+        Delete all objects in S3 with the specified prefix.
+
+        :param bucket_name: The name of the S3 bucket.
+        :param prefix: The prefix to match objects for deletion.
+        """
+        try:
+            import boto3  # pylint: disable=import-outside-toplevel
+            s3 = boto3.client('s3')
+
+            # List all objects with the prefix
+            response = s3.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+
+            if 'Contents' not in response:
+                return  # No objects found
+
+            # Prepare objects for deletion
+            objects_to_delete = [{'Key': obj['Key']} for obj in response['Contents']]
+
+            # Delete objects in batches (S3 allows max 1000 objects per delete request)
+            for i in range(0, len(objects_to_delete), 1000):
+                batch = objects_to_delete[i:i + 1000]
+                s3.delete_objects(
+                    Bucket=bucket_name,
+                    Delete={'Objects': batch}
+                )
+
+        except ModuleNotFoundError:
+            raise ImportError('Boto3 is not installed!')
+
+    def cleanup_job_files(self):
+        """
+        Remove all files in the job folder, including the folder itself.
+        Handles both local filesystem and S3 storage.
+
+        :raises ValueError: If no job_id is set.
+        """
+        if not self.job_id:
+            raise ValueError("No job_id set. Cannot cleanup files without a job_id.")
+
+        base_path = get_settings().file_output_base_path
+
+        if base_path.startswith('s3://'):
+            # S3 cleanup
+            bucket_name = base_path.split('/')[2]
+            base_prefix = '/'.join(base_path.split('/')[3:]).lstrip('/')
+
+            # Build the prefix for this job's files
+            if base_prefix:
+                job_prefix = f"{base_prefix}/{self.job_id}/"
+            else:
+                job_prefix = f"{self.job_id}/"
+
+            self._s3_delete_objects(bucket_name, job_prefix)
+
+        else:
+            # Local filesystem cleanup
+            job_dir = f"{base_path}/{self.job_id}"
+
+            if os.path.exists(job_dir) and os.path.isdir(job_dir):
+                shutil.rmtree(job_dir)

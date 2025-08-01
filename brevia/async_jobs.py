@@ -4,6 +4,7 @@ import time
 from datetime import datetime, timezone
 from sqlalchemy import BinaryExpression, Column, desc, func, String, text
 from pydantic import BaseModel as PydanticModel
+from sqlalchemy import delete, select
 from sqlalchemy.dialects.postgresql import JSON, TIMESTAMP, SMALLINT
 from sqlalchemy.orm import Session, Query
 from langchain_community.vectorstores.pgembedding import BaseModel
@@ -12,6 +13,7 @@ from brevia.services import BaseService
 from brevia.utilities.dates import date_filter
 from brevia.utilities.json_api import query_data_pagination
 from brevia.utilities.types import load_type
+from brevia.utilities.output import LinkedFileOutput
 
 MAX_DURATION = 120  # default max duration is 120 min / 2hr
 MAX_ATTEMPTS = 1  # default max number of attempts
@@ -264,3 +266,68 @@ def is_job_available(
         return False
 
     return True
+
+
+def cleanup_async_jobs(before_date: datetime, dry_run: bool):
+    """
+    Remove async jobs created before the specified date.
+    This function removes async_jobs records from the Brevia database
+    where the 'created' timestamp is older than the specified date.
+
+    Args:
+        before_date (datetime): The cutoff date for job deletion.
+        dry_run (bool): If True, only show what would be deleted without actually
+            deleting.
+    """
+    # Ensure before_date is timezone-aware
+    if before_date.tzinfo is None:
+        before_date = before_date.replace(tzinfo=timezone.utc)
+
+    with Session(db_connection()) as session:
+        # First, count how many records would be affected
+        count_query = select(AsyncJobsStore).where(AsyncJobsStore.created < before_date)
+        result = session.execute(count_query)
+        jobs_to_delete = result.scalars().all()
+
+        if not jobs_to_delete:
+            print(f"No async jobs found created before {before_date}")
+            return 0
+
+        print(
+            f"Found {len(jobs_to_delete)} async jobs created before {before_date}"
+        )
+
+        if dry_run:
+            print("DRY RUN - The following jobs would be deleted:")
+            for job in jobs_to_delete:
+                status = "completed" if job.completed else "pending"
+                print(
+                    f"  - Job UUID: {job.uuid}, Created: {job.created}, "
+                    f"Status: {status}, Service: {job.service}"
+                )
+            return len(jobs_to_delete)
+
+        # Store job UUIDs before deletion for file cleanup
+        job_uuids = [str(job.uuid) for job in jobs_to_delete]
+
+        # Perform the actual deletion from database
+        delete_query = delete(AsyncJobsStore).where(
+            AsyncJobsStore.created < before_date
+        )
+        result = session.execute(delete_query)
+        session.commit()
+
+        # Clean up files for each deleted job
+        files_cleanup_errors = 0
+        for job_uuid in job_uuids:
+            try:
+                file_output = LinkedFileOutput(job_id=job_uuid)
+                file_output.cleanup_job_files()
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                files_cleanup_errors += 1
+                print(f"Warning: Failed to cleanup files for job {job_uuid}: {exc}")
+
+        if files_cleanup_errors > 0:
+            print(f"Warning: {files_cleanup_errors} jobs had file cleanup errors")
+
+        return result.rowcount

@@ -193,7 +193,7 @@ def cleanup_jobs(before_date: datetime, dry_run: bool):
         if not click.confirm('Are you sure you want to delete async jobs?'):
             click.echo('Operation cancelled.')
             return
-
+    init_logging()
     num = cleanup_async_jobs(before_date=before_date, dry_run=dry_run)
 
     if dry_run:

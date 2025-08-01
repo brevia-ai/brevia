@@ -283,6 +283,8 @@ def cleanup_async_jobs(before_date: datetime, dry_run: bool):
     if before_date.tzinfo is None:
         before_date = before_date.replace(tzinfo=timezone.utc)
 
+    log = logging.getLogger(__name__)
+
     with Session(db_connection()) as session:
         # First, count how many records would be affected
         count_query = select(AsyncJobsStore).where(AsyncJobsStore.created < before_date)
@@ -290,18 +292,16 @@ def cleanup_async_jobs(before_date: datetime, dry_run: bool):
         jobs_to_delete = result.scalars().all()
 
         if not jobs_to_delete:
-            print(f"No async jobs found created before {before_date}")
+            log.info(f"No async jobs found created before {before_date}")
             return 0
 
-        print(
-            f"Found {len(jobs_to_delete)} async jobs created before {before_date}"
-        )
+        log.info(f"Found {len(jobs_to_delete)} async jobs created before {before_date}")
 
         if dry_run:
-            print("DRY RUN - The following jobs would be deleted:")
+            log.info("DRY RUN - The following jobs would be deleted:")
             for job in jobs_to_delete:
                 status = "completed" if job.completed else "pending"
-                print(
+                log.info(
                     f"  - Job UUID: {job.uuid}, Created: {job.created}, "
                     f"Status: {status}, Service: {job.service}"
                 )
@@ -325,9 +325,9 @@ def cleanup_async_jobs(before_date: datetime, dry_run: bool):
                 file_output.cleanup_job_files()
             except Exception as exc:  # pylint: disable=broad-exception-caught
                 files_cleanup_errors += 1
-                print(f"Warning: Failed to cleanup files for job {job_uuid}: {exc}")
+                log.warning(f"Failed to cleanup files for job {job_uuid}: {exc}")
 
         if files_cleanup_errors > 0:
-            print(f"Warning: {files_cleanup_errors} jobs had file cleanup errors")
+            log.warning(f"{files_cleanup_errors} jobs had file cleanup errors")
 
         return result.rowcount

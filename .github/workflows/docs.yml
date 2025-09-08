@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Set up Python runtime
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -58,7 +58,7 @@ jobs:
         run: .venv/bin/create_openapi
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
 
       - name: Build Redoc instance
         run: npx @redocly/cli build-docs ./openapi.json --output=site/redoc/index.html

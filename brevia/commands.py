@@ -197,7 +197,8 @@ def cleanup_jobs(before_date: datetime, dry_run: bool):
     num = cleanup_async_jobs(before_date=before_date, dry_run=dry_run)
 
     if dry_run:
-        click.echo(f"Dry run completed. {num} {'job' if num == 1 else 'jobs'} would be deleted.")
+        njob = f"{num} {'job' if num == 1 else 'jobs'}"
+        click.echo(f"Dry run completed. {njob} would be deleted.")
     elif num == 0:
         click.echo("No async jobs to delete.")
     else:

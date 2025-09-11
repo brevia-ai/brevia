@@ -45,6 +45,9 @@ class LinkedFileOutput:
         """
         # Generate the output URL
         base_url = get_settings().file_output_base_url
+        if self.job_id:
+            base_url = f"{base_url}/{self.job_id}"
+
         return f'{base_url}/{filename}'
 
     def _s3_upload(self, file_path: str, bucket_name: str, object_name: str):
@@ -74,13 +77,13 @@ class LinkedFileOutput:
         with open(output_path, 'w', encoding='utf-8') as file:
             file.write(content)
 
-        if self.job_id:
-            filename = f"{self.job_id}/{filename}"
         base_path = get_settings().file_output_base_path
         if base_path.startswith('s3://'):
             # Extract bucket name and object name from S3 path
             bucket_name = base_path.split('/')[2]
             object_name = '/'.join(base_path.split('/')[3:]).lstrip('/')
+            if self.job_id:
+                object_name += f"/{self.job_id}"
             object_name += f"/{filename}"
             self._s3_upload(output_path, bucket_name, object_name.lstrip('/'))
             # Remove the local temp file

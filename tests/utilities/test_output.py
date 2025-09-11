@@ -42,6 +42,11 @@ def test_file_url():
 
     assert file_url == '/download/test.txt'
 
+    output = LinkedFileOutput(job_id='123456789')
+    file_url = output.file_url('test.txt')
+
+    assert file_url == '/download/123456789/test.txt'
+
 
 def test_write_local_file():
     """Test write method for local file writing."""

@@ -1,6 +1,7 @@
 """Async Jobs table & utilities"""
 import logging
 import time
+import traceback
 from datetime import datetime, timezone
 from sqlalchemy import BinaryExpression, Column, desc, func, String, text
 from pydantic import BaseModel as PydanticModel
@@ -230,6 +231,7 @@ def run_job_service(
     except Exception as exc:  # pylint: disable=broad-exception-caught
         msg = f'{type(exc).__name__}: {exc}'
         log.error('Error in job service %s: %s', job_store.service, msg)
+        log.error('Stack trace: %s', traceback.format_exc())
         result = {'error': msg}
 
     finally:

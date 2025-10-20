@@ -58,7 +58,7 @@ jobs:
         run: .venv/bin/create_openapi
 
       - name: Setup Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
 
       - name: Build Redoc instance
         run: npx @redocly/cli build-docs ./openapi.json --output=site/redoc/index.html

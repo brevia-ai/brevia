@@ -5,7 +5,7 @@ description = {{ description | tojson }}
 {% if author_name %}authors = [{ name = {{ author_name | tojson }}{% if author_email %}, email = {{ author_email | tojson }}{% endif %} }]
 {% endif %}requires-python = ">=3.12"
 dependencies = [
-    {{ ("brevia @ " ~ brevia_source) | tojson }},
+    {% if "://" in brevia_source %}{{ ("brevia @ " ~ brevia_source) | tojson }}{% else %}{{ ("brevia==" ~ brevia_source) | tojson }}{% endif %},
 ]
 
 [dependency-groups]

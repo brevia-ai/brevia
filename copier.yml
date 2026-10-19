@@ -1,5 +1,5 @@
 # Copier template of an application built on Brevia: the files are in template/.
-#   uvx copier copy gh:nikazzio/brevia-next my-project
+#   uvx copier copy --vcs-ref v1.0.0b1 gh:brevia-ai/brevia my-project
 #   uvx copier update          # later, from the generated project, to take changes of the template
 _subdirectory: template
 _min_copier_version: "9.4"
@@ -34,9 +34,10 @@ author_email:
   default: ""
 brevia_source:
   type: str
-  help: Where to install Brevia from (a Git URL with an optional @revision, or file:///path/to/a/checkout)
-  # The commit the template is generated from: the template and Brevia match.
-  default: "git+https://github.com/nikazzio/brevia-next{% if _copier_conf.vcs_ref_hash %}@{{ _copier_conf.vcs_ref_hash }}{% endif %}"
+  help: Where to install Brevia from (a version on PyPI, a Git URL with an optional @revision, or file:///path/to/a/checkout)
+  # The release of the template, so that the template and Brevia match: update it in
+  # the pull request of each release, with the version in pyproject.toml.
+  default: "1.0.0b1"
 model:
   type: str
   help: Model of the example activity, as provider:name

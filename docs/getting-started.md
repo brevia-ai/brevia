@@ -16,10 +16,10 @@ here; the guides linked at the end cover each part in depth.
 ## Or start from the project template
 
 The steps below build a project by hand, to show each part. To start a real application,
-generate it from the Copier template of the repository, which needs read access to it:
+generate it from the Copier template of the repository:
 
 ```sh
-uvx copier copy gh:nikazzio/brevia-next my-project
+uvx copier copy --vcs-ref v1.0.0b1 gh:brevia-ai/brevia my-project
 ```
 
 The project has one activity like the one of this page, organised in modules, with its
@@ -29,19 +29,19 @@ HTTP API, a worker, a caller and tests with a fake model: see
 
 ## 1. Create the project and install Brevia
 
-Brevia is not published on a package index. Install it from its Git repository, which
-needs read access to it, or from a local checkout:
+Install Brevia from PyPI, pinned to a release:
 
 ```sh
 uv init --bare summaries
 cd summaries
-uv add "brevia @ git+https://github.com/nikazzio/brevia-next@v1.0.0b1"
-# or, from a local checkout:  uv add --editable ../brevia-next
-# or, with pip:               pip install "brevia @ git+https://github.com/nikazzio/brevia-next@v1.0.0b1"
+uv add "brevia==1.0.0b1"
+# or, from a local checkout:  uv add --editable ../brevia
+# or, with pip:               pip install "brevia==1.0.0b1"
 ```
 
-The package is imported as `brevia` and installs the `brevia` command. `@v1.0.0b1` pins
-the release; the tags are listed in the [changelog](https://github.com/nikazzio/brevia-next/blob/main/CHANGELOG.md).
+The package is imported as `brevia` and installs the `brevia` command. 1.0 is a
+pre-release, so the version must be given: without it, pip and uv install Brevia 0.15.
+The releases are listed in the [changelog](https://github.com/brevia-ai/brevia/blob/1.x/CHANGELOG.md).
 
 ## 2. The files of the project
 

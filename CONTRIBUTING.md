@@ -18,11 +18,11 @@ The development environment comes from `uv.lock`. Do not upgrade dependencies or
 ## Workflow
 
 1. **Stage and plan.** Work is organised in stages, listed in [docs/IMPLEMENTATION.md](docs/IMPLEMENTATION.md). Before writing code for a stage, write a plan: the sections of the specification it implements, files and interfaces, tests, verification criteria and open questions. The maintainer approves it.
-2. **Branch.** Create a branch from `main` named after the kind of change, for example `feat/configuration` or `fix/job-retry`.
+2. **Branch.** Create a branch from `1.x`, the branch of Brevia 1.0, named after the kind of change, for example `feat/configuration` or `fix/job-retry`.
 3. **Implement** with the rules below, and keep the change focused on one purpose.
 4. **Check** locally: formatting, lint, types and unit tests (see [Checks](#checks)).
 5. **Update the records:** an entry in `docs/implementation-log.md` with the change and its evidence; `docs/IMPLEMENTATION.md` when the status, a deviation, a known limit or a planned item changes; `CHANGELOG.md` for changes visible to users of the library; the documentation site for any public feature (see [Documentation](#documentation)).
-6. **Pull request** with the template. Review follows the [review procedure](.github/skills/code-review/SKILL.md). Merges into `main` are squash merges.
+6. **Pull request** with the template. Review follows the [review procedure](.github/skills/code-review/SKILL.md). Merges into `1.x` are squash merges.
 
 ## Checks
 
@@ -125,14 +125,21 @@ The documentation site is built with [Zensical](https://zensical.org/) from the 
 The [project template](docs/guides/project-template.md) is in `copier.yml` (questions)
 and `template/` (files, with Jinja placeholders); it is not part of the wheel and the
 library's Ruff excludes it. A change of the public API that the template uses changes
-the template in the same pull request. Check a change by generating a project from the
-working tree, with Brevia from the local checkout, and running its checks:
+the template in the same pull request. The default of `brevia_source` in `copier.yml` is
+the version of Brevia on PyPI that generated projects install: the pull request of a
+release changes it together with the version in `pyproject.toml`. Check a change by
+generating a project from the working tree, with Brevia from the local checkout, and
+running its checks:
 
 ```sh
 rm -rf /tmp/brevia-gen
-uvx copier copy --trust --defaults -d brevia_source="file://$PWD" . /tmp/brevia-gen
+uvx copier copy --trust --defaults --vcs-ref HEAD -d brevia_source="file://$PWD" . /tmp/brevia-gen
 cd /tmp/brevia-gen && uv sync && uv run ruff format --check . && uv run ruff check . && uv run pytest
 ```
+
+`--vcs-ref HEAD` takes the working tree, uncommitted changes included: without it Copier
+takes the latest stable tag of the repository, a release of Brevia 0.15 without the
+template.
 
 Without a database the tests that run the activity are skipped; with the database of
 `compose.yaml` and `uv run brevia db upgrade` they run too.

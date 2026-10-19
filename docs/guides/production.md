@@ -10,8 +10,8 @@ is `myproject`.
 
 - **PostgreSQL**, tested with version 18. Brevia uses two schemas of one database: its
   own (`brevia`) and the one of jobs (`dbos`). See [Database](database.md).
-- **Brevia pinned to a release**, `brevia @ git+https://github.com/nikazzio/brevia-next@v1.0.0b1`
-  in the dependencies of the application, with the lockfile committed.
+- **Brevia pinned to a release**, `brevia==1.0.0b1` in the dependencies of the
+  application, with the lockfile committed.
 - **A folder on persistent storage** for the files of runs, if activities save
   outputs (`BREVIA_FILES_ROOT`). See [Files](files.md).
 - **The environment** of each process, API and workers alike:

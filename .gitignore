@@ -27,3 +27,6 @@ CLAUDE.local.md
 .vscode/
 .DS_Store
 corpus*.json
+
+# Cache of the documentation site, which Git ignores through its own .gitignore
+.cache/

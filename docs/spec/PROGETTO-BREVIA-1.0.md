@@ -104,7 +104,7 @@ Rilettura del 10 ottobre 2026 sul checkout `brevia-ai/brevia`, commit `81ae7d6`,
 
 La tabella documenta il riferimento di partenza, non impone la compatibilità completa. Prima di implementare ciascun modulo si definiscono comportamento e dati della 1.0; la mappatura dei vecchi campi serve quando si affrontano adattatori e migrazione. La perdita di una capacità utile va valutata, non confusa con il cambiamento dei suoi nomi o della sua implementazione.
 
-**Licenza:** le versioni ≤ 0.15 sono MIT; la licenza della 1.0 è un punto aperto (P7). Il codice riusato dalla 0.15 mantiene la nota MIT.
+**Licenza:** MIT, come le versioni ≤ 0.15 (P7, decisione del 19 ottobre 2026). Il codice riusato dalla 0.15 mantiene la nota MIT.
 
 ---
 
@@ -1116,11 +1116,11 @@ Predisposizione futura OpenTelemetry, verificando prima quanto offerto da Pydant
 
 - **Python:** minimo 3.12, verifiche automatiche su 3.12–3.14. Pydantic AI e Pydantic Evals richiedono almeno 3.11 (verificato su PyPI, ottobre 2026).
 - **Un solo pacchetto con tutte le funzioni** (nucleo, API, documenti, analisi, conoscenza e RAG, conversazioni, trascrizione, valutazione, CLI). Le API FastAPI fanno parte del nucleo; il progetto sceglie quali router montare. Extra soltanto per librerie legate a un'infrastruttura specifica: `s3`, `azure`, in futuro `graph`. Un nuovo adattatore si aggiunge con una nuova versione; nel frattempo il progetto può registrarne uno proprio.
-- **Dipendenze principali:** Pydantic AI, DBOS, SQLAlchemy e Alembic, psycopg 3, pgvector, FastAPI e uvicorn, pydantic-settings, PyJWT (al posto di `python-jose` della 0.15), lettori PDF e DOCX. Versioni fissate nel lock; licenza di psycopg in verifica (P9).
+- **Dipendenze principali:** Pydantic AI, DBOS, SQLAlchemy e Alembic, psycopg 3, pgvector, FastAPI e uvicorn, pydantic-settings, PyJWT (al posto di `python-jose` della 0.15), lettori PDF e DOCX. Versioni fissate nel lock; licenza di psycopg compatibile con MIT (P9).
 - **Ordine di sviluppo** distinto dal disegno del pacchetto: prima consegna in §5.
 - **API Python pubblica:** stabile soltanto ciò che si importa da `brevia`; il resto è interno. Pydantic AI e DBOS non sono esposti.
 - **Riga di comando:** comando unico `brevia` con sottocomandi (`token`, `db`, `openapi`, `worker`), al posto dei comandi separati della 0.15.
-- **Distribuzione:** da decidere con la licenza (P7). Esiste su PyPI pubblico il pacchetto `Brevia` 0.15.2: il metodo scelto deve evitare che un progetto installi per errore la versione pubblica.
+- **Distribuzione:** su PyPI con lo stesso nome della 0.15 (`brevia`), dal ramo `1.x` di `brevia-ai/brevia` (decisione del 19 ottobre 2026). Le versioni della 1.0 precedenti a quella finale sono pre-release: chi installa `brevia` senza versione né `--pre` riceve ancora la 0.15.2, quindi un progetto della 0.15 non passa alla 1.0 per errore. Il template si prende dal repository al tag della release e installa Brevia da PyPI.
 - **Compatibilità delle dipendenze (audit del 14 ottobre):** il lock del repository non vincola i consumer. Prima della prima distribuzione: intervalli realmente supportati con limiti alle major dove servono (Pydantic AI ammette cambi incompatibili nelle major e alcuni nelle minor), una run simulata sul wheel installato in un ambiente pulito, una procedura esplicita di aggiornamento e verifica degli adattatori. Resta il pacchetto unico, con moduli e dipendenze interne separati.
 
 Struttura proposta del repository della libreria:
@@ -1192,9 +1192,9 @@ I criteri di un progetto utilizzatore restano nella sua documentazione (§5).
 - **P4 — Formati di ingestione:** lettori PDF, DOCX e testo nella prima consegna per l'analisi; Markdown e DOCX previsti anche per il RAG; XLSX/PPTX lettori opzionali secondo necessità. Implementazioni concrete da scegliere; nessuna dipendenza aggiuntiva per formati difficili già approvata.
 - **P5 — Autorizzazione:** decisa (§7.9): chiamante, `end_user`, politiche `shared` e `per-caller` con default `per-caller`. Implementata nella tappa 4 in forma non sostituibile, con amministratori; regole per attività o operazione quando un progetto le chiede.
 - **P6 — Modelli iniziali:** OpenAI, Anthropic e Ollama tramite Pydantic AI; definire matrice delle capacità e opzioni validate. I modelli concreti appartengono al progetto utilizzatore.
-- **P7 — Licenza:** licenza della 1.0 da decidere.
-- **P8 — Copyright della Brevia attuale:** chiarire il titolare "Brevia AI".
-- **P9 — Licenze delle dipendenze:** compatibilità di psycopg (LGPL-3.0) con la licenza scelta (P7).
+- **P7 — Licenza:** chiuso: MIT (19 ottobre 2026).
+- **P8 — Copyright:** chiuso: nel `LICENSE` della 1.0 Brevia AI (dal 2023) e Atlas (dal 2026).
+- **P9 — Licenze delle dipendenze:** chiuso: psycopg (LGPL-3.0) è una dipendenza installata, non inclusa nel pacchetto, ed è compatibile con la licenza MIT.
 - **P10 — Libreria di base:** chiuso per questa progettazione: Pydantic AI + DBOS. LlamaIndex non incluso; valutabile in futuro soltanto per lettori di formati difficili (§4.1).
 - **P11 — Integrazione BEdita:** architettura e responsabilità del plugin in §§6 e 9.6; da dettagliare schema locale di correlazione, firma callback e mapping del progetto. Compatibilità delle versioni BEdita/CakePHP da dichiarare nel plugin.
 - **P12 — Installazione e gestione:** processi, configurazione, migrazioni, rilasci, pulizia e installazione di riferimento decisi (§11.5); pacchetto in §11.4. Infrastruttura, fornitori e vincoli sui dati nel progetto utilizzatore; distribuzione con la licenza (P7).
@@ -1212,7 +1212,7 @@ I criteri di un progetto utilizzatore restano nella sua documentazione (§5).
 | Prima consegna della libreria | Strumento candidato per gli agenti: citazione per numero di frase (la fonte è divisa in frasi numerate, il modello indica i numeri e il testo esatto lo recupera il codice), da decidere insieme agli strumenti `open`/`find` di §7.5 per non duplicarli; non necessario alla prima consegna |
 | Prima consegna della libreria | Payload e nomi definitivi; OpenAPI e collezione Postman |
 | Prima della produzione (audit del 14 ottobre) | Regola di conservazione per ogni copia dei dati (§7.8); compatibilità delle dipendenze (§11.4); limiti fra run misurati con un carico rappresentativo: concorrenza per worker e per provider, rifiuto del sovraccarico delle code, connessioni moltiplicate per processi, memoria di documenti, snapshot e tracce, arresto ordinato e tempo di svuotamento, lavori CPU o Office che continuano dopo un timeout. Le code DBOS limitano gli avvii dei job, non le richieste ai modelli. Backup e ripristino coerenti di `brevia` e `dbos`. Niente microservizi, partizionamenti o cache distribuite prima delle misure |
-| Esterni | Licenza, copyright e dipendenze (P7–P9); distribuzione; integrazione BEdita (caricamento o adattatore, polling o callback) |
+| Esterni | Integrazione BEdita (caricamento o adattatore, polling o callback) |
 | Non bloccanti | RAG, conversazioni, valutazione completa, trascrizione, indici a grafo, migrazione dei progetti 0.x |
 
 ### 12.2 Punto 0 — completamento delle specifiche generali

@@ -64,7 +64,7 @@ cost tracking, and consistent errors and logs. The domain logic stays in the pro
   new one: a new beta may need a new database (or its `brevia` and `dbos` schemas
   dropped and created again). The release notes say when.
 - **API.** Any part may change before 1.0, declared in the
-  [changelog](https://github.com/nikazzio/brevia-next/blob/main/CHANGELOG.md). The
+  [changelog](https://github.com/brevia-ai/brevia/blob/1.x/CHANGELOG.md). The
   youngest parts are the most likely to: `brevia.analysis`, `brevia.tools` and the
   prompts of the package.
 

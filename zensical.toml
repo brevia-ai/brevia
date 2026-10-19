@@ -5,8 +5,8 @@
 [project]
 site_name = "Brevia"
 site_description = "Python library for building AI applications"
-repo_url = "https://github.com/nikazzio/brevia-next"
-repo_name = "brevia-next"
+repo_url = "https://github.com/brevia-ai/brevia"
+repo_name = "brevia-ai/brevia"
 docs_dir = "docs"
 site_dir = "site"
 extra_css = ["stylesheets/brevia.css"]

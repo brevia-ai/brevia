@@ -570,7 +570,7 @@ Each one has a reason and at least one test that fails if it is broken.
 
 1. Change `db/tables.py` and `db/migrations/versions/0001_initial.py` together. Until
    the first release the initial migration is edited in place (see
-   [CONTRIBUTING.md](https://github.com/nikazzio/brevia-next/blob/main/CONTRIBUTING.md#database-migrations)).
+   [CONTRIBUTING.md](https://github.com/brevia-ai/brevia/blob/1.x/CONTRIBUTING.md#database-migrations)).
 2. No test compares the two yet (deferred in the implementation status).
 3. Recreate the development schema afterwards.
 

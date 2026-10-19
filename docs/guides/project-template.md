@@ -9,16 +9,20 @@ pieces by hand, to show each of them.
 ## Generate a project
 
 ```sh
-uvx copier copy --vcs-ref v1.0.0b1 gh:nikazzio/brevia-next my-project
+uvx copier copy --vcs-ref v1.0.0b1 gh:brevia-ai/brevia my-project
 ```
 
-`--vcs-ref` chooses the release of the template: Copier takes the latest stable tag by
-default and ignores beta tags such as `v1.0.0b1`, so without it the template comes from
-the latest commit of the repository. The generated project installs Brevia from the
-same commit as the template, so the two always match.
+`--vcs-ref` chooses the release of the template and is required: by default Copier
+takes the latest stable tag, which is a release of Brevia 0.15 without the template,
+and ignores pre-release tags such as `v1.0.0b1`. The generated project installs from
+PyPI the release of Brevia of the template, so the two match.
 
-The repository is private: the command needs read access to it. Copier asks a few
+The template is not in the package installed from PyPI, which has only the library:
+Copier reads it from the repository at the tag, without cloning it. Copier asks a few
 questions and writes the project in `my-project/`; its `README.md` lists the commands.
+To add the files to an existing repository instead, run the command in it with `.` as
+destination (`uvx copier copy --vcs-ref v1.0.0b1 gh:brevia-ai/brevia .`): Copier asks
+before overwriting a file that already exists.
 
 | Question | Default | Meaning |
 |---|---|---|
@@ -27,13 +31,13 @@ questions and writes the project in `my-project/`; its `README.md` lists the com
 | `package_name` | from the slug, `my_brevia_application` | Python package under `src/` |
 | `description` | `An application built on the Brevia library` | One line, in the README and `pyproject.toml` |
 | `author_name`, `author_email` | empty | Authors in `pyproject.toml` |
-| `brevia_source` | `git+https://github.com/nikazzio/brevia-next@<commit of the template>` | Where to install Brevia from: the Git repository at a tag or commit, or `file:///path/to/brevia-next` for a local checkout |
+| `brevia_source` | the release of the template, `1.0.0b1` | Where to install Brevia from: a version on PyPI, the Git repository at a tag or commit (`git+https://github.com/brevia-ai/brevia@<revision>`), or `file:///path/to/brevia` for a local checkout |
 | `model` | `openai:gpt-6-luna` | Model of the example activity, as `provider:name` |
 
-With `file:///path/to/brevia-next`, uv may reuse a build of Brevia from its cache, since
+With `file:///path/to/brevia`, uv may reuse a build of Brevia from its cache, since
 the version of a checkout does not change between commits: after updating the
 checkout, run `uv sync --reinstall-package brevia` in the project. A Git source pinned
-to a revision does not have this problem.
+to a revision and a version on PyPI do not have this problem.
 
 The development database of `compose.yaml` listens on port 5432; set `DB_PORT` to start
 it on another port, and change `BREVIA_DATABASE_URL` in `.env` to match.
@@ -47,8 +51,7 @@ uvx copier update --vcs-ref v1.0.0bN
 
 Copier merges the changes of the template with those made in the project and marks
 the conflicts, as Git does. The answers are kept, `brevia_source` included: to move
-Brevia to the same release, give it again
-(`--data brevia_source=git+https://github.com/nikazzio/brevia-next@v1.0.0bN`) or change
+Brevia to the same release, give it again (`--data brevia_source=1.0.0bN`) or change
 the dependency in `pyproject.toml`, then run `uv lock`.
 
 ## What the project contains

@@ -29,22 +29,20 @@ See [implementation status](docs/IMPLEMENTATION.md) for guarantees and limits.
 Start a new application from the [project template](docs/guides/project-template.md):
 
 ```sh
-uvx copier copy --vcs-ref v1.0.0b1 gh:nikazzio/brevia-next my-project
+uvx copier copy --vcs-ref v1.0.0b1 gh:brevia-ai/brevia my-project
 ```
 
 It has one working activity, its HTTP API, a worker, tests with a fake model, a
-development database and a container image that runs the worker and the API. To add Brevia to an existing project instead, install it from a
-local checkout, using [uv](https://docs.astral.sh/uv/):
+development database and a container image that runs the worker and the API. To add
+Brevia to an existing project instead, install it from PyPI, pinned to a release, using
+[uv](https://docs.astral.sh/uv/):
 
 ```sh
-uv add --editable ../brevia-next
+uv add "brevia==1.0.0b1"
 ```
 
-Or install from Git (repository access required), pinned to the tag of a release:
-
-```sh
-uv add "brevia @ git+https://github.com/nikazzio/brevia-next@v1.0.0b1"
-```
+1.0 is a pre-release: `pip install brevia` or `uv add brevia` without a version still
+installs Brevia 0.15.
 
 Follow [Getting started](docs/getting-started.md) for a complete working example:
 configure the database and a model, register an activity, then run it from Python.
@@ -117,6 +115,6 @@ address or port.
 
 ## Licence and compatibility
 
-Proprietary; the licence has not been decided. Do not distribute.
+[MIT](LICENSE).
 Brevia 1.0 is a new design; projects using
 [Brevia 0.15](https://github.com/brevia-ai/brevia) require a separate migration.

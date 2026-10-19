@@ -4,10 +4,6 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
-### Added
-
-- **Container image in the project template.** Generated projects get a `Dockerfile` (Python 3.12, uv, tini, installation from `uv.lock`, no secrets) and `bin/start`, which runs the worker and the HTTP API together (`APP_MODE=all`, the default), one of them (`api`, `worker`) or the migration (`migrate`). A stop reaches both processes and waits for them; when one ends on its own the container exits with an error. The `compose.yaml` of the project runs the image with the profile `app`. *Running in production* recommends the image, as one service or as two from the same image.
-
 ## [1.0.0b1] - 2026-10-19
 
 First beta, for controlled use in internal projects: everything below is new. The
@@ -23,7 +19,8 @@ still change before 1.0 is on the [documentation home](docs/index.md#not-in-the-
 - **Models.** Verified with real calls on OpenAI (`openai:gpt-6-luna`, synthetic
   corpus of summary and extraction: 10/10 valid and faithful). Anthropic and Ollama
   are tested with simulated providers only.
-- **Installation.** From the Git tag `v1.0.0b1` of the private repository; see
+- **Installation.** From PyPI, with the version: `uv add "brevia==1.0.0b1"`. It is a
+  pre-release, so `brevia` without a version still installs Brevia 0.15; see
   [Running in production](docs/guides/production.md).
 
 ### Added
@@ -42,8 +39,9 @@ still change before 1.0 is on the [documentation home](docs/index.md#not-in-the-
 - **Access.** JWT authentication compatible with Brevia 0.15 (`Authenticator`, `AuthSettings`, `create_token`, `brevia token create`); `Caller` with an optional `end_user`; `AccessPolicy` (`per-caller` or `shared`, administrators).
 - **Feedback.** `Brevia.add_feedback()`: corrections (`target`, `original`, `corrected`) or a rating (`good`, `bad`) with a comment, an external reference and a `source` (`user`, `reviewer`, `automatic`), only added; an idempotency key records a repeated submission once. Public types `FeedbackRequest`, `Correction`, `Feedback`.
 - **HTTP API.** `brevia.api.create_app(brevia)`: one FastAPI app that starts and stops Brevia, gets the caller of each request from its Bearer token and answers every error as `{code, message, details, request_id}`; `BreviaDep` and `CallerDep` for the endpoints of an application. Endpoints: `/health/live`, `/health/ready`, `/status` (the token of a caller or `BREVIA_STATUS_TOKEN`, as in Brevia 0.15); `/activities`; `POST /runs` (direct: `{run_id, status, output}`, `422` with the `run_id` when the run fails; job: `202` with `Location` and `Idempotency-Key`), `GET /runs` (filters, cursor pages), `/runs/{run_id}` with `/result` (`409` until it succeeds), `/cancel`, `/retry`, `/files/{name}` and `/feedback`; `/configurations` and `/prompts` (writes by administrators). `end_user` in the body of the requests that record something. OpenAPI document with the real error body and the Bearer scheme. Dependencies FastAPI and uvicorn.
-- **Project template.** `uvx copier copy --vcs-ref v1.0.0b1 gh:nikazzio/brevia-next my-project` generates an application with a custom text activity and the document summary activity, its worker, its HTTP API, a caller, tests with a fake model and a development database; `uvx copier update` takes the changes of the template.
-- **Repository.** Package `brevia` (version `1.0.0b1`) with inline types, upper bounds below the next major version of every runtime dependency, documentation site, development rules, agent instructions and continuous integration.
+- **Project template.** `uvx copier copy --vcs-ref v1.0.0b1 gh:brevia-ai/brevia my-project` generates an application with a custom text activity and the document summary activity, its worker, its HTTP API, a caller, tests with a fake model and a development database; `uvx copier update` takes the changes of the template. Generated projects install Brevia from PyPI.
+- **Container image in the project template.** Generated projects get a `Dockerfile` (Python 3.12, uv, tini, installation from `uv.lock`, no secrets) and `bin/start`, which runs the worker and the HTTP API together (`APP_MODE=all`, the default), one of them (`api`, `worker`) or the migration (`migrate`). A stop reaches both processes and waits for them; when one ends on its own the container exits with an error. The `compose.yaml` of the project runs the image with the profile `app`. *Running in production* recommends the image, as one service or as two from the same image.
+- **Repository.** Package `brevia` (version `1.0.0b1`), MIT licence, with inline types, upper bounds below the next major version of every runtime dependency, documentation site, development rules, agent instructions and continuous integration.
 
-[Unreleased]: https://github.com/nikazzio/brevia-next/compare/v1.0.0b1...HEAD
-[1.0.0b1]: https://github.com/nikazzio/brevia-next/releases/tag/v1.0.0b1
+[Unreleased]: https://github.com/brevia-ai/brevia/compare/v1.0.0b1...1.x
+[1.0.0b1]: https://github.com/brevia-ai/brevia/releases/tag/v1.0.0b1

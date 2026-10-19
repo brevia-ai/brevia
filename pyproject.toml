@@ -3,6 +3,8 @@ name = "brevia"
 version = "1.0.0b1"
 description = "Python library for building AI applications: configuration, models, activities, durable jobs, files and access control."
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.20.0,<2",
@@ -26,7 +28,6 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Typing :: Typed",
-    "Private :: Do Not Upload",
 ]
 
 [project.scripts]

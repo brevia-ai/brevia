@@ -1,0 +1,121 @@
+# Documentation site, built with Zensical: `uv run --group docs zensical build --strict`.
+# Pages are Markdown files in docs/. The Python API reference is generated from the
+# docstrings of the public API by mkdocstrings.
+
+[project]
+site_name = "Brevia"
+site_description = "Python library for building AI applications"
+repo_url = "https://github.com/nikazzio/brevia-next"
+repo_name = "brevia-next"
+docs_dir = "docs"
+site_dir = "site"
+extra_css = ["stylesheets/brevia.css"]
+nav = [
+  { "Home" = "index.md" },
+  { "Getting started" = "getting-started.md" },
+  { "Concepts" = "concepts.md" },
+  { "Guides" = [
+    { "Configuration" = "guides/configuration.md" },
+    { "Prompts" = "guides/prompts.md" },
+    { "Models and limits" = "guides/models.md" },
+    { "Database" = "guides/database.md" },
+    { "Recorded runs" = "guides/runs.md" },
+    { "Jobs" = "guides/jobs.md" },
+    { "Files" = "guides/files.md" },
+    { "Documents" = "guides/documents.md" },
+    { "Pipelines" = "guides/pipelines.md" },
+    { "Analysis activities" = "guides/analysis.md" },
+    { "Tools" = "guides/tools.md" },
+    { "Executable analysis example" = "guides/analysis-example.md" },
+    { "HTTP examples" = "guides/http-examples.md" },
+    { "Callers and access" = "guides/access.md" },
+    { "HTTP API" = "guides/http-api.md" },
+    { "Project template" = "guides/project-template.md" },
+    { "Workers" = "guides/workers.md" },
+    { "Running in production" = "guides/production.md" },
+    { "Errors" = "guides/errors.md" },
+    { "Testing" = "guides/testing.md" },
+    { "Logging" = "guides/logging.md" },
+  ] },
+  { "API reference" = [
+    "reference/index.md",
+    { "Application" = "reference/application.md" },
+    { "Runs and jobs" = "reference/runs.md" },
+    { "Access" = "reference/access.md" },
+    { "HTTP API" = "reference/api.md" },
+    { "Files" = "reference/files.md" },
+    { "Documents" = "reference/documents.md" },
+    { "Analysis" = "reference/analysis.md" },
+    { "Tools" = "reference/tools.md" },
+    { "Configuration and prompts" = "reference/customization.md" },
+    { "Models and limits" = "reference/models.md" },
+    { "Defaults" = "reference/defaults.md" },
+    { "Errors" = "reference/errors.md" },
+    { "Testing" = "reference/testing.md" },
+  ] },
+  { "Development" = [
+    { "Contributing" = "development.md" },
+    { "Architecture" = "architecture.md" },
+    { "Implementation status" = "IMPLEMENTATION.md" },
+    { "Implementation log" = "implementation-log.md" },
+  ] },
+]
+
+[project.theme]
+language = "en"
+logo = "assets/brevia-logo.svg"
+favicon = "assets/brevia-logo.svg"
+features = [
+  "content.code.copy",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.instant",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+]
+
+# Colours of both schemes are set in docs/stylesheets/brevia.css.
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "custom"
+accent = "custom"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "custom"
+accent = "custom"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to light mode"
+
+[project.markdown_extensions]
+admonition = {}
+attr_list = {}
+def_list = {}
+md_in_html = {}
+toc.permalink = true
+pymdownx.details = {}
+# Mermaid diagrams in ```mermaid blocks.
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+pymdownx.highlight.anchor_linenums = true
+pymdownx.inlinehilite = {}
+
+[project.plugins.mkdocstrings.handlers.python]
+paths = ["src"]
+
+[project.plugins.mkdocstrings.handlers.python.options]
+docstring_style = "google"
+show_source = false
+show_root_heading = true
+show_signature_annotations = true
+separate_signature = true
+members_order = "source"
+merge_init_into_class = true

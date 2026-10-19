@@ -1,0 +1,38 @@
+# Project file, read by Brevia (BREVIA_PROJECT_FILE, default brevia.toml): models the project
+# may use, limits of each run and the defaults of each activity. Keys stay in the environment.
+# A value left out takes the default of Brevia (module brevia.config.defaults); the values below
+# are written out so that the project shows what it uses.
+
+[limits]                    # per run, retries included; 0: no limit
+max_requests = 10
+max_tool_calls = 0
+max_total_tokens = 0
+max_seconds = 120
+provider_retries = 2        # retries after a temporary provider error
+
+[traces]
+retention_days = 0          # contents of the model calls, after the run ends; 0: kept
+
+[models.{{ model | tojson }}]
+{% if model == "openai:gpt-6-luna" -%}
+reasoning_levels = ["low", "medium", "high", "xhigh", "max"]
+# Temperature is accepted only with reasoning explicitly disabled.
+temperature_with_reasoning = false
+# USD per million tokens, from the page of the model at OpenAI (October 2026).
+prices = { input = 0.10, cached_input = 0.01, output = 0.50 }
+{%- endif %}
+# Declare capabilities and prices here (see the models guide of Brevia); without prices the
+# cost of a run is reported as unknown.
+
+[activities."text.summarize"]
+model = {{ model | tojson }}
+language = "it"
+
+[activities."document.summarize"]
+# language = "Italian"      # without it, the summary keeps the language of the document
+strategy = "auto"           # for a document longer than max_input_chars
+max_input_chars = 120000
+
+[activities."document.summarize".model]
+model = {{ model | tojson }}
+# max_tokens = 16000        # per request, reasoning included; without it, the model maximum

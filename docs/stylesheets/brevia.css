@@ -1,0 +1,115 @@
+/* Brevia documentation theme: cheerful pastel colours over the Zensical modern theme.
+   Colours come in pairs: a pastel tint for surfaces, a deeper tone of the same hue
+   for text and links, so that contrast stays readable. */
+
+:root {
+  --brevia-lavender: #8e7cf0;
+  --brevia-lavender-deep: #5b4ccc;
+  --brevia-lavender-soft: #efebff;
+  --brevia-pink: #e98bc0;
+  --brevia-pink-deep: #c2508f;
+  --brevia-pink-soft: #fdeef6;
+  --brevia-mint: #5fc9b5;
+  --brevia-mint-soft: #e6f7f3;
+}
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: var(--brevia-lavender-deep);
+  --md-primary-fg-color--light: var(--brevia-lavender);
+  --md-primary-fg-color--dark: #463ab0;
+  --md-primary-bg-color: #ffffff;
+  --md-accent-fg-color: var(--brevia-pink-deep);
+  --md-accent-fg-color--transparent: #c2508f1a;
+  --md-default-bg-color: #fdfcff;
+  --md-code-bg-color: var(--brevia-lavender-soft);
+  --md-code-fg-color: #3d3466;
+  --md-typeset-a-color: var(--brevia-lavender-deep);
+  --brevia-header-bg: linear-gradient(90deg, var(--brevia-lavender-soft), var(--brevia-pink-soft) 55%, var(--brevia-mint-soft));
+  --brevia-table-head-bg: var(--brevia-lavender-soft);
+  --brevia-nav-active-bg: var(--brevia-pink-soft);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #b6abff;
+  --md-primary-fg-color--light: #cfc7ff;
+  --md-primary-fg-color--dark: var(--brevia-lavender);
+  --md-accent-fg-color: #f4a9d2;
+  --md-accent-fg-color--transparent: #f4a9d21a;
+  --md-default-bg-color: #1c1a29;
+  --md-code-bg-color: #2a2640;
+  --md-code-fg-color: #e3ddff;
+  --md-typeset-a-color: #b6abff;
+  --brevia-header-bg: linear-gradient(90deg, #26223b, #33243a 55%, #1f3333);
+  --brevia-table-head-bg: #2a2640;
+  --brevia-nav-active-bg: #33243a;
+}
+
+/* Header and footer with a soft gradient */
+.md-header {
+  background: var(--brevia-header-bg);
+}
+
+.md-footer,
+.md-footer-meta {
+  background: var(--brevia-header-bg);
+}
+
+.md-header__button.md-logo img {
+  height: 1.6rem;
+  width: auto;
+}
+
+/* Navigation: the current page in a pastel pill */
+.md-nav__link--active,
+.md-nav__item--active > .md-nav__link {
+  color: var(--md-primary-fg-color);
+}
+
+.md-sidebar--primary .md-nav__link--active {
+  background: var(--brevia-nav-active-bg);
+  border-radius: 0.5rem;
+}
+
+/* Headings in the deeper lavender, with a pastel underline for h2 */
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+  color: var(--md-primary-fg-color);
+}
+
+.md-typeset h2 {
+  padding-bottom: 0.2em;
+  border-bottom: 3px solid transparent;
+  border-image: linear-gradient(90deg, var(--brevia-lavender), var(--brevia-pink), var(--brevia-mint)) 1;
+}
+
+/* Tables: pastel header row, names of settings kept on one line */
+.md-typeset table:not([class]) th {
+  background: var(--brevia-table-head-bg);
+}
+
+.md-typeset table:not([class]) td:first-child code {
+  white-space: nowrap;
+  word-break: normal;
+}
+
+/* Inline code as a soft lavender chip */
+.md-typeset :not(pre) > code {
+  border-radius: 0.3rem;
+}
+
+/* Admonitions in pastel tints */
+.md-typeset .admonition.note,
+.md-typeset details.note {
+  border-color: var(--brevia-lavender);
+}
+
+.md-typeset .admonition.tip,
+.md-typeset details.tip {
+  border-color: var(--brevia-mint);
+}
+
+.md-typeset .admonition.warning,
+.md-typeset details.warning {
+  border-color: var(--brevia-pink);
+}

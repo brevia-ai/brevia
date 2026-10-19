@@ -1,0 +1,136 @@
+# {{ project_name }}
+
+{{ description }}. Built on the Brevia library from its project template.
+
+## Structure
+
+```text
+brevia.toml                       project file read by Brevia: models, limits, activity defaults
+prompts/                          prompt templates of the activities
+src/{{ package_name }}/
+  application.py                  creates Brevia and registers the activities
+  activities/                     the code that runs inside a run or a job and uses Brevia
+  domain/                         the logic of the application, without Brevia
+  schemas.py                      requests, configuration and results
+  api.py                          the HTTP API: the endpoints of Brevia and of the application
+client.py                         a caller in Python: runs an activity, submits a job, reads its status
+tests/                            tests with a fake model
+compose.yaml                      development database; the application in a container (profile "app")
+Dockerfile, bin/start             the image of the application and the script that starts it
+```
+
+## Setup
+
+```sh
+cp .env.example .env              # then set the token secret and the provider key
+docker compose up -d --wait       # development database
+uv sync
+uv run brevia db upgrade          # Brevia schemas; again after every upgrade of Brevia
+```
+
+## Run
+
+```sh
+echo "A text to summarise." > text.txt
+uv run --env-file .env python client.py run text.txt
+```
+
+As a job: a worker in one terminal, the submission in another.
+
+```sh
+uv run --env-file .env brevia worker {{ package_name }}.application:create
+uv run --env-file .env python client.py submit summary-1 text.txt
+```
+
+Over HTTP: the API in one terminal, a worker in another, then a request with a token.
+
+```sh
+uv run --env-file .env uvicorn {{ package_name }}.api:app --reload
+TOKEN=$(uv run --env-file .env brevia token create --user my-frontend)
+curl -X POST localhost:8000/summaries -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: application/json" -d '{"text": "A text to summarise."}'
+RUN_ID=...                        # the run_id in the answer of POST /summaries
+curl localhost:8000/runs/$RUN_ID -H "Authorization: Bearer $TOKEN"          # status: queued, running, succeeded
+curl localhost:8000/runs/$RUN_ID/result -H "Authorization: Bearer $TOKEN"   # 409 not_ready until it succeeds
+```
+
+The API does not start without `BREVIA_TOKENS_SECRET` in `.env` (at least 32 bytes).
+
+The interactive documentation of every endpoint is at http://localhost:8000/docs.
+
+`BREVIA_FAKE_MODELS=true` in `.env` answers every model call with a fake: no provider key and
+no cost, for local runs.
+
+## Container
+
+The image runs the worker and the API with `bin/start`, which `APP_MODE` drives:
+
+| `APP_MODE` | Runs |
+|---|---|
+| `all` (default) | the worker and the API together; a stop reaches both and waits for them, and when one ends on its own the other is stopped and the container exits with an error |
+| `api` | the API only, on `PORT` (8000) |
+| `worker` | the worker only |
+| `migrate` | `brevia db upgrade`, then exits: run it once per release, before the processes |
+
+```sh
+docker build -t {{ project_slug }} .                     # the image, for a platform
+
+# Locally, with the database of compose.yaml: build first, so the migration runs the new code.
+docker compose --profile app build
+docker compose --profile app run --rm -e APP_MODE=migrate app
+docker compose --profile app up                           # then http://localhost:8000/docs
+```
+
+`bin/start` needs bash 5.1 or later (the image has it) and the profile `app` needs
+Docker Compose 2.24 or later. The build installs the packages of `uv.lock`, written by
+`uv sync`: Brevia must come from a package index or a Git URL the build can reach, not
+from a `file://` path. Keep the version of uv in the `Dockerfile` (0.13.0) as the one
+that writes `uv.lock`.
+
+The environment of the container needs at least:
+
+| Variable | Why |
+|---|---|
+| `BREVIA_DATABASE_URL` | the database |
+| `BREVIA_TOKENS_SECRET` | the tokens of the HTTP API, at least 32 bytes |
+| `OPENAI_API_KEY` | the provider of the models |
+| `BREVIA_FILES_ROOT` | a folder on a volume, for the files of runs |
+| `BREVIA_APP_VERSION` | the release of the image: jobs interrupted under another release are not started again |
+| `BREVIA_WORKER_ID` | a fixed name for the worker of this service, never shared by two running workers: the host name of a container changes at every deploy |
+
+Set the stop timeout of the platform to `BREVIA_WORKER_SHUTDOWN_SECONDS` (30) plus a few
+seconds, or running jobs are interrupted and start again from the beginning; some
+platforms stop at once by default. `GET /health/ready` checks the database, not the
+worker. The image runs as root, so it can write to volumes that platforms mount as root.
+More in the guide *Running in production* of Brevia.
+
+## Test
+
+```sh
+uv run pytest
+```
+
+The tests use a fake model; those that run an activity need the database and are skipped
+without it.
+
+## Template updates
+
+The project records the template it comes from in `.copier-answers.yml`. To take the changes
+of a newer template:
+
+```sh
+uvx copier update
+```
+
+## Document summary from the library
+
+The application also registers `document.summarize` with the library's readers,
+packaged prompts and `SummarizeConfig`. Use `POST /runs` with
+`{"activity":"document.summarize","mode":"job","input":{"text":"A document."}}`,
+or pass a PDF, DOCX or UTF-8 text file by URL:
+`"input":{"file":{"name":"report.pdf","url":"https://docs.example.org/report.pdf"}}`.
+Files need `BREVIA_FILES_ROOT` and the host of the URL in `BREVIA_FILES_ALLOWED_HOSTS`
+(see `.env.example`); without them the run fails with `unavailable` or `invalid_input`.
+Its defaults are in the `activities."document.summarize"` section of `brevia.toml`.
+The original `text.summarize` remains the example of domain checks written by the
+project; `/summaries` submits that custom activity.

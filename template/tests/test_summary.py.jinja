@@ -1,0 +1,28 @@
+"""The activity with a fake model: no provider is called (see the testing guide of Brevia)."""
+
+from brevia import Brevia
+from brevia.analysis import Summary
+from brevia.testing import fake_model
+
+from {{ package_name }}.activities import summary
+from {{ package_name }}.schemas import SummaryResult
+
+
+async def test_summary_is_returned(brevia: Brevia) -> None:
+    with fake_model(SummaryResult(summary="Short.")):
+        result = await brevia.run(summary.NAME, {"text": "A text  to summarise."})
+    assert result == SummaryResult(summary="Short.")
+
+
+async def test_a_summary_too_long_is_written_again(brevia: Brevia) -> None:
+    too_long = SummaryResult(summary=" ".join(["word"] * 500))
+    with fake_model(too_long, SummaryResult(summary="Short.")):
+        result = await brevia.run(summary.NAME, {"text": "A text to summarise."})
+    assert result.summary == "Short."
+
+
+async def test_document_summary_runs_with_the_packaged_prompts(brevia: Brevia) -> None:
+    # The activity of the library, with the defaults of brevia.toml and its prompts.
+    with fake_model(Summary(summary="Short.")):
+        result = await brevia.run("document.summarize", {"text": "A document to summarise."})
+    assert result == Summary(summary="Short.")

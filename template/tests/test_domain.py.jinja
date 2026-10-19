@@ -1,0 +1,12 @@
+from {{ package_name }}.domain import text
+
+
+def test_normalize_collapses_spaces() -> None:
+    assert text.normalize("  one\n\n two\tthree ") == "one two three"
+
+
+def test_length_problems_report_words_over_the_limit() -> None:
+    assert text.length_problems("one two three", max_words=3) == []
+    assert text.length_problems("one two three four", max_words=3) == [
+        "the summary has 4 words, at most 3"
+    ]

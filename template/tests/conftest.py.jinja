@@ -1,0 +1,34 @@
+"""Fixtures: a started Brevia for the tests that run an activity.
+
+Brevia needs its database also in tests: start the one of compose.yaml and run
+`uv run brevia db upgrade`. Without it, the tests that use `brevia` are skipped.
+"""
+
+from collections.abc import AsyncIterator
+
+import pytest
+from brevia import Brevia, BreviaSettings, Unavailable
+from pydantic import ValidationError
+
+from {{ package_name }} import application
+
+
+@pytest.fixture
+async def brevia() -> AsyncIterator[Brevia]:
+    # Only a missing or unreachable database skips the tests: an error of the
+    # application itself, such as a broken brevia.toml, makes them fail.
+    try:
+        BreviaSettings()
+    except ValidationError as exc:
+        if any(error["loc"] == ("database_url",) for error in exc.errors()):
+            pytest.skip("BREVIA_DATABASE_URL is not set")
+        raise
+    app = application.create(modes=("direct",))
+    try:
+        await app.start()
+    except Unavailable as exc:
+        pytest.skip(f"database not available: {exc.message}")
+    try:
+        yield app
+    finally:
+        await app.stop()

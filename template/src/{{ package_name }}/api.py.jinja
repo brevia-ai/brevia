@@ -1,0 +1,28 @@
+"""HTTP API: the endpoints of Brevia and those of the application, on one app.
+
+    uv run --env-file .env uvicorn {{ package_name }}.api:app --reload
+
+Brevia serves /runs, /activities, /configurations, /prompts and the health endpoints
+(see /docs); the endpoints below are those of the application. Every request needs a
+token (`uv run --env-file .env brevia token create --user my-frontend`).
+"""
+
+from brevia.api import BreviaDep, CallerDep, create_app
+from pydantic import BaseModel
+
+from . import application
+from .activities import summary
+from .schemas import SummaryRequest
+
+app = create_app(application.create())
+
+
+class Accepted(BaseModel):
+    run_id: str
+
+
+@app.post("/summaries", status_code=202)
+async def create_summary(request: SummaryRequest, brevia: BreviaDep, caller: CallerDep) -> Accepted:
+    """Summarise a text as a job; follow it with GET /runs/{run_id}."""
+    handle = await brevia.submit(summary.NAME, request, caller=caller)
+    return Accepted(run_id=handle.run_id)

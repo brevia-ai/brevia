@@ -1,0 +1,16 @@
+[models."openai:example-model"]
+
+[activities."example.generate"]
+model = "openai:example-model"
+[activities."example.map_reduce"]
+model = "openai:example-model"
+[activities."example.refine"]
+model = "openai:example-model"
+[activities."example.summarize"]
+model = "openai:example-model"
+[activities."example.summarize_document"]
+model = "openai:example-model"
+[activities."example.extract"]
+model = "openai:example-model"
+[activities."example.extract_document"]
+model = "openai:example-model"

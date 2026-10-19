@@ -1,0 +1,33 @@
+"""Creates Brevia and registers the activities: the one place where the library is set up.
+
+The worker runs it with ``brevia worker {{ package_name }}.application:create``; the code that
+runs or submits activities (client.py, an API, the tests) creates it too. Brevia reads its
+settings from the ``BREVIA_*`` variables and from ``.env``.
+"""
+
+from collections.abc import Collection
+
+from brevia import Brevia, BreviaSettings, configure_logging
+from brevia.analysis import SUMMARIZE_PROMPTS, SummarizeConfig, SummarizeRequest, Summary, summarize
+
+from .activities import summary
+
+
+def create(modes: Collection[str] = ("direct", "job")) -> Brevia:
+    """Brevia with the activities of the application registered."""
+    settings = BreviaSettings()
+    configure_logging(settings.log_level, settings.log_format)
+    brevia = Brevia.from_settings(settings)
+    summary.register(brevia, modes)
+    brevia.register_activity(
+        name="document.summarize",
+        version="1",
+        function=summarize,
+        input_type=SummarizeRequest,
+        output_type=Summary,
+        config_type=SummarizeConfig,
+        prompts=SUMMARIZE_PROMPTS,
+        modes=tuple(modes),
+        overridable=("language", "strategy"),
+    )
+    return brevia

@@ -1,0 +1,108 @@
+[project]
+name = "brevia"
+version = "1.0.0b1"
+description = "Python library for building AI applications: configuration, models, activities, durable jobs, files and access control."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.20.0,<2",
+    "dbos>=3.2,<4",
+    "fastapi>=0.143,<1",
+    "httpx2>=2.13,<3",
+    "psycopg[binary]>=3.3.6,<4",
+    "pydantic>=2.12,<3",
+    "pydantic-ai-slim[anthropic,openai]>=2.55,<3",
+    "pydantic-settings>=2.15,<3",
+    "pyjwt>=2.11,<3",
+    "pypdf>=6.21,<7",
+    "python-docx>=1.2,<2",
+    "sqlalchemy[asyncio]>=2.1.4,<3",
+    "typing-extensions>=4.12,<5",
+    "uvicorn>=0.54,<1",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+    "Private :: Do Not Upload",
+]
+
+[project.scripts]
+brevia = "brevia.cli:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4",
+    "pytest>=9.1",
+    "pytest-asyncio>=1.2",
+    "ruff>=0.17",
+]
+docs = [
+    "mkdocstrings-python>=2.0.9",
+    "zensical>=0.0.70",
+]
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/brevia"]
+
+# ---------- Ruff: formatter and linter ----------
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+src = ["src", "tests"]
+# The project template follows the settings of the projects it generates (template/pyproject.toml.jinja);
+# the specification is kept as written, its code blocks are sketches
+extend-exclude = ["template", "docs/spec"]
+
+[tool.ruff.lint]
+# Selected rule sets, each with a reason (CONTRIBUTING.md, "Style and typing"):
+#   E, W, F  pycodestyle and Pyflakes: common errors
+#   I        import sorting
+#   UP       syntax of the supported Python versions
+#   B        likely bugs (flake8-bugbear)
+#   SIM      simpler equivalent constructs
+#   RUF      Ruff-specific checks
+#   ASYNC    blocking calls and misuse in async code
+#   PT       pytest conventions
+#   TID      no relative imports beyond the package
+#   S        security checks (flake8-bandit), relaxed in tests
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "RUF", "ASYNC", "PT", "TID", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+# Assertions are the purpose of tests; tests pickle only objects they create.
+"tests/**" = ["S101", "S301"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+
+# ---------- mypy ----------
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests"]
+warn_unreachable = true
+
+# ---------- pytest ----------
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Shared test modules, such as the contract of the stores and the store in memory.
+pythonpath = ["tests", "tests/unit"]
+# Only unit tests run by default: integration and AI tests need explicit authorization.
+addopts = ["-m", "unit", "--strict-markers", "--strict-config"]
+markers = [
+    "unit: deterministic tests without external services or model providers",
+    "integration: tests that need a real PostgreSQL database or other local services",
+    "ai: tests that call a real model provider and incur costs",
+]
+xfail_strict = true
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

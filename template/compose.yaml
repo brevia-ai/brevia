@@ -1,0 +1,48 @@
+# Development database: PostgreSQL with pgvector, as used by Brevia.
+# Start it with `docker compose up -d --wait`, then run `uv run brevia db upgrade`.
+# The application in its container, with the profile "app" (see the README):
+#   docker compose --profile app build      # first, so the migration runs the new code
+#   docker compose --profile app run --rm -e APP_MODE=migrate app
+#   docker compose --profile app up
+# The credentials are for local development only.
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg18
+    environment:
+      POSTGRES_USER: brevia
+      POSTGRES_PASSWORD: brevia
+      POSTGRES_DB: brevia
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brevia -d brevia"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    profiles: ["app"]
+    build: .
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      APP_MODE: all
+      BREVIA_DATABASE_URL: postgresql://brevia:brevia@postgres:5432/brevia
+      BREVIA_FILES_ROOT: /data/files
+      BREVIA_WORKER_ID: app
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    volumes:
+      - files:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # The worker gets BREVIA_WORKER_SHUTDOWN_SECONDS (30) to end its jobs.
+    stop_grace_period: 40s
+
+volumes:
+  postgres:
+  files:

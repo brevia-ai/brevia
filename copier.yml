@@ -1,0 +1,43 @@
+# Copier template of an application built on Brevia: the files are in template/.
+#   uvx copier copy gh:nikazzio/brevia-next my-project
+#   uvx copier update          # later, from the generated project, to take changes of the template
+_subdirectory: template
+_min_copier_version: "9.4"
+_answers_file: .copier-answers.yml
+_message_after_copy: |
+  Project created in {{ _copier_conf.dst_path }}. Next steps are in its README.md.
+
+project_name:
+  type: str
+  help: Name of the project
+  default: My Brevia application
+project_slug:
+  type: str
+  help: Folder and distribution name
+  default: "{{ project_name | lower | replace(' ', '-') }}"
+package_name:
+  type: str
+  help: Python package name
+  default: "{{ project_slug | replace('-', '_') }}"
+  validator: "{% if not package_name.isidentifier() %}Not a valid Python identifier{% endif %}"
+description:
+  type: str
+  help: One-line description
+  default: An application built on the Brevia library
+author_name:
+  type: str
+  help: Author name
+  default: ""
+author_email:
+  type: str
+  help: Author email
+  default: ""
+brevia_source:
+  type: str
+  help: Where to install Brevia from (a Git URL with an optional @revision, or file:///path/to/a/checkout)
+  # The commit the template is generated from: the template and Brevia match.
+  default: "git+https://github.com/nikazzio/brevia-next{% if _copier_conf.vcs_ref_hash %}@{{ _copier_conf.vcs_ref_hash }}{% endif %}"
+model:
+  type: str
+  help: Model of the example activity, as provider:name
+  default: openai:gpt-6-luna

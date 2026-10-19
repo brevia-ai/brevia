@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# Jobs run on the runner named by the repository variable CI_RUNNER, for example
+# "self-hosted" while the hosted minutes are used up; without it, on GitHub's runners.
+# Pull requests from forks always run on GitHub's runners: their code never runs on a
+# self-hosted machine.
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Checks (Python ${{ matrix.python }})
+    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && vars.CI_RUNNER || 'ubuntu-latest' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13", "3.14"]
+    env:
+      UV_PYTHON: ${{ matrix.python }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install the development environment
+        run: uv sync --locked
+      - name: Formatting
+        run: uv run ruff format --check
+      - name: Lint
+        run: uv run ruff check
+      - name: Types
+        run: uv run mypy
+      - name: Unit tests
+        run: uv run pytest
+
+  integration:
+    name: Integration tests (PostgreSQL)
+    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && vars.CI_RUNNER || 'ubuntu-latest' }}
+    services:
+      postgres:
+        image: pgvector/pgvector:0.8.7-pg18
+        env:
+          POSTGRES_USER: brevia
+          POSTGRES_PASSWORD: brevia
+          POSTGRES_DB: brevia
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U brevia -d brevia"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      UV_PYTHON: "3.12"
+      BREVIA_DATABASE_URL: postgresql://brevia:brevia@localhost:5432/brevia
+      BREVIA_TEST_DATABASE_URL: postgresql://brevia:brevia@localhost:5432/brevia
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install the development environment
+        run: uv sync --locked
+      - name: Migrate the database
+        run: uv run brevia db upgrade
+      - name: Check the revision
+        run: uv run brevia db current
+      - name: Integration tests
+        run: uv run pytest -m integration
+
+  docs:
+    name: Documentation site
+    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && vars.CI_RUNNER || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Build the site in strict mode
+        run: uv run --locked --group docs zensical build --strict
+
+  install:
+    # Specification §11.6, "Installation": the package works when installed by a
+    # separate application, outside the development environment.
+    name: Install from a separate environment
+    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && vars.CI_RUNNER || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - name: Build the distributions
+        run: uv build
+      - name: Install the wheel in a clean environment and check it
+        working-directory: ${{ runner.temp }}
+        run: |
+          uv venv --python 3.12 app
+          uv pip install --python app "${GITHUB_WORKSPACE}"/dist/*.whl
+          app/bin/python - <<'PY'
+          from importlib.resources import files
+
+          import brevia
+
+          # The typing marker and the migrations must ship in the wheel, not only in
+          # the source tree.
+          assert files("brevia").joinpath("py.typed").is_file(), "py.typed missing"
+          migrations = files("brevia.db").joinpath("migrations")
+          assert migrations.joinpath("env.py").is_file(), "migrations missing"
+          assert migrations.joinpath("versions").is_dir(), "migrations missing"
+          from brevia.db import migrate
+          assert migrate.head() is not None, "no migration found"
+          from brevia.analysis import EXTRACT_PROMPTS, SUMMARIZE_PROMPTS
+          for name, path in {**SUMMARIZE_PROMPTS, **EXTRACT_PROMPTS}.items():
+              assert path.is_file(), f"prompt {name} missing"
+          print(brevia.__version__)
+          PY
+          app/bin/brevia --help

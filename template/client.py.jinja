@@ -1,0 +1,56 @@
+"""Caller of the application: runs the activity directly or submits it as a job.
+
+    uv run --env-file .env python client.py run TEXT_FILE
+    uv run --env-file .env python client.py submit KEY TEXT_FILE   # a worker must be running
+    uv run --env-file .env python client.py status RUN_ID
+
+An API or another program does the same with the functions below.
+"""
+
+import asyncio
+import dataclasses
+import json
+import sys
+from pathlib import Path
+
+from {{ package_name }} import application
+from {{ package_name }}.activities import summary
+from {{ package_name }}.schemas import SummaryRequest
+
+
+async def run(path: str) -> None:
+    async with application.create() as brevia:
+        result = await brevia.run(summary.NAME, SummaryRequest(text=Path(path).read_text()))
+    print(result.model_dump_json(indent=2))
+
+
+async def submit(key: str, path: str) -> None:
+    async with application.create() as brevia:
+        handle = await brevia.submit(
+            summary.NAME, SummaryRequest(text=Path(path).read_text()), idempotency_key=key
+        )
+        print("run", handle.run_id)
+        result = await handle.result(wait=300)
+    print(result.model_dump_json(indent=2))
+
+
+async def status(run_id: str) -> None:
+    async with application.create() as brevia:
+        state = await brevia.job(run_id).status()
+    print(json.dumps(dataclasses.asdict(state), indent=2, default=str))
+
+
+COMMANDS = {"run": (run, 1), "submit": (submit, 2), "status": (status, 1)}
+
+
+def main(args: list[str]) -> int:
+    if not args or args[0] not in COMMANDS or len(args) - 1 != COMMANDS[args[0]][1]:
+        print(__doc__, file=sys.stderr)
+        return 2
+    command, _ = COMMANDS[args[0]]
+    asyncio.run(command(*args[1:]))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

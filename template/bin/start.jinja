@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# Starts the application in its container. APP_MODE chooses what runs:
+#   all (default)  the job worker and the HTTP API together
+#   api            the HTTP API only
+#   worker         the job worker only
+#   migrate        brevia db upgrade, then exit: the processes never migrate
+# In "all", a stop (TERM or INT) is passed to both processes as TERM and the script waits
+# until both have ended, so the worker can finish its jobs. When one of them ends on its
+# own, the other is stopped and the script exits with an error, so that the platform
+# starts the container again.
+set -uo pipefail
+
+mode="${APP_MODE:-all}"
+worker=(brevia worker {{ package_name }}.application:create)
+api=(uvicorn {{ package_name }}.api:app --host 0.0.0.0 --port "${PORT:-8000}")
+
+case "$mode" in
+    migrate) exec brevia db upgrade ;;
+    api) exec "${api[@]}" ;;
+    worker) exec "${worker[@]}" ;;
+    all) ;;
+    *)
+        echo "start: unknown APP_MODE '$mode' (all, api, worker or migrate)" >&2
+        exit 64
+        ;;
+esac
+
+# The traps come first, so a stop that arrives while the processes start is not lost;
+# stop() signals only the processes already started.
+stopping="" worker_pid="" api_pid=""
+stop() {
+    stopping="$1"
+    echo "start: $1 received, stopping the worker and the api" >&2
+    for pid in $worker_pid $api_pid; do
+        kill -TERM "$pid" 2>/dev/null
+    done
+}
+trap 'stop TERM' TERM
+trap 'stop INT' INT
+
+"${worker[@]}" &
+worker_pid=$!
+"${api[@]}" &
+api_pid=$!
+# A stop received before both had started: stop them now.
+[[ -n "$stopping" ]] && kill -TERM "$worker_pid" "$api_pid" 2>/dev/null
+
+# The first process that ends; a signal interrupts `wait`, so wait again (127 without a
+# process: none of them is left to wait for).
+while true; do
+    ended_pid=""
+    wait -n -p ended_pid "$worker_pid" "$api_pid"
+    first_code=$?
+    [[ -n "${ended_pid:-}" || "$first_code" == 127 ]] && break
+done
+if [[ "${ended_pid:-}" == "$worker_pid" ]]; then
+    first=worker other=api other_pid=$api_pid
+else
+    first=api other=worker other_pid=$worker_pid
+fi
+if [[ -z "$stopping" ]]; then
+    echo "start: the $first exited with $first_code, stopping the $other" >&2
+    kill -TERM "$other_pid" 2>/dev/null
+fi
+# The last one by its PID, whose result `wait` keeps even when it has already ended; a
+# signal interrupts `wait` while the process still runs, so wait again.
+while true; do
+    wait "$other_pid"
+    other_code=$?
+    ((other_code > 128)) && kill -0 "$other_pid" 2>/dev/null && continue
+    break
+done
+echo "start: the $first exited with $first_code, the $other with $other_code" >&2
+
+# After a stop, 143 (TERM) and 130 (INT) are normal ends.
+normal() { [[ "$1" == 0 || "$1" == 143 || "$1" == 130 ]]; }
+if [[ -n "$stopping" ]]; then
+    normal "$first_code" || exit "$first_code"
+    normal "$other_code" || exit "$other_code"
+    exit 0
+fi
+# A process that ends on its own is an error, even with 0.
+[[ "$first_code" == 0 ]] && exit 1
+exit "$first_code"

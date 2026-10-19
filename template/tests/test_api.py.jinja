@@ -1,0 +1,45 @@
+"""The HTTP app is built and has the endpoints of Brevia and of the application.
+
+The app is not started here, so the database is not needed: the tests that run an
+activity are in test_summary.py.
+"""
+
+import importlib
+
+import pytest
+from brevia import create_token
+from fastapi.testclient import TestClient
+
+
+@pytest.fixture
+def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
+    # Settings of the test only: Brevia connects to the database when the app starts.
+    monkeypatch.setenv("BREVIA_DATABASE_URL", "postgresql://brevia@localhost/unused")
+    monkeypatch.setenv("BREVIA_TOKENS_SECRET", "s" * 32)
+    # Over the .env of the project, which may disable the tokens for local runs.
+    monkeypatch.setenv("BREVIA_AUTH_DISABLED", "false")
+    monkeypatch.setenv("BREVIA_TOKENS_USERS", "")
+    api = importlib.reload(importlib.import_module("{{ package_name }}.api"))
+    return TestClient(api.app)  # without `with`: the app is not started
+
+
+def test_the_api_has_the_endpoints_of_brevia_and_of_the_application(
+    client: TestClient,
+) -> None:
+    paths = client.get("/openapi.json").json()["paths"]
+    assert {"/runs", "/activities", "/health/live", "/summaries"} <= set(paths)
+
+
+def test_the_endpoints_of_the_application_need_a_token(client: TestClient) -> None:
+    response = client.post("/summaries", json={"text": "A text."})
+    assert response.status_code == 401
+    assert response.json()["code"] == "unauthorized"
+
+
+def test_document_summary_is_registered(client: TestClient) -> None:
+    token = create_token("test", 5, "s" * 32)
+    response = client.get(
+        "/activities/document.summarize", headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    assert {"file", "text", "language"} <= set(response.json()["input_schema"]["properties"])

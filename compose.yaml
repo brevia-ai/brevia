@@ -1,0 +1,24 @@
+# Development database: PostgreSQL with pgvector.
+# Start it with `docker compose up -d --wait`, then run `uv run brevia db upgrade`.
+# The credentials are for local development only.
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg18
+    environment:
+      POSTGRES_USER: brevia
+      POSTGRES_PASSWORD: brevia
+      POSTGRES_DB: brevia
+    ports:
+      # 5435 avoids the default port of a local PostgreSQL; BREVIA_DB_PORT changes it.
+      - "${BREVIA_DB_PORT:-5435}:5432"
+    volumes:
+      # Images from PostgreSQL 18 keep their data under /var/lib/postgresql.
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brevia -d brevia"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres:

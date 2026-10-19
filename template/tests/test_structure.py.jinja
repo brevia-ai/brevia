@@ -1,0 +1,15 @@
+"""The logic in domain/ does not depend on Brevia: only application.py and activities/ use it."""
+
+import ast
+from pathlib import Path
+
+DOMAIN = Path(__file__).resolve().parents[1] / "src" / "{{ package_name }}" / "domain"
+
+
+def test_domain_does_not_import_brevia() -> None:
+    for path in DOMAIN.glob("*.py"):
+        for node in ast.walk(ast.parse(path.read_text())):
+            if isinstance(node, ast.Import):
+                assert all(a.name.split(".")[0] != "brevia" for a in node.names), path
+            elif isinstance(node, ast.ImportFrom) and node.level == 0:
+                assert (node.module or "").split(".")[0] != "brevia", path

@@ -15,6 +15,8 @@ permissions:
 jobs:
   documentation:
     name: Build documentation
+    # Only pull requests merged into main: the branch 1.x (Brevia 1.0) has its own workflows.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
     steps:
 

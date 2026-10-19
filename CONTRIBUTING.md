@@ -144,6 +144,16 @@ template.
 Without a database the tests that run the activity are skipped; with the database of
 `compose.yaml` and `uv run brevia db upgrade` they run too.
 
+## Releases
+
+Brevia 1.x is published on PyPI by the workflow `publish.yml` when a tag `v1.*` is pushed.
+
+1. A pull request into `1.x` sets the version, in [PEP 440](https://peps.python.org/pep-0440/) form (`1.0.0b2`, `1.0.0rc1`, `1.0.0`), in `pyproject.toml` and as the default of `brevia_source` in `copier.yml`, and gives the section of `CHANGELOG.md` the version and the date of the release.
+2. After the merge, the maintainer tags the merged commit and pushes the tag: `git tag -a v1.0.0b2 -m "Brevia 1.0.0b2" && git push origin v1.0.0b2`.
+3. The workflow checks that the tag and the default of the template match the version of the package, builds the distributions and uploads them with the repository secret `PYPI_TOKEN`. If a check fails nothing is published: delete the tag, fix the versions and tag again.
+
+A version uploaded to PyPI cannot be replaced, not even after deleting it: an error found after the upload is fixed with the next version.
+
 ## Changes and compatibility
 
 - Describe the behaviour before and after, the reason, the checks actually run and the known limits.

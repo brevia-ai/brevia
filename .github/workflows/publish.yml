@@ -1,0 +1,36 @@
+name: Publish
+
+# Publishes Brevia 1.x on PyPI when a release tag is pushed, for example v1.0.0b1.
+# The steps of a release are in CONTRIBUTING.md.
+
+on:
+  push:
+    tags: ["v1.*"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Build and publish on PyPI
+    # GitHub's runners only: the job uses the PyPI token.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # uv from PyPI at a fixed version, not from a third-party action: this job holds
+      # the PyPI token, so only code of GitHub and PyPI runs in it.
+      - name: Install uv
+        run: pipx install uv==0.13.0
+      - name: The tag matches the version of the package
+        run: test "v$(uv version --short)" = "$GITHUB_REF_NAME"
+      - name: The template installs the same version
+        # The default of the question brevia_source in copier.yml.
+        run: |
+          template=$(awk '/^brevia_source:/ {f = 1; next} f && /^[^ ]/ {f = 0} f && /^  default:/ {print $2}' copier.yml)
+          test "$template" = "\"$(uv version --short)\""
+      - name: Build the distributions
+        run: uv build
+      - name: Publish on PyPI
+        run: uv publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}

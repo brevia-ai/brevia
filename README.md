@@ -1,10 +1,14 @@
 # Brevia
 
+[![CI](https://github.com/brevia-ai/brevia/actions/workflows/ci.yml/badge.svg?branch=1.x)](https://github.com/brevia-ai/brevia/actions/workflows/ci.yml?query=branch%3A1.x)
+![Python Versions](https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-blue.svg)
+[![License](https://img.shields.io/badge/license-MIT-orange.svg)](https://github.com/brevia-ai/brevia/blob/1.x/LICENSE)
+
 Python library for AI applications. Define typed activities; Brevia handles model
 calls, validated output, configuration, durable jobs, files and access control.
 Your application owns the business logic.
 
-**Beta, for controlled internal use · Python 3.12+ · PostgreSQL · Not published on PyPI**
+**Beta, for controlled internal use · Python 3.12+ · PostgreSQL · On PyPI as a pre-release: `brevia==1.0.0b1`**
 
 ## What works today
 
@@ -21,12 +25,12 @@ Your application owns the business logic.
 An interrupted job restarts its activity from the beginning: external effects must
 tolerate repetition. What the beta leaves out, and what may still change before 1.0
 (real models verified with OpenAI only; the database schema), is on the
-[documentation home](docs/index.md#not-in-the-beta).
-See [implementation status](docs/IMPLEMENTATION.md) for guarantees and limits.
+[documentation home](https://github.com/brevia-ai/brevia/blob/1.x/docs/index.md#not-in-the-beta).
+See [implementation status](https://github.com/brevia-ai/brevia/blob/1.x/docs/IMPLEMENTATION.md) for guarantees and limits.
 
 ## Use it in your application
 
-Start a new application from the [project template](docs/guides/project-template.md):
+Start a new application from the [project template](https://github.com/brevia-ai/brevia/blob/1.x/docs/guides/project-template.md):
 
 ```sh
 uvx copier copy --vcs-ref v1.0.0b1 gh:brevia-ai/brevia my-project
@@ -44,9 +48,9 @@ uv add "brevia==1.0.0b1"
 1.0 is a pre-release: `pip install brevia` or `uv add brevia` without a version still
 installs Brevia 0.15.
 
-Follow [Getting started](docs/getting-started.md) for a complete working example:
+Follow [Getting started](https://github.com/brevia-ai/brevia/blob/1.x/docs/getting-started.md) for a complete working example:
 configure the database and a model, register an activity, then run it from Python.
-For background execution, use the [job example](docs/guides/jobs.md#a-complete-example).
+For background execution, use the [job example](https://github.com/brevia-ai/brevia/blob/1.x/docs/guides/jobs.md#a-complete-example).
 
 ## Develop Brevia
 
@@ -66,7 +70,7 @@ uv run brevia db upgrade
 
 Set a provider key in `.env` only when calling a real model. Load it into the process
 with `uv run --env-file .env python your_script.py`. For development without model
-calls, see [fake models](docs/guides/testing.md).
+calls, see [fake models](https://github.com/brevia-ai/brevia/blob/1.x/docs/guides/testing.md).
 
 ## Configuration
 
@@ -76,10 +80,10 @@ calls, see [fake models](docs/guides/testing.md).
 | `brevia.toml` | Models, run limits and activity defaults |
 | Application code | Activities, input/output schemas and business logic |
 
-[`.env.example`](.env.example) contains the common options; omitted settings use
-their defaults. See [all settings](docs/guides/configuration.md),
-[worker settings](docs/guides/workers.md#settings) and
-[authentication](docs/guides/access.md#authentication) when needed.
+[`.env.example`](https://github.com/brevia-ai/brevia/blob/1.x/.env.example) contains the common options; omitted settings use
+their defaults. See [all settings](https://github.com/brevia-ai/brevia/blob/1.x/docs/guides/configuration.md),
+[worker settings](https://github.com/brevia-ai/brevia/blob/1.x/docs/guides/workers.md#settings) and
+[authentication](https://github.com/brevia-ai/brevia/blob/1.x/docs/guides/access.md#authentication) when needed.
 
 ## Checks
 
@@ -91,7 +95,7 @@ uv run pytest
 ```
 
 Unit tests need no services or provider keys. Integration and real-model tests are
-separate: see [Contributing](CONTRIBUTING.md#checks).
+separate: see [Contributing](https://github.com/brevia-ai/brevia/blob/1.x/CONTRIBUTING.md#checks).
 
 ## Documentation site
 
@@ -107,14 +111,14 @@ address or port.
 
 | Need | Read |
 |---|---|
-| Run and operate jobs | [Jobs](docs/guides/jobs.md) · [Workers](docs/guides/workers.md) |
-| Handle documents and permissions | [Files](docs/guides/files.md) · [Access](docs/guides/access.md) |
-| Use the Python API | [API reference](docs/reference/index.md) |
-| Check progress and changes | [Implementation status](docs/IMPLEMENTATION.md) · [Changelog](CHANGELOG.md) |
-| Contribute | [Contributing](CONTRIBUTING.md) · [Agent instructions](AGENTS.md) |
+| Run and operate jobs | [Jobs](https://github.com/brevia-ai/brevia/blob/1.x/docs/guides/jobs.md) · [Workers](https://github.com/brevia-ai/brevia/blob/1.x/docs/guides/workers.md) |
+| Handle documents and permissions | [Files](https://github.com/brevia-ai/brevia/blob/1.x/docs/guides/files.md) · [Access](https://github.com/brevia-ai/brevia/blob/1.x/docs/guides/access.md) |
+| Use the Python API | [API reference](https://github.com/brevia-ai/brevia/blob/1.x/docs/reference/index.md) |
+| Check progress and changes | [Implementation status](https://github.com/brevia-ai/brevia/blob/1.x/docs/IMPLEMENTATION.md) · [Changelog](https://github.com/brevia-ai/brevia/blob/1.x/CHANGELOG.md) |
+| Contribute | [Contributing](https://github.com/brevia-ai/brevia/blob/1.x/CONTRIBUTING.md) · [Agent instructions](https://github.com/brevia-ai/brevia/blob/1.x/AGENTS.md) |
 
 ## Licence and compatibility
 
-[MIT](LICENSE).
+[MIT](https://github.com/brevia-ai/brevia/blob/1.x/LICENSE).
 Brevia 1.0 is a new design; projects using
 [Brevia 0.15](https://github.com/brevia-ai/brevia) require a separate migration.

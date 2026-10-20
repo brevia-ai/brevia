@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
-## [1.0.0b1] - 2026-10-19
+## [1.0.0b1] - 2026-10-20
 
 First beta, for controlled use in internal projects: everything below is new. The
 changes made while it was developed are recorded in the
